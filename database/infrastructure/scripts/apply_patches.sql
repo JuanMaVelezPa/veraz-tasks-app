@@ -1,4 +1,4 @@
-y--
+--
 -- VERSION 1.0.0
 --
 --
@@ -12,6 +12,21 @@ y--
 -- OBJECT NAME: apply_patches
 -- DESCRIPTION: Master script to apply all patches in order
 --
+
+-- =====================================================
+-- INSTRUCCIONES DE EJECUCIÓN
+-- =====================================================
+-- ANTES DE EJECUTAR ESTE SCRIPT:
+-- 1. Ejecutar el script drop_all para limpiar la base de datos:
+--    psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f infrastructure/scripts/00_DROP_ALL.sql
+--
+-- 2. Luego ejecutar este script de parches:
+--    psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f infrastructure/scripts/apply_patches.sql
+--
+-- COMANDO COMPLETO PARA RECREAR LA BASE DE DATOS (usando variable de entorno):
+-- psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f infrastructure/scripts/00_DROP_ALL.sql && psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f infrastructure/scripts/apply_patches.sql
+--
+-- =====================================================
 
 -- =====================================================
 -- PATCH APPLICATION SCRIPT

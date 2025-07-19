@@ -1,0 +1,21 @@
+{
+    "editor.encoding": "utf8",
+    "java.compile.nullAnalysis.mode": "automatic",
+    "java.configuration.updateBuildConfiguration": "interactive",
+    // SQL Configuration
+    "sql.format.enable": true,
+    "sql.format.keywordCase": "upper",
+    "sql.format.indentSize": 4,
+    "sql.format.insertSpaces": true,
+    "sql.format.linesBetweenQueries": 2,
+    // File Associations
+    "files.associations": {
+        "*.sql": "sql"
+    },
+    // Snippets Configuration
+    "editor.snippetSuggestions": "top",
+    "editor.tabCompletion": "on",
+    // Database Guidelines Reference
+    "workbench.editor.enablePreview": false,
+    "workbench.editor.enablePreviewFromQuickOpen": false
+}
