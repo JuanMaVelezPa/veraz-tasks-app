@@ -1,0 +1,36 @@
+--
+-- VERSION 1.0.0
+--
+--
+-- VERSION     REQUEST NRO    USER            DATE             CHANGES
+-- ----------- -------------- --------------- ---------------- ----------------
+-- 1.0.0                      JMVELEZ         15/01/2025       Creación indexes tabla empleados
+-- ----------- -------------- --------------- ---------------- ----------------
+--
+--
+-- OBJECT TYPE: INDEXES
+-- OBJECT NAME: GE_TEMPL_INDEXES
+-- DESCRIPTION: Performance indexes for GE_TEMPL table
+--
+
+-- Drop existing indexes if they exist
+DROP INDEX IF EXISTS GE_IEMPL_PERS;
+DROP INDEX IF EXISTS GE_IEMPL_USER;
+DROP INDEX IF EXISTS GE_IEMPL_CODE;
+DROP INDEX IF EXISTS GE_IEMPL_POSITION;
+DROP INDEX IF EXISTS GE_IEMPL_DEPARTMENT;
+DROP INDEX IF EXISTS GE_IEMPL_SUPERVISOR;
+DROP INDEX IF EXISTS GE_IEMPL_HIRE_DATE;
+DROP INDEX IF EXISTS GE_IEMPL_STATUS;
+DROP INDEX IF EXISTS GE_IEMPL_WORK_EMAIL;
+
+-- Create indexes
+CREATE INDEX GE_IEMPL_PERS ON GE_TEMPL(empl_pers);
+CREATE INDEX GE_IEMPL_USER ON GE_TEMPL(empl_user);
+CREATE INDEX GE_IEMPL_CODE ON GE_TEMPL(empl_employee_code);
+CREATE INDEX GE_IEMPL_POSITION ON GE_TEMPL(empl_position);
+CREATE INDEX GE_IEMPL_DEPARTMENT ON GE_TEMPL(empl_department);
+CREATE INDEX GE_IEMPL_SUPERVISOR ON GE_TEMPL(empl_supervisor);
+CREATE INDEX GE_IEMPL_HIRE_DATE ON GE_TEMPL(empl_hire_date);
+CREATE INDEX GE_IEMPL_STATUS ON GE_TEMPL(empl_status);
+CREATE INDEX GE_IEMPL_WORK_EMAIL ON GE_TEMPL(empl_work_email); 
