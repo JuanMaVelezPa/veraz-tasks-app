@@ -69,8 +69,8 @@ tasks-app/
 
 ## 📚 Documentación Detallada
 
-- **[Backend Documentation](backend/README.md)** - Documentación completa del API REST
-- **[Database Documentation](database/README.md)** - Guías de base de datos y scripts
+- **[Backend Documentation](backend/README.md)** - Guía completa del API REST
+- **[Database Documentation](database/README.md)** - Guía de configuración de base de datos
 
 ## 🔧 Tecnologías
 
