@@ -1,11 +1,808 @@
 {
 	"info": {
-		"_postman_id": "caba4e8a-4e05-4623-b273-59407b7bb320",
+		"_postman_id": "42fb2593-0fc9-4211-80c6-7b9590c82f4b",
 		"name": "VerazDb",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "14082102"
 	},
 	"item": [
+		{
+			"name": "Person",
+			"item": [
+				{
+					"name": "Get  Person",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/person",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"person"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Person by ID (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/person/0fbd9216-58df-41ff-a3cf-df0a04f09efc",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"person",
+								"0fbd9216-58df-41ff-a3cf-df0a04f09efc"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Person (Admin)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Script en la pestaña \"Tests\" de tu solicitud (donde obtienes la respuesta con \"person\": { \"id\": ... })",
+									"try {",
+									"    // Parsear la respuesta JSON",
+									"    const responseJson = pm.response.json();",
+									"",
+									"    // Verificar que el objeto 'person' exista y que contenga la propiedad 'id'",
+									"    if (responseJson && responseJson.person && responseJson.person.id) {",
+									"        // Guardar el ID de la persona en una variable de colección",
+									"        pm.collectionVariables.set(\"person_id\", responseJson.person.id);",
+									"        ",
+									"        console.log(\"ID de persona guardado:\", responseJson.person.id);",
+									"    } else {",
+									"        // Mensaje de depuración si el ID no se encuentra o la estructura es inesperada",
+									"        console.warn(\"Advertencia: No se encontró 'id' dentro de 'person' en la respuesta JSON o la respuesta es inesperada.\", responseJson);",
+									"    }",
+									"",
+									"} catch (e) {",
+									"    // Captura cualquier error durante el parseo o el procesamiento del token/ID",
+									"    console.error(\"Error al procesar la respuesta JSON en el script de Tests:\", e);",
+									"    // Puedes hacer que el test falle si hay un error crítico",
+									"    pm.test(\"Script de Tests ejecutado sin errores críticos\", function() {",
+									"        throw e;",
+									"    });",
+									"}",
+									"",
+									"// Opcional: Un test para verificar que la solicitud fue exitosa (código de estado 2xx)",
+									"pm.test(\"Status code is 2xx success\", function () {",
+									"    pm.response.to.be.success;",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						},
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identType\": \"CC\",\n    \"identNumber\": \"123456789\",\n    \"firstName\": \"Persona1\",\n    \"lastName\": \"García\",\n    \"birthDate\": \"1985-05-15\",\n    \"gender\": \"F\",\n    \"nationality\": \"Colombian\",\n    \"mobile\": \"3009876543\",\n    \"email\": \"maria.garcia@email.com\",\n    \"address\": \"Carrera 78 #90-12\",\n    \"city\": \"Medellín\",\n    \"country\": \"Colombia\",\n    \"postalCode\": \"050034\",\n    \"notes\": \"Persona para empleado\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/admin/person",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"admin",
+								"person"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Person (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identType\": \"PASSPORT\",\n    \"userId\": \"d17f8757-f5a5-4bcf-8b53-006bb25977d7\",\n    \"identNumber\": \"CA666777888\",\n    \"firstName\": \"Amanda\",\n    \"lastName\": \"Anderson\",\n    \"birthDate\": \"1996-06-18\",\n    \"gender\": \"F\",\n    \"nationality\": \"Canadian\",\n    \"mobile\": \"+1-416-555-0108\",\n    \"email\": \"amanda.anderson@construction.ca\",\n    \"address\": \"258 Dundas Street\",\n    \"city\": \"Toronto\",\n    \"country\": \"Canada\",\n    \"postalCode\": \"M5T 2Z5\",\n    \"notes\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/person/495751e8-6b70-4cdc-bb5f-87476046dda6",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"person",
+								"495751e8-6b70-4cdc-bb5f-87476046dda6"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Person (Admin)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/person/85ccc8c9-16db-42a6-921f-27670a7b37a9",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"person",
+								"85ccc8c9-16db-42a6-921f-27670a7b37a9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Available-Users",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:3000/api/person/available-users",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"person",
+								"available-users"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employee",
+			"item": [
+				{
+					"name": "Get Employee by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/employee/{{employee_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"employee",
+								"{{employee_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const responseJson = pm.response.json();",
+									"    ",
+									"    if (responseJson && responseJson.employee && responseJson.employee.id) {",
+									"        pm.collectionVariables.set(\"employee_id\", responseJson.employee.id);",
+									"        console.log(\"Employee ID guardado:\", responseJson.employee.id);",
+									"    } else {",
+									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");",
+									"    }",
+									"} catch (e) {",
+									"    console.error(\"Error al procesar la respuesta JSON:\", e);",
+									"}",
+									"",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"employeeCode\": \"EMP80\",\n  \"position\": \"Desarrollador Senior\",\n  \"department\": \"Tecnología\",\n  \"supervisorId\": null,\n  \"hireDate\": \"2023-01-15\",\n  \"terminationDate\": null,\n  \"salary\": 5000000,\n  \"currency\": \"COP\",\n  \"employmentType\": \"FULL_TIME\",\n  \"status\": \"ACTIVE\",\n  \"workEmail\": \"maria.garcia@empresa.com\",\n  \"workMobile\": \"3009876543\",\n  \"workLocation\": \"Oficina Bogotá\",\n  \"workSchedule\": \"Lunes a Viernes 8:00-17:00\",\n  \"skills\": \"Java, Spring Boot, React, PostgreSQL\",\n  \"certifications\": \"Oracle Certified Professional\",\n  \"education\": \"Ingeniera de Sistemas - Universidad Nacional\",\n  \"benefits\": \"Seguro médico, bonos de productividad\",\n  \"notes\": \"Empleada destacada con excelente rendimiento\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/employee",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"employee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employee",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"employeeCode\": \"EMP001\",\n  \"position\": \"Desarrollador Senior Full Stack\",\n  \"department\": \"Tecnología e Innovación\",\n  \"supervisorId\": null,\n  \"hireDate\": \"2023-01-15\",\n  \"terminationDate\": null,\n  \"salary\": 5500000,\n  \"currency\": \"COP\",\n  \"employmentType\": \"FULL_TIME\",\n  \"status\": \"ACTIVE\",\n  \"workEmail\": \"maria.garcia@empresa.com\",\n  \"workMobile\": \"3009876543\",\n  \"workLocation\": \"Oficina Bogotá - Piso 5\",\n  \"workSchedule\": \"Lunes a Viernes 8:00-17:00\",\n  \"skills\": \"Java, Spring Boot, React, PostgreSQL, Docker, AWS\",\n  \"certifications\": \"Oracle Certified Professional, AWS Certified Developer\",\n  \"education\": \"Ingeniera de Sistemas - Universidad Nacional\",\n  \"benefits\": \"Seguro médico, bonos de productividad, gym\",\n  \"notes\": \"Empleada destacada con excelente rendimiento, promovida recientemente\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/employee/{{employee_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"employee",
+								"{{employee_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Employee",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/employee/{{employee_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"employee",
+								"{{employee_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Client",
+			"item": [
+				{
+					"name": "Get Client by ID",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/client/{{client_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"client",
+								"{{client_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Client",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const responseJson = pm.response.json();",
+									"    ",
+									"    if (responseJson && responseJson.data && responseJson.client.id) {",
+									"        pm.collectionVariables.set(\"client_id\", responseJson.client.id);",
+									"        console.log(\"Client ID guardado:\", responseJson.client.id);",
+									"    } else {",
+									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");",
+									"    }",
+									"} catch (e) {",
+									"    console.error(\"Error al procesar la respuesta JSON:\", e);",
+									"}",
+									"",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"clientCode\": \"CLI001\",\n  \"type\": \"CORPORATE\",\n  \"category\": \"VIP\",\n  \"source\": \"Web\",\n  \"companyName\": \"Tech Solutions S.A.\",\n  \"companyWebsite\": \"https://techsolutions.com\",\n  \"companyIndustry\": \"Tecnología\",\n  \"contactPerson\": \"Carlos Rodríguez\",\n  \"contactPosition\": \"Gerente de TI\",\n  \"address\": \"Calle 100 #15-30\",\n  \"city\": \"Bogotá\",\n  \"country\": \"Colombia\",\n  \"postalCode\": \"110221\",\n  \"taxId\": \"900123456-7\",\n  \"creditLimit\": 10000000,\n  \"currency\": \"COP\",\n  \"paymentTerms\": \"30 días\",\n  \"paymentMethod\": \"Transferencia bancaria\",\n  \"notes\": \"Cliente importante con proyectos de alto valor\",\n  \"preferences\": \"Atención personalizada, reportes mensuales\",\n  \"tags\": \"VIP, recurrente, tecnología\",\n  \"rating\": 5,\n  \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/client",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"client"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Client",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"clientCode\": \"CLI001\",\n  \"type\": \"CORPORATE\",\n  \"category\": \"VIP\",\n  \"source\": \"Web\",\n  \"companyName\": \"Tech Solutions S.A.\",\n  \"companyWebsite\": \"https://techsolutions.com\",\n  \"companyIndustry\": \"Tecnología e Innovación\",\n  \"contactPerson\": \"Carlos Rodríguez\",\n  \"contactPosition\": \"Director de TI\",\n  \"address\": \"Calle 100 #15-30, Piso 8\",\n  \"city\": \"Bogotá\",\n  \"country\": \"Colombia\",\n  \"postalCode\": \"110221\",\n  \"taxId\": \"900123456-7\",\n  \"creditLimit\": 15000000,\n  \"currency\": \"COP\",\n  \"paymentTerms\": \"30 días\",\n  \"paymentMethod\": \"Transferencia bancaria\",\n  \"notes\": \"Cliente importante con proyectos de alto valor, expandiendo operaciones\",\n  \"preferences\": \"Atención personalizada, reportes mensuales, soporte 24/7\",\n  \"tags\": \"VIP, recurrente, tecnología, expansión\",\n  \"rating\": 5,\n  \"status\": \"ACTIVE\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/client/{{client_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"client",
+								"{{client_id}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Client",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/client/{{client_id}}",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"client",
+								"{{client_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Profile",
+			"item": [
+				{
+					"name": "Get My Person",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Person",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"userId\": \"d17f8757-f5a5-4bcf-8b53-006bb25977d7\",\n    \"identType\": \"PASSPORT\",\n    \"identNumber\": \"CA666777888\",\n    \"firstName\": \"Amanda\",\n    \"lastName\": \"Velez Ramirez\",\n    \"birthDate\": \"1996-06-18\",\n    \"gender\": \"F\",\n    \"nationality\": \"Canadian\",\n    \"mobile\": \"+1-416-555-0108\",\n    \"email\": \"amanda.anderson@construction.ca\",\n    \"address\": \"258 Dundas Street\",\n    \"city\": \"Toronto\",\n    \"country\": \"Canada\",\n    \"postalCode\": \"M5T 2Z5\",\n    \"notes\": null\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
 		{
 			"name": "Check-Status-Token",
 			"protocolProfileBehavior": {
@@ -227,6 +1024,45 @@
 		},
 		{
 			"name": "Register",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"try {\r",
+							"    // Parsear la respuesta JSON\r",
+							"    const responseJson = pm.response.json();\r",
+							"\r",
+							"    // Verificar que el objeto 'usuario' exista y que contenga la propiedad 'id'\r",
+							"    if (responseJson && responseJson.user && responseJson.user.id) {\r",
+							"        // Guardar el ID de la usuario en una variable de colección\r",
+							"        pm.collectionVariables.set(\"user_id\", responseJson.user.id);\r",
+							"        \r",
+							"        console.log(\"ID de usuario guardado:\", responseJson.user.id);\r",
+							"    } else {\r",
+							"        // Mensaje de depuración si el ID no se encuentra o la estructura es inesperada\r",
+							"        console.warn(\"Advertencia: No se encontró 'id' dentro de 'usuario' en la respuesta JSON o la respuesta es inesperada.\", responseJson);\r",
+							"    }\r",
+							"\r",
+							"} catch (e) {\r",
+							"    // Captura cualquier error durante el parseo o el procesamiento del token/ID\r",
+							"    console.error(\"Error al procesar la respuesta JSON en el script de Tests:\", e);\r",
+							"    // Puedes hacer que el test falle si hay un error crítico\r",
+							"    pm.test(\"Script de Tests ejecutado sin errores críticos\", function() {\r",
+							"        throw e;\r",
+							"    });\r",
+							"}\r",
+							"\r",
+							"// Opcional: Un test para verificar que la solicitud fue exitosa (código de estado 2xx)\r",
+							"pm.test(\"Status code is 2xx success\", function () {\r",
+							"    pm.response.to.be.success;\r",
+							"});"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -238,7 +1074,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"username\": \"jmvelez\",\r\n    \"email\": \"jmvelez@gmail.com\",\r\n    \"password\": \"Abc123456*\"\r\n}",
+					"raw": "{\r\n    \"username\": \"carava\",\r\n    \"email\": \"carava@gmail.com\",\r\n    \"password\": \"Abc123456*\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -360,6 +1196,21 @@
 	"variable": [
 		{
 			"key": "jwt_token",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "person_id",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "employee_id",
+			"value": "\"\"",
+			"type": "string"
+		},
+		{
+			"key": "client_id",
 			"value": "\"\"",
 			"type": "string"
 		}

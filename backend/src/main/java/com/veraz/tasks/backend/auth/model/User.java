@@ -11,6 +11,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.veraz.tasks.backend.person.model.Person;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -21,6 +22,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -61,6 +63,9 @@ public class User implements UserDetails {
     @JoinTable(name = "ge_tusro", joinColumns = @JoinColumn(name = "usro_user"), inverseJoinColumns = @JoinColumn(name = "usro_role"))
     private Set<Role> roles = new HashSet<>();
 
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private Person person;
+
     public User(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
@@ -71,7 +76,7 @@ public class User implements UserDetails {
     }
 
     @PrePersist
-    protected void onCreate() {
+    protected void prePersist() {
         if (this.createdAt == null) {
             this.createdAt = LocalDateTime.now();
         }

@@ -51,21 +51,21 @@ END $$;
 -- =====================================================
 
 -- Apply initial schema patch
-\i infrastructure/patches/v1.0.0/001_initial_schema.sql
+\i ../patches/v1.0.0/001_initial_schema.sql
 
 -- Apply initial authentication data patch
-\i infrastructure/patches/v1.0.0/002_initial_auth_data.sql
+\i ../patches/v1.0.0/002_initial_auth_data.sql
 
 -- Apply test data patch
-\i infrastructure/patches/v1.0.0/003_test_data_employees_clients.sql
+\i ../patches/v1.0.0/003_test_data_employees_clients.sql
 
 -- =====================================================
 -- FUTURE PATCHES WILL BE ADDED HERE
 -- =====================================================
 -- Example:
--- \i infrastructure/patches/v1.1.0/004_add_new_table.sql
--- \i infrastructure/patches/v1.2.0/005_add_new_column.sql
--- \i infrastructure/patches/v2.0.0/006_major_version_update.sql
+-- \i ../patches/v1.1.0/004_add_new_table.sql
+-- \i ../patches/v1.2.0/005_add_new_column.sql
+-- \i ../patches/v2.0.0/006_major_version_update.sql
 
 -- =====================================================
 -- COMPLETION MESSAGE

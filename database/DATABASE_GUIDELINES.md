@@ -4,7 +4,7 @@
 
 ### Modules
 GE => General
-CU => Customer
+CL => Client
 HR => Human Resources
 
 ### 1.1 Tables
@@ -18,7 +18,7 @@ HR => Human Resources
   - `GE_TPERM` (permissions)
   - `GE_TROPE` (role-permission relationship)
   - `GE_TUSRO` (user-role relationship)
-  - `CU_TCLIE` (clients)
+  - `CL_TCLIE` (clients)
 
 ### 1.2 Views
 - **Prefix**: Use `{MODULE}_V` prefix for all views
@@ -74,7 +74,7 @@ VERSION INTEGER DEFAULT 1
   - `user_username` (username column for GE_TUSER)
   - `pers_pers` (primary key for GE_TPERS)
   - `empl_empl` (primary key for GE_TEMPL)
-  - `clie_clie` (primary key for CU_TCLIE)
+  - `clie_clie` (primary key for CL_TCLIE)
 
 ### 2.3 Primary Key Convention
 - **Format**: `{4-letter_table_prefix}_{4-letter_table_prefix}` (repeat the prefix)
@@ -82,7 +82,7 @@ VERSION INTEGER DEFAULT 1
   - `user_user` (primary key for GE_TUSER)
   - `pers_pers` (primary key for GE_TPERS)
   - `empl_empl` (primary key for GE_TEMPL)
-  - `clie_clie` (primary key for CU_TCLIE)
+  - `clie_clie` (primary key for CL_TCLIE)
 
 ### 2.4 Constraints
 - **Primary Keys**: Always use `UUID` with `GEN_RANDOM_UUID()` function

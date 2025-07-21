@@ -49,6 +49,7 @@ public class AuthService {
         return user;
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDTO loginUser(LoginRequestDTO loginRequest) {
         try {
             User user = userRepository.findByUsernameOrEmailAllIgnoreCase(
@@ -86,6 +87,7 @@ public class AuthService {
         }
     }
 
+    @Transactional(readOnly = true)
     public UserResponseDTO checkAuthStatus(User user) {
         try {
             if (user == null) {

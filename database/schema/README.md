@@ -58,7 +58,7 @@ The master script `01_CREATE_TABLES.sql` executes files in the following order:
 
 ### 3. Create Business Tables (With Dependencies)
 - `GE_TEMPL.sql` - Employees table (depends on GE_TUSER and GE_TPERS)
-- `CU_TCLIE.sql` - Clients table (depends on GE_TUSER and GE_TPERS)
+- `CL_TCLIE.sql` - Clients table (depends on GE_TUSER and GE_TPERS)
 
 ### 4. Create Constraints
 - Base table constraints
@@ -74,7 +74,7 @@ The master script `01_CREATE_TABLES.sql` executes files in the following order:
 
 ### Tables
 - **Format**: `{MODULE}_T{4-letter-name}`
-- **Examples**: `GE_TUSER`, `GE_TPERS`, `GE_TROLE`, `GE_TPERM`, `GE_TUSRO`, `GE_TROPE`, `GE_TEMPL`, `CU_TCLIE`
+- **Examples**: `GE_TUSER`, `GE_TPERS`, `GE_TROLE`, `GE_TPERM`, `GE_TUSRO`, `GE_TROPE`, `GE_TEMPL`, `CL_TCLIE`
 
 ### Primary Keys
 - **Format**: `{4-letter_prefix}_{4-letter_prefix}`
@@ -122,17 +122,17 @@ After running the master script, you can verify everything was created correctly
 ```sql
 -- Verify created tables
 \dt GE_*
-\dt CU_*
+\dt CL_*
 
 -- Verify constraints
 SELECT conname, contype, conrelid::regclass 
 FROM pg_constraint 
-WHERE conrelid::regclass::text LIKE 'GE_%' OR conrelid::regclass::text LIKE 'CU_%';
+WHERE conrelid::regclass::text LIKE 'GE_%' OR conrelid::regclass::text LIKE 'CL_%';
 
 -- Verify indexes
 SELECT indexname, tablename 
 FROM pg_indexes 
-WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CU_%';
+WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CL_%';
 ```
 
 ## 📊 Table Summary
@@ -149,4 +149,4 @@ WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CU_%';
 
 ### Business Tables
 - **GE_TEMPL**: Employee information
-- **CU_TCLIE**: Client information 
+- **CL_TCLIE**: Client information 

@@ -140,17 +140,17 @@ psql -d your_database -U your_user -f infrastructure/scripts/check_patch_status.
 ```sql
 -- Check tables
 \dt GE_*
-\dt CU_*
+\dt CL_*
 
 -- Check constraints
 SELECT conname, contype, conrelid::regclass 
 FROM pg_constraint 
-WHERE conrelid::regclass::text LIKE 'GE_%' OR conrelid::regclass::text LIKE 'CU_%';
+WHERE conrelid::regclass::text LIKE 'GE_%' OR conrelid::regclass::text LIKE 'CL_%';
 
 -- Check indexes
 SELECT indexname, tablename 
 FROM pg_indexes 
-WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CU_%';
+WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CL_%';
 
 -- Check initial data
 SELECT 'Roles' as table_name, COUNT(*) as record_count FROM GE_TROLE

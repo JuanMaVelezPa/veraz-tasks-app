@@ -66,7 +66,7 @@ psql -h localhost -p 5432 tasks_app_db -U tasks_app_user
 - **GE_TPERM:** Permisos
 - **GE_TPERS:** Personas
 - **GE_TEMPL:** Empleados
-- **CU_TCLIE:** Clientes
+- **CL_TCLIE:** Clientes
 
 ## 🔐 Extensiones
 

@@ -13,41 +13,48 @@
 -- DESCRIPTION: Initial database schema with all base tables, roles, permissions and business tables
 --
 
+DO $$
+BEGIN
+    RAISE NOTICE '=====================================================';
+    RAISE NOTICE 'STARTING PATCH 001_initial_schema';
+    RAISE NOTICE '=====================================================';
+END $$; 
+
 -- =====================================================
 -- STEP 1: CREATE BASE TABLES (No dependencies)
 -- =====================================================
 
 -- Create GE_TUSER table (no dependencies)
-\i schema/tables/GE_TUSER.sql
+\i ../../schema/tables/GE_TUSER.sql
 
 -- Create GE_TPERS table (no dependencies)
-\i schema/tables/GE_TPERS.sql
+\i ../../schema/tables/GE_TPERS.sql
 
 -- Create GE_TROLE table (no dependencies)
-\i schema/tables/GE_TROLE.sql
+\i ../../schema/tables/GE_TROLE.sql
 
 -- Create GE_TPERM table (no dependencies)
-\i schema/tables/GE_TPERM.sql
+\i ../../schema/tables/GE_TPERM.sql
 
 -- =====================================================
 -- STEP 2: CREATE RELATIONSHIP TABLES (With dependencies)
 -- =====================================================
 
 -- Create GE_TUSRO table (depends on GE_TUSER and GE_TROLE)
-\i schema/tables/GE_TUSRO.sql
+\i ../../schema/tables/GE_TUSRO.sql
 
 -- Create GE_TROPE table (depends on GE_TROLE and GE_TPERM)
-\i schema/tables/GE_TROPE.sql
+\i ../../schema/tables/GE_TROPE.sql
 
 -- =====================================================
 -- STEP 3: CREATE BUSINESS TABLES (With dependencies)
 -- =====================================================
 
 -- Create GE_TEMPL table (depends on GE_TUSER and GE_TPERS)
-\i schema/tables/GE_TEMPL.sql
+\i ../../schema/tables/GE_TEMPL.sql
 
--- Create CU_TCLIE table (depends on GE_TUSER and GE_TPERS)
-\i schema/tables/CU_TCLIE.sql
+-- Create CL_TCLIE table (depends on GE_TUSER and GE_TPERS)
+\i ../../schema/tables/CL_TCLIE.sql
 
 
 -- =====================================================
@@ -55,36 +62,38 @@
 -- =====================================================
 
 -- Add constraints to base tables
-\i schema/constraints/GE_TUSER_CONSTRAINTS.sql
-\i schema/constraints/GE_TPERS_CONSTRAINTS.sql
-\i schema/constraints/GE_TROLE_CONSTRAINTS.sql
-\i schema/constraints/GE_TPERM_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TUSER_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TPERS_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TROLE_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TPERM_CONSTRAINTS.sql
 
 -- Add constraints to relationship tables
-\i schema/constraints/GE_TUSRO_CONSTRAINTS.sql
-\i schema/constraints/GE_TROPE_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TUSRO_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TROPE_CONSTRAINTS.sql
 
 -- Add constraints to business tables
-\i schema/constraints/GE_TEMPL_CONSTRAINTS.sql
-\i schema/constraints/CU_TCLIE_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TEMPL_CONSTRAINTS.sql
+\i ../../schema/constraints/CL_TCLIE_CONSTRAINTS.sql
 
 -- =====================================================
 -- STEP 5: CREATE INDEXES
 -- =====================================================
 
 -- Create indexes for base tables
-\i schema/indixes/GE_TUSER_INDEXES.sql
-\i schema/indixes/GE_TPERS_INDEXES.sql
-\i schema/indixes/GE_TROLE_INDEXES.sql
-\i schema/indixes/GE_TPERM_INDEXES.sql
+\i ../../schema/indixes/GE_TUSER_INDEXES.sql
+\i ../../schema/indixes/GE_TPERS_INDEXES.sql
+\i ../../schema/indixes/GE_TROLE_INDEXES.sql
+\i ../../schema/indixes/GE_TPERM_INDEXES.sql
 
 -- Create indexes for relationship tables
-\i schema/indixes/GE_TUSRO_INDEXES.sql
-\i schema/indixes/GE_TROPE_INDEXES.sql
+\i ../../schema/indixes/GE_TUSRO_INDEXES.sql
+\i ../../schema/indixes/GE_TROPE_INDEXES.sql
 
 -- Create indexes for business tables
-\i schema/indixes/GE_TEMPL_INDEXES.sql
-\i schema/indixes/CU_TCLIE_INDEXES.sql
+
+\i ../../schema/indixes/GE_TEMPL_INDEXES.sql
+\i ../../schema/indixes/CL_TCLIE_INDEXES.sql
+
 
 -- =====================================================
 -- COMPLETION MESSAGE
@@ -107,6 +116,6 @@ BEGIN
     RAISE NOTICE '';
     RAISE NOTICE 'Created business tables:';
     RAISE NOTICE '- GE_TEMPL (Employees)';
-    RAISE NOTICE '- CU_TCLIE (Clients)';
+    RAISE NOTICE '- CL_TCLIE (Clients)';
     RAISE NOTICE '=====================================================';
 END $$; 

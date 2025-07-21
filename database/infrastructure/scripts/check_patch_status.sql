@@ -61,7 +61,7 @@ BEGIN
     SELECT COUNT(*) INTO table_count 
     FROM information_schema.tables 
     WHERE table_schema = 'public' 
-    AND table_name IN ('ge_templ', 'cu_tclie');
+    AND table_name IN ('ge_templ', 'cl_tclie');
     
     IF table_count = 2 THEN
         RAISE NOTICE '✓ Business tables exist (2/2)';
@@ -106,7 +106,7 @@ BEGIN
     SELECT COUNT(*) INTO index_count 
     FROM pg_indexes 
     WHERE schemaname = 'public' 
-    AND indexname LIKE 'ge_i%' OR indexname LIKE 'cu_i%';
+    AND indexname LIKE 'ge_i%' OR indexname LIKE 'cl_i%';
     
     IF index_count >= 20 THEN
         RAISE NOTICE '✓ Performance indexes exist (%/20+)', index_count;
@@ -189,7 +189,7 @@ BEGIN
     END IF;
     
     -- Check clients
-    SELECT COUNT(*) INTO clie_count FROM CU_TCLIE;
+    SELECT COUNT(*) INTO clie_count FROM CL_TCLIE;
     IF clie_count >= 10 THEN
         RAISE NOTICE '✓ Test clients exist (%/10)', clie_count;
     ELSE
@@ -209,12 +209,12 @@ SELECT
         WHEN table_name LIKE 'ge_tusro' THEN 'User-Role Relationships'
         WHEN table_name LIKE 'ge_trope' THEN 'Role-Permission Relationships'
         WHEN table_name LIKE 'ge_templ' THEN 'Employees'
-        WHEN table_name LIKE 'cu_tclie' THEN 'Clients'
+        WHEN table_name LIKE 'cl_tclie' THEN 'Clients'
         ELSE 'Unknown'
     END as description
 FROM information_schema.tables 
 WHERE table_schema = 'public' 
-AND table_name IN ('ge_tuser', 'ge_tpers', 'ge_trole', 'ge_tperm', 'ge_tusro', 'ge_trope', 'ge_templ', 'cu_tclie')
+AND table_name IN ('ge_tuser', 'ge_tpers', 'ge_trole', 'ge_tperm', 'ge_tusro', 'ge_trope', 'ge_templ', 'cl_tclie')
 ORDER BY table_name;
 
 \echo '\n=== CONSTRAINT SUMMARY ==='
@@ -233,7 +233,7 @@ SELECT
     COUNT(*) as index_count
 FROM pg_indexes 
 WHERE schemaname = 'public' 
-AND (indexname LIKE 'ge_i%' OR indexname LIKE 'cu_i%')
+AND (indexname LIKE 'ge_i%' OR indexname LIKE 'cl_i%')
 GROUP BY tablename
 ORDER BY tablename;
 
@@ -248,7 +248,7 @@ SELECT 'Persons' as table_name, COUNT(*) as record_count FROM GE_TPERS
 UNION ALL
 SELECT 'Employees' as table_name, COUNT(*) as record_count FROM GE_TEMPL
 UNION ALL
-SELECT 'Clients' as table_name, COUNT(*) as record_count FROM CU_TCLIE
+SELECT 'Clients' as table_name, COUNT(*) as record_count FROM CL_TCLIE
 UNION ALL
 SELECT 'User-Role Assignments' as table_name, COUNT(*) as record_count FROM GE_TUSRO
 UNION ALL

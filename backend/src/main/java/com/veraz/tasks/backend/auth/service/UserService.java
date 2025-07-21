@@ -47,6 +47,7 @@ public class UserService implements UserDetailsService {
         this.passwordEncoder = passwordEncoder;
     }
 
+    @Transactional
     public UserResponseDTO createUser(UserRequestDTO userRequest) {
         try {
             if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(),

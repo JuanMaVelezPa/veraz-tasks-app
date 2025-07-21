@@ -13,6 +13,13 @@
 -- DESCRIPTION: Insert initial authentication data (roles, permissions, admin user)
 --
 
+DO $$
+BEGIN
+    RAISE NOTICE '=====================================================';
+    RAISE NOTICE 'STARTING PATCH 002_initial_auth_data';
+    RAISE NOTICE '=====================================================';
+END $$; 
+
 -- =====================================================
 -- INITIAL AUTHENTICATION DATA
 -- =====================================================
@@ -21,7 +28,7 @@
 -- =====================================================
 
 -- Insert initial authentication data
-\i data/seed/00_initial_data_auth.sql
+\i ../../data/seed/00_initial_data_auth.sql
 
 -- =====================================================
 -- COMPLETION MESSAGE

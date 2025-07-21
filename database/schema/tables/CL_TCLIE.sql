@@ -9,14 +9,13 @@
 --
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: CU_TCLIE
+-- OBJECT NAME: CL_TCLIE
 -- DESCRIPTION: Stores client information linked to persons and users
 --
-DROP TABLE IF EXISTS CU_TCLIE;
-CREATE TABLE CU_TCLIE (
+DROP TABLE IF EXISTS CL_TCLIE;
+CREATE TABLE CL_TCLIE (
     clie_clie UUID DEFAULT GEN_RANDOM_UUID(),
     clie_pers UUID NOT NULL,
-    clie_user UUID,
     clie_client_code VARCHAR(20) NOT NULL,
     clie_type VARCHAR(20) NOT NULL,
     clie_category VARCHAR(50),

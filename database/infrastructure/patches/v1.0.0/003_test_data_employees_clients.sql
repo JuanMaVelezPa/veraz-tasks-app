@@ -23,8 +23,15 @@
 -- - All data for Canada (CAD currency)
 -- =====================================================
 
+DO $$
+BEGIN
+    RAISE NOTICE '=====================================================';
+    RAISE NOTICE 'STARTING PATCH 003_test_data_employees_clients';
+    RAISE NOTICE '=====================================================';
+END $$; 
+
 -- Insert test data
-\i data/seed/03_test_data_employees_clients.sql
+\i ../../data/seed/03_test_data_employees_clients.sql
 
 -- =====================================================
 -- COMPLETION MESSAGE
