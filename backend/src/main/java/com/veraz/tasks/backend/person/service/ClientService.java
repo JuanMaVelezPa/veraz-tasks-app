@@ -15,6 +15,8 @@ import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -31,6 +33,20 @@ public class ClientService {
         this.clientRepository = clientRepository;
         this.personRepository = personRepository;
         this.messageSource = messageSource;
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDto> getClients() {
+        List<Client> clients = clientRepository.findAll();
+        List<ClientResponseDto> clientResponseDtos = new ArrayList<>();
+        for (Client client : clients) {
+            clientResponseDtos.add(ClientResponseDto.builder()
+                    .client(ClientMapper.toDto(client))
+                    .message(null)
+                    .status("OK")
+                    .build());
+        }
+        return clientResponseDtos;
     }
 
     @Transactional(readOnly = true)

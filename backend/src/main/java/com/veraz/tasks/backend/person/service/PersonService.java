@@ -4,6 +4,7 @@ import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.repository.UserRepository;
 import com.veraz.tasks.backend.person.dto.PersonRequestDto;
 import com.veraz.tasks.backend.person.dto.PersonResponseDto;
+import com.veraz.tasks.backend.person.dto.UserSummaryDto;
 import com.veraz.tasks.backend.person.mapper.PersonMapper;
 import com.veraz.tasks.backend.person.model.Client;
 import com.veraz.tasks.backend.person.model.Employee;
@@ -44,7 +45,7 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
-    public List<PersonResponseDto> getAllPersons() {
+    public List<PersonResponseDto> getPersons() {
         List<Person> persons = personRepository.findAll();
         List<PersonResponseDto> personResponseDtos = new ArrayList<>();
         for (Person person : persons) {
@@ -73,6 +74,22 @@ public class PersonService {
                 .message(null)
                 .status("OK")
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserSummaryDto> getAvailableUsers() {
+        List<User> users = userRepository.findAll();
+        List<UserSummaryDto> userSummaryDtos = new ArrayList<>();
+        for (User user : users) {
+            userSummaryDtos.add(UserSummaryDto.builder()
+                    .id(user.getId())
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .isActive(user.getIsActive())
+                    .createdAt(user.getCreatedAt())
+                    .build());
+        }
+        return userSummaryDtos;
     }
 
     @Transactional

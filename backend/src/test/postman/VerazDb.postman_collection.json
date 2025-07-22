@@ -302,7 +302,70 @@
 			"name": "Employee",
 			"item": [
 				{
+					"name": "Get Employees",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/employee",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"employee"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Employee by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    if (responseJson && responseJson.employee && responseJson.employee.id) {\r",
+									"        pm.collectionVariables.set(\"employee_id\", responseJson.employee.id);\r",
+									"        console.log(\"Employee ID guardado:\", responseJson.employee.id);\r",
+									"    } else {\r",
+									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");\r",
+									"    }\r",
+									"} catch (e) {\r",
+									"    console.error(\"Error al procesar la respuesta JSON:\", e);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -323,7 +386,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/employee/{{employee_id}}",
+							"raw": "http://localhost:3000/api/employee/aa4e13e8-44f9-44f9-a85b-c35575e9e5ef",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -332,7 +395,7 @@
 							"path": [
 								"api",
 								"employee",
-								"{{employee_id}}"
+								"aa4e13e8-44f9-44f9-a85b-c35575e9e5ef"
 							]
 						}
 					},
@@ -443,7 +506,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"employeeCode\": \"EMP001\",\n  \"position\": \"Desarrollador Senior Full Stack\",\n  \"department\": \"Tecnología e Innovación\",\n  \"supervisorId\": null,\n  \"hireDate\": \"2023-01-15\",\n  \"terminationDate\": null,\n  \"salary\": 5500000,\n  \"currency\": \"COP\",\n  \"employmentType\": \"FULL_TIME\",\n  \"status\": \"ACTIVE\",\n  \"workEmail\": \"maria.garcia@empresa.com\",\n  \"workMobile\": \"3009876543\",\n  \"workLocation\": \"Oficina Bogotá - Piso 5\",\n  \"workSchedule\": \"Lunes a Viernes 8:00-17:00\",\n  \"skills\": \"Java, Spring Boot, React, PostgreSQL, Docker, AWS\",\n  \"certifications\": \"Oracle Certified Professional, AWS Certified Developer\",\n  \"education\": \"Ingeniera de Sistemas - Universidad Nacional\",\n  \"benefits\": \"Seguro médico, bonos de productividad, gym\",\n  \"notes\": \"Empleada destacada con excelente rendimiento, promovida recientemente\"\n}",
+							"raw": "{\n    \"personId\": \"0fbd9216-58df-41ff-a3cf-df0a04f09efc\",\n    \"userId\": \"1ce0079d-11de-477d-9d5b-cd798f94fd78\",\n    \"employeeCode\": \"EMP002\",\n    \"position\": \"Operations Manager SuperNova\",\n    \"department\": \"Construction\",\n    \"supervisorId\": null,\n    \"hireDate\": \"2020-03-20\",\n    \"terminationDate\": null,\n    \"salary\": 82000.00,\n    \"currency\": \"CAD\",\n    \"employmentType\": \"FULL_TIME\",\n    \"status\": \"ACTIVE\",\n    \"workEmail\": \"sarah.williams@construction.ca\",\n    \"workMobile\": \"+1-416-555-0102\",\n    \"workLocation\": \"Toronto Office\",\n    \"workSchedule\": null,\n    \"skills\": null,\n    \"certifications\": \"Ingeniero FullStack\",\n    \"education\": null,\n    \"benefits\": null,\n    \"notes\": null\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -509,7 +572,7 @@
 			"name": "Client",
 			"item": [
 				{
-					"name": "Get Client by ID",
+					"name": "Get Clients",
 					"request": {
 						"auth": {
 							"type": "bearer",
@@ -530,7 +593,70 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/client/{{client_id}}",
+							"raw": "http://localhost:3000/api/client",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"client"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Client by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {\r",
+									"    const responseJson = pm.response.json();\r",
+									"    \r",
+									"    if (responseJson && responseJson.client && responseJson.client.id) {\r",
+									"        pm.collectionVariables.set(\"client_id\", responseJson.client.id);\r",
+									"        console.log(\"Client ID guardado:\", responseJson.client.id);\r",
+									"    } else {\r",
+									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");\r",
+									"    }\r",
+									"} catch (e) {\r",
+									"    console.error(\"Error al procesar la respuesta JSON:\", e);\r",
+									"}\r",
+									"\r",
+									"pm.test(\"Status code is 201 Created\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "en",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/client/b65ff7ea-fb3d-4095-b066-559d6b96413f",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -539,7 +665,7 @@
 							"path": [
 								"api",
 								"client",
-								"{{client_id}}"
+								"b65ff7ea-fb3d-4095-b066-559d6b96413f"
 							]
 						}
 					},
@@ -555,7 +681,7 @@
 									"try {",
 									"    const responseJson = pm.response.json();",
 									"    ",
-									"    if (responseJson && responseJson.data && responseJson.client.id) {",
+									"    if (responseJson && responseJson.client && responseJson.client.id) {",
 									"        pm.collectionVariables.set(\"client_id\", responseJson.client.id);",
 									"        console.log(\"Client ID guardado:\", responseJson.client.id);",
 									"    } else {",
@@ -650,7 +776,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"personId\": \"{{person_id}}\",\n  \"clientCode\": \"CLI001\",\n  \"type\": \"CORPORATE\",\n  \"category\": \"VIP\",\n  \"source\": \"Web\",\n  \"companyName\": \"Tech Solutions S.A.\",\n  \"companyWebsite\": \"https://techsolutions.com\",\n  \"companyIndustry\": \"Tecnología e Innovación\",\n  \"contactPerson\": \"Carlos Rodríguez\",\n  \"contactPosition\": \"Director de TI\",\n  \"address\": \"Calle 100 #15-30, Piso 8\",\n  \"city\": \"Bogotá\",\n  \"country\": \"Colombia\",\n  \"postalCode\": \"110221\",\n  \"taxId\": \"900123456-7\",\n  \"creditLimit\": 15000000,\n  \"currency\": \"COP\",\n  \"paymentTerms\": \"30 días\",\n  \"paymentMethod\": \"Transferencia bancaria\",\n  \"notes\": \"Cliente importante con proyectos de alto valor, expandiendo operaciones\",\n  \"preferences\": \"Atención personalizada, reportes mensuales, soporte 24/7\",\n  \"tags\": \"VIP, recurrente, tecnología, expansión\",\n  \"rating\": 5,\n  \"status\": \"ACTIVE\"\n}",
+							"raw": "{\n    \"personId\": \"61e88070-2ada-4d78-86e8-af163cc29141\",\n    \"clientCode\": \"CLI001\",\n    \"type\": \"CORPORATE\",\n    \"category\": null,\n    \"source\": null,\n    \"companyName\": \"La desordenada\",\n    \"companyWebsite\": null,\n    \"companyIndustry\": \"Construction\",\n    \"contactPerson\": \"John Smith\",\n    \"contactPosition\": \"CEO\",\n    \"address\": \"100 Main Street\",\n    \"city\": \"Toronto\",\n    \"country\": \"Canada\",\n    \"postalCode\": \"M5H 1A1\",\n    \"taxId\": null,\n    \"creditLimit\": null,\n    \"currency\": \"CAD\",\n    \"paymentTerms\": null,\n    \"paymentMethod\": null,\n    \"notes\": null,\n    \"preferences\": null,\n    \"tags\": null,\n    \"rating\": null,\n    \"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -814,7 +940,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2MTZkMGU2Yy0yZGZkLTRiN2UtYjY5NS1iZmQ4MjJmZjA4YmIiLCJpYXQiOjE3NTI4NDM3MjAsImV4cCI6MTc1MjkzMDEyMH0.ki5PVCgoHksLPk1rb3wEuKcZERP2xjf6Nyd70b46NFg",
+							"value": "{{jwt_token}}",
 							"type": "string"
 						}
 					]
@@ -899,7 +1025,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI2MTZkMGU2Yy0yZGZkLTRiN2UtYjY5NS1iZmQ4MjJmZjA4YmIiLCJpYXQiOjE3NTI4NzY0MjksImV4cCI6MTc1Mjk2MjgyOX0.ZC0lKv0guhvHcBycu-03Bf1qOsgbkX5JJ24dyrm95yQ",
+							"value": "{{jwt_token}}",
 							"type": "string"
 						}
 					]
@@ -916,7 +1042,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/users",
+					"raw": "http://localhost:3000/api/users/d17f8757-f5a5-4bcf-8b53-006bb25977d",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -924,7 +1050,8 @@
 					"port": "3000",
 					"path": [
 						"api",
-						"users"
+						"users",
+						"d17f8757-f5a5-4bcf-8b53-006bb25977d"
 					]
 				}
 			},
@@ -1068,7 +1195,7 @@
 				"header": [
 					{
 						"key": "Accept-Language",
-						"value": "en",
+						"value": "es",
 						"type": "text"
 					}
 				],
@@ -1141,7 +1268,7 @@
 				"header": [
 					{
 						"key": "Accept-Language",
-						"value": "en",
+						"value": "es",
 						"type": "text"
 					}
 				],
@@ -1213,6 +1340,10 @@
 			"key": "client_id",
 			"value": "\"\"",
 			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": ""
 		}
 	]
 }

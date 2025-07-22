@@ -3,6 +3,7 @@ package com.veraz.tasks.backend.auth.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -40,7 +41,8 @@ public class UserController {
     @Operation(summary = "Get all users", description = "Get all users")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
@@ -51,34 +53,69 @@ public class UserController {
     @Operation(summary = "Get user", description = "Get user with id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<UserResponseDTO> getUser(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.getUserByID(id));
+        UserResponseDTO response = userService.getUserByID(id);
+        
+        // Si no hay usuario, es un error 404
+        if (response.getUser() == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        return ResponseEntity.ok(response);
     }
 
     @PatchMapping("/{id}")
     @Operation(summary = "Update user", description = "Update user with id")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User updated successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
             @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        return ResponseEntity.ok(userService.patchUser(id, userUpdateDTO));
+        UserResponseDTO response = userService.patchUser(id, userUpdateDTO);
+        
+        // Si no hay usuario, es un error 404
+        if (response.getUser() == null) {
+            if (response.getMessage() != null && response.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        
+        return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user", description = "Delete user with id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> deleteUser(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.deleteUser(id));
+        UserResponseDTO response = userService.deleteUser(id);
+        
+        // Si no hay usuario, es un error 404
+        if (response.getUser() == null) {
+            if (response.getMessage() != null && response.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 
 }

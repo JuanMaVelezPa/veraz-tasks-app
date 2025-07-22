@@ -1,5 +1,7 @@
 package com.veraz.tasks.backend.auth.controller;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -40,30 +42,51 @@ public class AuthController {
     @Operation(summary = "Login user", description = "Login user with email or username and password")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Login successful"),
-            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+            @ApiResponse(responseCode = "401", description = "Invalid credentials"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data")
     })
-    public UserResponseDTO loginUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        return authService.loginUser(loginRequest);
+    public ResponseEntity<UserResponseDTO> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
+        UserResponseDTO response = authService.loginUser(loginRequest);
+        if (response.getUser() == null || response.getToken() == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/register")
     @Operation(summary = "Register user", description = "Register user with email, username, first name, last name, password and active")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User registered successfully"),
-            @ApiResponse(responseCode = "400", description = "Invalid request")
+            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data or user already exists"),
+            @ApiResponse(responseCode = "409", description = "Conflict - User already exists")
     })
-    public UserResponseDTO registerUser(@Valid @RequestBody UserRequestDTO user) {
-        return userService.createUser(user);
+    public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO user) {
+        UserResponseDTO response = userService.createUser(user);
+        if (response.getUser() == null) {
+            if (response.getMessage() != null && response.getMessage().contains("already exists")) {
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        }
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/check-status")
     @Operation(summary = "Check authentication status", description = "Checks if the provided JWT token is valid and returns user details.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Authentication status checked successfully. Token is valid."),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token.")
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public UserResponseDTO checkAuthStatus(@AuthenticationPrincipal User userPrincipal) {
-        return authService.checkAuthStatus(userPrincipal);
+    public ResponseEntity<UserResponseDTO> checkAuthStatus(@AuthenticationPrincipal User userPrincipal) {
+        UserResponseDTO response = authService.checkAuthStatus(userPrincipal);
+        if (response.getUser() == null) {
+            if (response.getMessage() != null && response.getMessage().contains("not found")) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        }
+        return ResponseEntity.ok(response);
     }
 
 }

@@ -81,9 +81,11 @@ public class UserService implements UserDetailsService {
     public UserResponseDTO getUserByID(UUID id) {
         logger.info("Getting user by id: {}", id);
         User user = userRepository.findById(id).orElse(null);
-        if (user != null) {
-            user.getRoles().size(); // Force lazy loading
+        if (user == null) {
+            return new UserResponseDTO(null, null,
+                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
         }
+        user.getRoles().size(); // Force lazy loading
         return new UserResponseDTO(toUserDetailDto(user), null, null);
     }
 
@@ -213,7 +215,7 @@ public class UserService implements UserDetailsService {
         userDto.setId(user.getId());
         userDto.setUsername(user.getUsername());
         userDto.setEmail(user.getEmail());
-        userDto.setCreatedAt(user.getCreatedAt());  
+        userDto.setCreatedAt(user.getCreatedAt());
         userDto.setRoles(roles);
         userDto.setPerms(perms);
 
