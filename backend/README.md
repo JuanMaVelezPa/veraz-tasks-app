@@ -47,7 +47,7 @@ src/main/java/com/veraz/tasks/backend/
 
 ## 🔐 Autenticación
 
-- **Endpoint:** `/api/auth/login`
+- **Endpoint:** `/api/auth/signIn`
 - **Usuario por defecto:** `admin` / `Abc123456*`
 - **JWT Token:** Requerido para endpoints protegidos
 

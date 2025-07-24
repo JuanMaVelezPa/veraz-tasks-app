@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.veraz.tasks.backend.auth.config.JwtUtils;
-import com.veraz.tasks.backend.auth.dto.LoginRequestDTO;
+import com.veraz.tasks.backend.auth.dto.SignInRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.repository.UserRepository;
@@ -50,20 +50,20 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDTO loginUser(LoginRequestDTO loginRequest) {
+    public UserResponseDTO signInUser(SignInRequestDTO signInRequest) {
         try {
             User user = userRepository.findByUsernameOrEmailAllIgnoreCase(
-                    loginRequest.getUsernameOrEmail(),
-                    loginRequest.getUsernameOrEmail());
+                    signInRequest.getUsernameOrEmail(),
+                    signInRequest.getUsernameOrEmail());
 
             if (user == null) {
                 return new UserResponseDTO(null, null,
                         messageSource.getMessage("user.invalid.password", null, LocaleContextHolder.getLocale()));
             }
 
-            logger.info("Login attempt for user: {}", user.getUsername());
+            logger.info("SignIn attempt for user: {}", user.getUsername());
 
-            if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
+            if (!passwordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
                 logger.warn("Invalid password attempt for user: {}", user.getUsername());
                 return new UserResponseDTO(null, null,
                         messageSource.getMessage("user.invalid.password", null, LocaleContextHolder.getLocale()));
@@ -75,15 +75,15 @@ public class AuthService {
                         messageSource.getMessage("user.not.active", null, LocaleContextHolder.getLocale()));
             }
 
-            logger.info("Successful login for user: {}", user.getUsername());
+            logger.info("Successful signIn for user: {}", user.getUsername());
             return new UserResponseDTO(
                     userService.toUserDetailDto(user),
                     generateJwtToken(user),
-                    messageSource.getMessage("user.login.successfully", null, LocaleContextHolder.getLocale()));
+                    messageSource.getMessage("user.signIn.successfully", null, LocaleContextHolder.getLocale()));
         } catch (Exception e) {
-            logger.error("Error logging in user: " + e.getMessage());
+            logger.error("Error signing in user: " + e.getMessage());
             return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.error.login", null, LocaleContextHolder.getLocale()));
+                    messageSource.getMessage("user.error.signIn", null, LocaleContextHolder.getLocale()));
         }
     }
 
@@ -103,7 +103,7 @@ public class AuthService {
             return new UserResponseDTO(
                     userService.toUserDetailDto(user),
                     generateJwtToken(user),
-                    messageSource.getMessage("user.login.successfully", null, LocaleContextHolder.getLocale()));
+                    messageSource.getMessage("user.signIn.successfully", null, LocaleContextHolder.getLocale()));
         } catch (Exception e) {
             logger.error("Error checking auth status: {}", e.getMessage(), e);
             return new UserResponseDTO(null, null,

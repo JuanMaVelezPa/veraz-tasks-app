@@ -930,7 +930,7 @@
 			]
 		},
 		{
-			"name": "Check-Status-Token",
+			"name": "Check-Status",
 			"protocolProfileBehavior": {
 				"disableBodyPruning": true
 			},
@@ -1150,7 +1150,7 @@
 			"response": []
 		},
 		{
-			"name": "Register",
+			"name": "SignUp",
 			"event": [
 				{
 					"listen": "test",
@@ -1209,7 +1209,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/auth/register",
+					"raw": "http://localhost:3000/api/auth/signUp",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1218,14 +1218,14 @@
 					"path": [
 						"api",
 						"auth",
-						"register"
+						"signUp"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "Login",
+			"name": "SignIn",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -1282,7 +1282,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/auth/login",
+					"raw": "http://localhost:3000/api/auth/signIn",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1291,7 +1291,7 @@
 					"path": [
 						"api",
 						"auth",
-						"login"
+						"signIn"
 					]
 				}
 			},

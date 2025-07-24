@@ -33,8 +33,8 @@ public class OpenApiConfig {
                                 - 📝 Automatic Documentation
 
                                 ### Endpoints Principales:
-                                - **POST** `/auth/login` - Login
-                                - **POST** `/auth/register` - Register user
+                                - **POST** `/auth/signIn` - signIn
+                                - **POST** `/auth/signUp` - signUp
                                 - **GET** `/auth/check-status` - Check authentication status
 
                                 ### Autenticación:
@@ -68,7 +68,7 @@ public class OpenApiConfig {
 
                                                         **Ejemplo:** `Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
 
-                                                        **Nota:** Obtén el token haciendo login en `/auth/login`
+                                                        **Nota:** Obtén el token haciendo signIn en `/auth/signIn`
                                                         """)))
                 .addServersItem(new Server()
                         .url("http://localhost:3000/api")

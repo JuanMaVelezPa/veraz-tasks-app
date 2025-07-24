@@ -44,7 +44,7 @@ tasks-app/
 **Nota:** Las credenciales por defecto para desarrollo son:
 - **Superusuario PostgreSQL:** `postgres` / `jmvelez`
 - **Usuario base de datos:** `tasks_app_user` / `tasks_app_user`
-- **Usuarios del sistema (login):** `admin` / `Abc123456*` (y otros usuarios creados por defecto)
+- **Usuarios del sistema (signIn):** `admin` / `Abc123456*` (y otros usuarios creados por defecto)
 
 ### Ejecutar el Backend
 

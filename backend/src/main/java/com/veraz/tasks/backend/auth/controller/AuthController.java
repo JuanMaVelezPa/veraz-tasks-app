@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.auth.dto.LoginRequestDTO;
+import com.veraz.tasks.backend.auth.dto.SignInRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.model.User;
@@ -38,29 +38,29 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("login")
-    @Operation(summary = "Login user", description = "Login user with email or username and password")
+    @PostMapping("signIn")
+    @Operation(summary = "SignIn user", description = "SignIn user with email or username and password")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "200", description = "SignIn successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data")
     })
-    public ResponseEntity<UserResponseDTO> loginUser(@Valid @RequestBody LoginRequestDTO loginRequest) {
-        UserResponseDTO response = authService.loginUser(loginRequest);
+    public ResponseEntity<UserResponseDTO> signInUser(@Valid @RequestBody SignInRequestDTO signInRequest) {
+        UserResponseDTO response = authService.signInUser(signInRequest);
         if (response.getUser() == null || response.getToken() == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
         }
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/register")
-    @Operation(summary = "Register user", description = "Register user with email, username, first name, last name, password and active")
+    @PostMapping("/signUp")
+    @Operation(summary = "SignUp user", description = "SignUp user with email, username, first name, last name, password and active")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User registered successfully"),
+            @ApiResponse(responseCode = "201", description = "User signUp successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data or user already exists"),
             @ApiResponse(responseCode = "409", description = "Conflict - User already exists")
     })
-    public ResponseEntity<UserResponseDTO> registerUser(@Valid @RequestBody UserRequestDTO user) {
+    public ResponseEntity<UserResponseDTO> signUpUser(@Valid @RequestBody UserRequestDTO user) {
         UserResponseDTO response = userService.createUser(user);
         if (response.getUser() == null) {
             if (response.getMessage() != null && response.getMessage().contains("already exists")) {
