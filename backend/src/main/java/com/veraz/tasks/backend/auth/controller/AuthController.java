@@ -38,10 +38,10 @@ public class AuthController {
         this.userService = userService;
     }
 
-    @PostMapping("signIn")
-    @Operation(summary = "SignIn user", description = "SignIn user with email or username and password")
+    @PostMapping("sign-in")
+    @Operation(summary = "Sign-in user", description = "Sign-in user with email or username and password")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "SignIn successful"),
+            @ApiResponse(responseCode = "200", description = "Sign-in successful"),
             @ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data")
     })
@@ -53,10 +53,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/signUp")
-    @Operation(summary = "SignUp user", description = "SignUp user with email, username, first name, last name, password and active")
+    @PostMapping("/sign-up")
+    @Operation(summary = "Sign-up user", description = "Sign-up user with email, username, first name, last name, password and active")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User signUp successfully"),
+            @ApiResponse(responseCode = "201", description = "User sign-up successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data or user already exists"),
             @ApiResponse(responseCode = "409", description = "Conflict - User already exists")
     })

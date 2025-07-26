@@ -1,98 +1,135 @@
 # Tasks App
 
-Aplicación de gestión de tareas con arquitectura backend en Spring Boot y base de datos PostgreSQL.
+A comprehensive task management application with Spring Boot backend, Angular frontend, and PostgreSQL database.
 
-## 📁 Estructura del Proyecto
+## 📁 Project Structure
 
 ```
 tasks-app/
-├── backend/          # API REST con Spring Boot
-├── database/         # Scripts y esquemas de base de datos
-└── README.md         # Este archivo
+├── backend/          # Spring Boot REST API
+├── frontend/         # Angular 20 SPA
+├── database/         # PostgreSQL scripts and schemas
+└── README.md         # This file
 ```
 
-## 🚀 Inicio Rápido
+## 🚀 Quick Start
 
-### Prerrequisitos
+### Prerequisites
 
-- Java 21 o superior
-- PostgreSQL 17 o superior
-- Maven 3.6 o superior
+- **Java 21** or higher
+- **Node.js 18** or higher
+- **PostgreSQL 17** or higher
+- **Maven 3.6** or higher
 
-### Configuración de Base de Datos
+### Database Setup
 
-1. **Crear la base de datos:**
+1. **Create database:**
    ```bash
    createdb tasks_app_db
    ```
 
-2. **Configurar usuario y extensiones (ejecutar como superusuario postgres):**
+2. **Setup user and extensions (run as postgres superuser):**
    ```bash
    cd database/infrastructure/scripts
-   # En Windows PowerShell:
+   # Windows PowerShell:
    .\00_setup_db_user_and_extensions.ps1
-   # En Linux/Mac:
+   # Linux/Mac:
    # psql -h localhost -p 5432 -U postgres -d tasks_app_db -f 00_setup_db_user_and_extensions.sql
    ```
 
-3. **Aplicar el esquema inicial:**
+3. **Apply initial schema:**
    ```bash
    cd database/infrastructure/scripts
    psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f 00_DROP_ALL.sql && psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f apply_patches.sql
    ```
 
-**Nota:** Las credenciales por defecto para desarrollo son:
-- **Superusuario PostgreSQL:** `postgres` / `jmvelez`
-- **Usuario base de datos:** `tasks_app_user` / `tasks_app_user`
-- **Usuarios del sistema (signIn):** `admin` / `Abc123456*` (y otros usuarios creados por defecto)
+**Note:** Default development credentials:
+- **PostgreSQL Superuser:** `postgres` / `jmvelez`
+- **Database User:** `tasks_app_user` / `tasks_app_user`
+- **System Users:** `admin_user` / `Abc123456*`
 
-### Ejecutar el Backend
+### Backend Setup
 
-1. **Navegar al directorio backend:**
+1. **Navigate to backend directory:**
    ```bash
    cd backend
    ```
 
-2. **Instalar dependencias (solo la primera vez o cuando se agreguen nuevas):**
+2. **Install dependencies:**
    ```bash
    mvn clean install
    ```
 
-3. **Ejecutar la aplicación:**
+3. **Run the application:**
    ```bash
    ./mvnw spring-boot:run
    ```
 
-4. **Verificar que esté funcionando:**
-   - API disponible en: http://localhost:3000/api
-   - Documentación Swagger: http://localhost:3000/api/swagger-ui.html
+4. **Verify it's running:**
+   - API: http://localhost:3000/api
+   - Swagger Docs: http://localhost:3000/api/swagger-ui.html
 
-## 📚 Documentación Detallada
+### Frontend Setup
 
-- **[Backend Documentation](backend/README.md)** - Guía completa del API REST
-- **[Database Documentation](database/README.md)** - Guía de configuración de base de datos
+1. **Navigate to frontend directory:**
+   ```bash
+   cd frontend
+   ```
 
-## 🔧 Tecnologías
+2. **Install dependencies:**
+   ```bash
+   npm install
+   ```
 
-- **Backend:** Spring Boot 3.5.3, Spring Security, JWT
-- **Base de Datos:** PostgreSQL 17
+3. **Run the application:**
+   ```bash
+   npm start
+   ```
+
+4. **Verify it's running:**
+   - Frontend: http://localhost:4200
+
+## 📚 Detailed Documentation
+
+- **[Backend Documentation](backend/README.md)** - Complete REST API guide
+- **[Frontend Documentation](frontend/README.md)** - Angular application guide
+- **[Database Documentation](database/README.md)** - Database configuration guide
+
+## 🔧 Technologies
+
+### Backend
+- **Framework:** Spring Boot 3.5.4
+- **Security:** Spring Security + JWT
+- **Database:** PostgreSQL 17
 - **Java:** 21
 - **Build Tool:** Maven 3.6+
-- **Documentación:** Swagger/OpenAPI 2.8.9
-- **Puerto API:** 3000
+- **Documentation:** Swagger/OpenAPI 2.8.9
+- **Port:** 3000
 
-## 👥 Equipo de Desarrollo
+### Frontend
+- **Framework:** Angular 20
+- **UI Library:** DaisyUI + Tailwind CSS
+- **Build Tool:** Angular CLI
+- **Port:** 4200
 
-- **Desarrollador Principal:** JMVELEZ
-- **Fecha de Inicio:** 15/01/2025
+## 🔐 Authentication
 
-## 📝 Notas
+- **Sign-in endpoint:** `/api/auth/sign-in`
+- **Default user:** `admin_user` / `Abc123456*`
+- **JWT Token:** Required for protected endpoints
 
-- Este es un proyecto en desarrollo
-- La base de datos se puede recrear completamente usando los scripts en `database/infrastructure/scripts/`
-- Para desarrollo local, usar las credenciales por defecto configuradas en los scripts
-- **Importante:** Ejecutar `mvn clean install` después de clonar el proyecto o cuando se agreguen nuevas dependencias
-- **Credenciales de desarrollo:**
-  - Base de datos: `tasks_app_user` / `tasks_app_user`
-  - Superusuario PostgreSQL: `postgres` / `jmvelez`
-  - Usuarios del sistema: `admin` / `Abc123456*` 
+## 👥 Development Team
+
+- **Lead Developer:** JMVELEZ
+- **Start Date:** 15/01/2025
+
+## 📝 Notes
+
+- This is a development project
+- Database can be completely recreated using scripts in `database/infrastructure/scripts/`
+- Use default credentials for local development
+- **Important:** Run `mvn clean install` after cloning or adding new dependencies
+- **Development Credentials:**
+  - Database: `tasks_app_user` / `tasks_app_user`
+  - PostgreSQL Superuser: `postgres` / `jmvelez`
+  - System Users: `admin_user` / `Abc123456*` 

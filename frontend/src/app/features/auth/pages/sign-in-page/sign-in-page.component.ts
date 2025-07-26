@@ -4,6 +4,7 @@ import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { AppInitService } from '@core/services/app-init.service';
 
 @Component({
   selector: 'app-sign-in-page',
@@ -18,8 +19,10 @@ export class SignInPageComponent {
   router = inject(Router);
 
   authService = inject(AuthService);
+  appInitService = inject(AppInitService);
 
   isLoading = signal(false);
+  errorMessage = signal<string | null>(null);
 
   signInForm = this.fb.nonNullable.group({
     usernameOrEmail: ['', [
@@ -43,16 +46,20 @@ export class SignInPageComponent {
     if (!usernameOrEmail || !password) { return; }
 
     this.isLoading.set(true);
+    this.errorMessage.set(null); // Limpiar errores anteriores
 
     console.log('Intentando iniciar sesión con:', { usernameOrEmail, password });
     this.authService.signIn(usernameOrEmail.toLowerCase(), password!)
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
-          console.log('Inicio de sesión exitoso');
+          console.log('Inicio de sesión exitoso, iniciando TokenRefreshService y redirigiendo');
           this.resetForm();
           this.isLoading.set(false);
+          this.appInitService.startTokenRefresh(); // Iniciar TokenRefreshService
+          this.router.navigateByUrl('/'); // Redirigir a la página principal
         } else {
           console.error('Inicio de sesión fallido');
+          this.errorMessage.set('Credenciales inválidas. Por favor, verifica tu usuario y contraseña.');
           this.isLoading.set(false);
         }
       },
@@ -60,11 +67,11 @@ export class SignInPageComponent {
           console.error('Error en el inicio de sesión:', error);
           this.isLoading.set(false);
           if (error && error.status === 401) {
-            console.log('Credenciales inválidas');
+            this.errorMessage.set('Credenciales inválidas. Por favor, verifica tu usuario y contraseña.');
           } else if (error && error.error && error.error.message) {
-            console.error('Mensaje de error del servidor:', error.error.message);
+            this.errorMessage.set(error.error.message);
           } else {
-            console.error('Ocurrió un error inesperado al iniciar sesión.');
+            this.errorMessage.set('Ocurrió un error inesperado al iniciar sesión. Por favor, intenta de nuevo.');
           }
         }
       );

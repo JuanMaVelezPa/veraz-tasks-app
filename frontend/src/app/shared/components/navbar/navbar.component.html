@@ -1,0 +1,83 @@
+<!-- Navbar superior -->
+<div class="navbar bg-base-100 shadow-sm h-14">
+  <div class="navbar-start">
+    @if (!layoutService.isSidebarOpen()) {
+    <div class="flex items-center gap-2">
+      <button
+        class="btn btn-ghost btn-circle btn-sm"
+        (click)="layoutService.toggleSidebar()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-5 w-5"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+
+      <a class="btn btn-ghost text-lg text-primary font-custom-one">Veraz</a>
+    </div>
+    }
+  </div>
+
+  <div class="navbar-end">
+    <div class="dropdown dropdown-end">
+      <div
+        tabindex="0"
+        role="button"
+        class="btn btn-ghost gap-2 px-2 py-1 hover:bg-base-200 transition-colors duration-200"
+      >
+        <div class="avatar">
+          <div class="w-8 h-8 rounded-full">
+            <img
+              alt="Juan Velez"
+              src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+            />
+          </div>
+        </div>
+
+        <div class="text-left hidden sm:block">
+          <h4 class="font-bold text-xs text-primary">{{ currentUser?.username || 'Usuario' }}</h4>
+          <p class="text-xs text-base-content/70">{{ userRole }}</p>
+        </div>
+
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-3 w-3 text-base-content/50"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M19 9l-7 7-7-7"
+          />
+        </svg>
+      </div>
+
+      <ul
+        tabindex="0"
+        class="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+      >
+        <li>
+          <a class="justify-between">
+            Profile
+            <span class="badge badge-primary">New</span>
+          </a>
+        </li>
+        <li><a>Settings</a></li>
+        <li><a (click)="onSignOut()">Logout</a></li>
+      </ul>
+    </div>
+  </div>
+</div>

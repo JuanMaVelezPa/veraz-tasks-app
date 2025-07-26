@@ -8,23 +8,17 @@
       "@core/*": [
         "./src/app/core/*"
       ],
-      "@dashboard/*": [
-        "./src/app/admin-dashboard/*"
+      "@admin/*": [
+        "./src/app/features/admin/*"
       ],
       "@auth/*": [
-        "./src/app/auth/*"
+        "./src/app/features/auth/*"
       ],
       "@person/*": [
-        "./src/app/person/*"
+        "./src/app/features/person/*"
       ],
       "@shared/*": [
         "./src/app/shared/*"
-      ],
-      "@store-front/*": [
-        "./src/app/store-front/*"
-      ],
-      "@products/*": [
-        "./src/app/products/*"
       ],
       "@assets/*": [
         "./public/assets/*"
