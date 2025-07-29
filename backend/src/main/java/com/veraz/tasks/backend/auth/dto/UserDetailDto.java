@@ -16,6 +16,7 @@ public class UserDetailDto {
     private UUID id;
     private String username;
     private String email;
+    private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private Set<String> roles;

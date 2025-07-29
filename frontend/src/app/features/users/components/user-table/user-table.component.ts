@@ -97,9 +97,9 @@ export class UserTableComponent {
     }
 
     if (currentOrder === 'asc') {
-      return 'fa-sort-up text-primary font-bold text-lg';
+      return 'fa-sort-up text-primary text-center font-bold text-lg';
     } else {
-      return 'fa-sort-down text-primary font-bold text-lg';
+      return 'fa-sort-down text-primary text-center font-bold text-lg';
     }
   };
 
@@ -107,7 +107,7 @@ export class UserTableComponent {
     if (!this.isSortable(field)) return '';
 
     const currentField = this.sortField();
-    return currentField === field ? 'text-primary font-semibold' : '';
+    return currentField === field ? 'text-primary font-semibold text-center' : '';
   };
 
   getSortLabel = (field: string) => {

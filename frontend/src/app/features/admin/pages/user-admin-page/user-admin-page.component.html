@@ -1,0 +1,16 @@
+@if(userResource.isLoading()) {
+<div class="flex justify-center items-center h-32">
+  <span class="loading loading-spinner loading-lg"></span>
+</div>
+}
+
+@if(userResource.error()) {
+<div class="alert alert-error mt-4">
+  <i class="fa-solid fa-exclamation-triangle"></i>
+  <span>Error: {{ userResource.error()?.message }}</span>
+</div>
+}
+
+@if(userResource.hasValue()) {
+<user-details [user]="userResource.value()"></user-details>
+}

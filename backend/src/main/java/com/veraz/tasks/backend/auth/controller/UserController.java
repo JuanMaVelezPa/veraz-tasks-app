@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.veraz.tasks.backend.auth.dto.UserDetailDto;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.dto.UserUpdateDTO;
 import com.veraz.tasks.backend.auth.dto.UsersResponseDTO;
@@ -74,9 +75,9 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
-    public ResponseEntity<UserResponseDTO> getUser(@PathVariable UUID id) {
-        UserResponseDTO response = userService.getUserByID(id);
-        if (response.getUser() == null) {
+    public ResponseEntity<UserDetailDto> getUser(@PathVariable UUID id) {
+        UserDetailDto response = userService.getUserByID(id);
+        if (response == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
         return ResponseEntity.ok(response);

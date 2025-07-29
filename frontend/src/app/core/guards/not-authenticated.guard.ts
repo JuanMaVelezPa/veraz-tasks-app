@@ -17,7 +17,6 @@ export const notAuthenticatedGuard: CanMatchFn = async (route: Route, segments: 
 
     return true;
   } catch (error) {
-    console.error('Error checking authentication status:', error);
     return true;
   }
 };

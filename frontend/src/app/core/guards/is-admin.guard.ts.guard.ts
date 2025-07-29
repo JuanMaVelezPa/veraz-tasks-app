@@ -8,7 +8,6 @@ export const isAdminGuard: CanMatchFn = async (route: Route, segments: UrlSegmen
   const router = inject(Router);
 
   const isAuthenticated = await firstValueFrom(authService.checkAuthStatus());
-  console.log("isAdminGuard - isAuthenticated", isAuthenticated);
 
   if (!isAuthenticated) {
     router.navigateByUrl("/auth/sign-in");

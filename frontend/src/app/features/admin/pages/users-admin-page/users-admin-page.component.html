@@ -1,12 +1,11 @@
-<div class="flex flex-wrap gap-4 items-center justify-between mb-4 bg-base-200 rounded-lg">
-  <h1 class="text-3xl font-bold text-base-content">Users</h1>
-  <button
-    class="btn btn-primary btn-sm"
-    routerLink="/admin/users/new"
-  >
-    <i class="fa-solid fa-plus"></i>
-    New User
-  </button>
-</div>
+<div class="space-y-4">
+  <div class="flex flex-wrap gap-4 items-center justify-between bg-base-200 rounded-lg p-3">
+    <h1 class="text-3xl font-bold text-base-content">Users</h1>
+    <button
+      class="btn btn-primary btn-sm"
+      [routerLink]="['/admin/users/', 'new']"
+    > New User </button>
+  </div>
 
-<app-user-table />
+  <app-user-table />
+</div>

@@ -84,21 +84,20 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDTO getUserByID(UUID id) {
+    public UserDetailDto getUserByID(UUID id) {
         logger.info("Getting user by id: {}", id);
         User user = userRepository.findById(id).orElse(null);
         if (user == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
+            return null;
         }
-        user.getRoles().size(); // Force lazy loading
-        return new UserResponseDTO(toUserDetailDto(user), null, null);
+        user.getRoles().size();
+        return toUserDetailDto(user);
     }
 
     @Transactional(readOnly = true)
     public UsersResponseDTO getAllUsers(PaginationRequestDTO paginationRequest) {
         logger.info("Getting all users with pagination - page: {}, size: {}, search: {}",
-                paginationRequest.getPage(), paginationRequest.getSize(), 
+                paginationRequest.getPage(), paginationRequest.getSize(),
                 paginationRequest.getSearch());
 
         paginationRequest.validateAndNormalize();
@@ -252,6 +251,7 @@ public class UserService implements UserDetailsService {
         userDto.setId(user.getId());
         userDto.setUsername(user.getUsername());
         userDto.setEmail(user.getEmail());
+        userDto.setIsActive(user.getIsActive());
         userDto.setCreatedAt(user.getCreatedAt());
         userDto.setRoles(roles);
         userDto.setPerms(perms);
