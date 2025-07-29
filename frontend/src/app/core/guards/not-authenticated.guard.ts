@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
-import { CanMatchFn, Route, Router, UrlSegment } from '@angular/router';
-import { AuthService } from '@auth/services/auth.service';
+import { Route, Router, UrlSegment, type CanMatchFn } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
+import { AuthService } from '@auth/services/auth.service';
 
 export const notAuthenticatedGuard: CanMatchFn = async (route: Route, segments: UrlSegment[]) => {
   const authService = inject(AuthService);
@@ -9,19 +9,15 @@ export const notAuthenticatedGuard: CanMatchFn = async (route: Route, segments: 
 
   try {
     const isAuthenticated = await firstValueFrom(authService.checkAuthStatus());
-    console.log("notAuthenticatedGuard - isAuthenticated", isAuthenticated);
 
     if (isAuthenticated) {
-      console.log("notAuthenticatedGuard - Usuario ya autenticado, redirigiendo a página principal");
-      router.navigateByUrl("/");
+      router.navigateByUrl('/');
       return false;
     }
 
-    console.log("notAuthenticatedGuard - Usuario no autenticado, permitiendo acceso a auth");
     return true;
   } catch (error) {
-    console.error("notAuthenticatedGuard - Error verificando autenticación:", error);
-    // Si hay error, permitimos acceso a auth para que pueda intentar autenticarse
+    console.error('Error checking authentication status:', error);
     return true;
   }
-}
+};

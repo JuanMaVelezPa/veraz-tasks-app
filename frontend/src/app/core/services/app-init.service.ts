@@ -10,9 +10,6 @@ export class AppInitService {
   private tokenRefreshService = inject(TokenRefreshService);
 
   initializeApp(): void {
-    console.log('AppInitService: Inicializando aplicación...');
-
-    // Iniciar el servicio de refresco de token si el usuario está autenticado
     if (this.authService.authStatus() === 'authenticated') {
       console.log('AppInitService: Usuario autenticado, iniciando TokenRefreshService');
       this.tokenRefreshService.startTokenRefresh();

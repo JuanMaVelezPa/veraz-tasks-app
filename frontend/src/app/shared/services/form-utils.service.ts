@@ -1,5 +1,7 @@
 import { Injectable } from '@angular/core';
 import { AbstractControl, FormArray, FormGroup, ValidationErrors, Validators } from '@angular/forms';
+import { Observable, of } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
 async function sleep(seconds: number = 1): Promise<boolean> {
   return new Promise(resolve => setTimeout(() => {
@@ -172,6 +174,9 @@ export class FormUtilsService {
     return errors;
   }
 
+  validateUsernameAvailability(username: string): Observable<boolean> {
+    return of(true).pipe(delay(500));
+  }
 
   static getTextError(errors: ValidationErrors): string | null {
     for (const key of Object.keys(errors)) {

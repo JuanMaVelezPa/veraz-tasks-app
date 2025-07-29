@@ -1,12 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { Router } from '@angular/router';
-import { LayoutService } from '@shared/services/layout.service';
-import { AuthService } from '@auth/services/auth.service';
 import { AppInitService } from '@core/services/app-init.service';
+import { AuthService } from '@auth/services/auth.service';
+import { LayoutService } from '@shared/services/layout.service';
+import { ThemeSelectorComponent } from '@shared/components/theme-selector/theme-selector.component';
 
 @Component({
   selector: 'app-navbar',
-  imports: [],
+  imports: [ThemeSelectorComponent],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
@@ -16,7 +17,7 @@ export class NavbarComponent {
   router = inject(Router);
   appInitService = inject(AppInitService);
 
-  // Getters para mostrar información del usuario
+  // Getters to display user information
   get currentUser() {
     return this.authService.user();
   }
@@ -30,7 +31,7 @@ export class NavbarComponent {
     if (!user || !user.roles || user.roles.length === 0) {
       return 'Usuario';
     }
-    return user.roles[0]; // Mostrar el primer rol
+    return user.roles[0]; // Show the first role
   }
 
   onSignOut() {

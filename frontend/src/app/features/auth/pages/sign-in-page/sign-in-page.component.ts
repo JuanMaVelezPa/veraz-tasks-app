@@ -46,32 +46,28 @@ export class SignInPageComponent {
     if (!usernameOrEmail || !password) { return; }
 
     this.isLoading.set(true);
-    this.errorMessage.set(null); // Limpiar errores anteriores
+    this.errorMessage.set(null);
 
-    console.log('Intentando iniciar sesión con:', { usernameOrEmail, password });
     this.authService.signIn(usernameOrEmail.toLowerCase(), password!)
       .subscribe((isAuthenticated) => {
         if (isAuthenticated) {
-          console.log('Inicio de sesión exitoso, iniciando TokenRefreshService y redirigiendo');
           this.resetForm();
           this.isLoading.set(false);
-          this.appInitService.startTokenRefresh(); // Iniciar TokenRefreshService
-          this.router.navigateByUrl('/'); // Redirigir a la página principal
+          this.appInitService.startTokenRefresh();
+          this.router.navigateByUrl('/');
         } else {
-          console.error('Inicio de sesión fallido');
-          this.errorMessage.set('Credenciales inválidas. Por favor, verifica tu usuario y contraseña.');
+          this.errorMessage.set('Invalid credentials. Please verify your username and password.');
           this.isLoading.set(false);
         }
       },
         (error) => {
-          console.error('Error en el inicio de sesión:', error);
           this.isLoading.set(false);
           if (error && error.status === 401) {
-            this.errorMessage.set('Credenciales inválidas. Por favor, verifica tu usuario y contraseña.');
+            this.errorMessage.set('Invalid credentials. Please verify your username and password.');
           } else if (error && error.error && error.error.message) {
             this.errorMessage.set(error.error.message);
           } else {
-            this.errorMessage.set('Ocurrió un error inesperado al iniciar sesión. Por favor, intenta de nuevo.');
+            this.errorMessage.set('An unexpected error occurred while signing in. Please try again.');
           }
         }
       );

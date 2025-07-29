@@ -9,7 +9,6 @@ export function authInterceptor(
 ): Observable<HttpEvent<unknown>> {
   const token = inject(AuthService).token();
 
-  // Solo agregar el header Authorization si hay un token válido
   if (token && token.trim().length > 0) {
     const newReq = req.clone({
       headers: req.headers.set('Authorization', `Bearer ${token}`)
