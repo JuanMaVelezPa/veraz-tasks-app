@@ -989,7 +989,14 @@
 					]
 				},
 				"method": "GET",
-				"header": [],
+				"header": [
+					{
+						"key": "",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
 				"body": {
 					"mode": "raw",
 					"raw": "",
@@ -1000,7 +1007,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/users",
+					"raw": "http://localhost:3000/api/users?page=3&size=10",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1009,6 +1016,16 @@
 					"path": [
 						"api",
 						"users"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "3"
+						},
+						{
+							"key": "size",
+							"value": "10"
+						}
 					]
 				}
 			},
@@ -1150,7 +1167,7 @@
 			"response": []
 		},
 		{
-			"name": "SignUp",
+			"name": "Sign-up",
 			"event": [
 				{
 					"listen": "test",
@@ -1209,7 +1226,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/auth/signUp",
+					"raw": "http://localhost:3000/api/auth/sign-up",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1218,14 +1235,14 @@
 					"path": [
 						"api",
 						"auth",
-						"signUp"
+						"sign-up"
 					]
 				}
 			},
 			"response": []
 		},
 		{
-			"name": "SignIn",
+			"name": "Sign-in",
 			"event": [
 				{
 					"listen": "prerequest",
@@ -1282,7 +1299,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:3000/api/auth/signIn",
+					"raw": "http://localhost:3000/api/auth/sign-in",
 					"protocol": "http",
 					"host": [
 						"localhost"
@@ -1291,7 +1308,7 @@
 					"path": [
 						"api",
 						"auth",
-						"signIn"
+						"sign-in"
 					]
 				}
 			},

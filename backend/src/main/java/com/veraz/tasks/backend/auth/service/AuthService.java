@@ -54,7 +54,8 @@ public class AuthService {
         try {
             User user = userRepository.findByUsernameOrEmailAllIgnoreCase(
                     signInRequest.getUsernameOrEmail(),
-                    signInRequest.getUsernameOrEmail());
+                    signInRequest.getUsernameOrEmail())
+                    .orElse(null);
 
             if (user == null) {
                 return new UserResponseDTO(null, null,

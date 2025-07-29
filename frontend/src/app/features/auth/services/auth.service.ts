@@ -26,8 +26,6 @@ export class AuthService {
   get authStatus() { return this.authState.authStatus; }
   get isAdmin() { return this.authState.isAdmin; }
 
-
-
   private initializeAuthState(): void {
     try {
       const cache = this.cacheService.getValidCache();

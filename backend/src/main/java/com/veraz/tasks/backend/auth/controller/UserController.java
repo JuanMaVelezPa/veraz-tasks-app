@@ -1,6 +1,5 @@
 package com.veraz.tasks.backend.auth.controller;
 
-import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
@@ -12,10 +11,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.dto.UserUpdateDTO;
+import com.veraz.tasks.backend.auth.dto.UsersResponseDTO;
+import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
 import com.veraz.tasks.backend.auth.service.UserService;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -38,15 +40,29 @@ public class UserController {
     }
 
     @GetMapping
-    @Operation(summary = "Get all users", description = "Get all users")
+    @Operation(summary = "Get all users", description = "Get all users with pagination")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
-    public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<UsersResponseDTO> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String sortDirection,
+            @RequestParam(defaultValue = "") String search) {
+        
+        PaginationRequestDTO paginationRequest = PaginationRequestDTO.builder()
+                .page(page)
+                .size(size)
+                .sortBy(sortBy)
+                .sortDirection(sortDirection)
+                .search(search)
+                .build();
+        
+        return ResponseEntity.ok(userService.getAllUsers(paginationRequest));
     }
 
     @GetMapping("/{id}")
@@ -60,12 +76,9 @@ public class UserController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
     public ResponseEntity<UserResponseDTO> getUser(@PathVariable UUID id) {
         UserResponseDTO response = userService.getUserByID(id);
-        
-        // Si no hay usuario, es un error 404
         if (response.getUser() == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
         }
-        
         return ResponseEntity.ok(response);
     }
 
@@ -82,15 +95,12 @@ public class UserController {
     public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
             @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
         UserResponseDTO response = userService.patchUser(id, userUpdateDTO);
-        
-        // Si no hay usuario, es un error 404
         if (response.getUser() == null) {
             if (response.getMessage() != null && response.getMessage().contains("not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        
         return ResponseEntity.ok(response);
     }
 
@@ -106,15 +116,12 @@ public class UserController {
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponseDTO> deleteUser(@PathVariable UUID id) {
         UserResponseDTO response = userService.deleteUser(id);
-        
-        // Si no hay usuario, es un error 404
         if (response.getUser() == null) {
             if (response.getMessage() != null && response.getMessage().contains("not found")) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
-        
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 

@@ -1,0 +1,39 @@
+<div class="mt-6 flex justify-center">
+  <div class="flex flex-col items-center justify-center gap-2">
+    <div class="join">
+      <button
+        class="join-item btn btn-outline btn-sm"
+        [disabled]="currentPage() === 1"
+        (click)="goToPage(1)"
+      > «« </button>
+
+      <button
+        class="join-item btn btn-outline btn-sm"
+        [disabled]="currentPage() === 1"
+        (click)="goToPrev()"
+      > « </button>
+
+      <button
+        class="join-item btn btn-outline btn-sm"
+        [disabled]="currentPage() === totalPages()"
+        (click)="goToPage(totalPages())"
+      > {{ currentPage() }} </button>
+
+      <button
+        class="join-item btn btn-outline btn-sm"
+        [disabled]="currentPage() === totalPages()"
+        (click)="goToNext()"
+      > » </button>
+
+      <button
+        class="join-item btn btn-outline btn-sm"
+        [disabled]="currentPage() === totalPages()"
+        (click)="goToPage(totalPages())"
+      > »» </button>
+    </div>
+
+    <div class="text-xs text-base-content/60">
+      {{ startItem() }}-{{ endItem() }} de {{ totalItems() }}
+    </div>
+  </div>
+</div>

@@ -1,10 +1,12 @@
 package com.veraz.tasks.backend.auth.service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,10 @@ import com.veraz.tasks.backend.auth.dto.UserDetailDto;
 import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.dto.UserUpdateDTO;
+import com.veraz.tasks.backend.auth.dto.UsersResponseDTO;
+import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
+import com.veraz.tasks.backend.shared.util.PaginationUtils;
 import com.veraz.tasks.backend.auth.model.Perm;
 import com.veraz.tasks.backend.auth.model.Role;
 import com.veraz.tasks.backend.auth.model.User;
@@ -51,7 +57,7 @@ public class UserService implements UserDetailsService {
     public UserResponseDTO createUser(UserRequestDTO userRequest) {
         try {
             if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(),
-                    userRequest.getEmail()) != null) {
+                    userRequest.getEmail()).isPresent()) {
                 return new UserResponseDTO(null, null,
                         messageSource.getMessage("user.already.exists",
                                 new Object[] { userRequest.getUsername() + " or " + userRequest.getEmail() },
@@ -90,25 +96,55 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional(readOnly = true)
-    public List<UserResponseDTO> getAllUsers() {
-        logger.info("Getting all users");
-        List<User> users = userRepository.findAll();
-        List<UserResponseDTO> userResponseDTOs = new ArrayList<>();
-        for (User user : users) {
-            userResponseDTOs.add(new UserResponseDTO(toUserDetailDto(user), null, null));
+    public UsersResponseDTO getAllUsers(PaginationRequestDTO paginationRequest) {
+        logger.info("Getting all users with pagination - page: {}, size: {}, search: {}",
+                paginationRequest.getPage(), paginationRequest.getSize(), 
+                paginationRequest.getSearch());
+
+        paginationRequest.validateAndNormalize();
+
+        Pageable pageable = PaginationUtils.createPageable(paginationRequest);
+        Page<User> userPage;
+
+        if (paginationRequest.hasSearch()) {
+            String searchTerm = paginationRequest.getSearch().trim();
+            logger.info("Searching users with term: '{}' in username, email and roles", searchTerm);
+            userPage = userRepository.findByUsernameOrEmailOrRolesNameContainingIgnoreCase(searchTerm, pageable);
+        } else {
+            userPage = userRepository.findAll(pageable);
         }
-        return userResponseDTOs;
+
+        List<UserDetailDto> userDetailDtos = userPage.getContent().stream()
+                .map(this::toUserDetailDto)
+                .collect(Collectors.toList());
+
+        PaginationInfo paginationInfo = PaginationInfo
+                .builder()
+                .currentPage(userPage.getNumber())
+                .totalPages(userPage.getTotalPages())
+                .totalElements(userPage.getTotalElements())
+                .pageSize(userPage.getSize())
+                .hasNext(userPage.hasNext())
+                .hasPrevious(userPage.hasPrevious())
+                .isFirst(userPage.isFirst())
+                .isLast(userPage.isLast())
+                .build();
+
+        logger.info("Found {} users out of {} total", userPage.getContent().size(), userPage.getTotalElements());
+
+        return UsersResponseDTO.builder()
+                .users(userDetailDtos)
+                .pagination(paginationInfo)
+                .build();
     }
 
     @Transactional(readOnly = true)
     public UserResponseDTO getUserByEmailOrUsername(String query) {
         logger.info("Searching user by email or username: {}", query);
-        User user = userRepository.findByUsernameOrEmailAllIgnoreCase(query, query);
-        if (user == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
-        }
-        return new UserResponseDTO(toUserDetailDto(user), null, null);
+        return userRepository.findByUsernameOrEmailAllIgnoreCase(query, query)
+                .map(user -> new UserResponseDTO(toUserDetailDto(user), null, null))
+                .orElse(new UserResponseDTO(null, null,
+                        messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
     }
 
     @Transactional
@@ -131,13 +167,14 @@ public class UserService implements UserDetailsService {
 
             // Solo validar si el username es diferente al actual
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
-                User existingUser = userRepository.findByUsername(newUsername);
-                if (existingUser != null && !existingUser.getId().equals(id)) {
-                    logger.warn("Username '{}' already exists for user ID: {}", newUsername, existingUser.getId());
-                    return new UserResponseDTO(null, null,
-                            messageSource.getMessage("user.username.already.exists", null,
+                userRepository.findByUsername(newUsername)
+                        .filter(existingUser -> !existingUser.getId().equals(id))
+                        .ifPresent(existingUser -> {
+                            logger.warn("Username '{}' already exists for user ID: {}", newUsername,
+                                    existingUser.getId());
+                            throw new RuntimeException(messageSource.getMessage("user.username.already.exists", null,
                                     LocaleContextHolder.getLocale()));
-                }
+                        });
             }
 
             userToUpdate.setUsername(newUsername);
@@ -151,13 +188,13 @@ public class UserService implements UserDetailsService {
 
             // Solo validar si el email es diferente al actual
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
-                User existingUser = userRepository.findByEmail(newEmail);
-                if (existingUser != null && !existingUser.getId().equals(id)) {
-                    logger.warn("Email '{}' already exists for user ID: {}", newEmail, existingUser.getId());
-                    return new UserResponseDTO(null, null,
-                            messageSource.getMessage("user.email.already.exists", null,
+                userRepository.findByEmail(newEmail)
+                        .filter(existingUser -> !existingUser.getId().equals(id))
+                        .ifPresent(existingUser -> {
+                            logger.warn("Email '{}' already exists for user ID: {}", newEmail, existingUser.getId());
+                            throw new RuntimeException(messageSource.getMessage("user.email.already.exists", null,
                                     LocaleContextHolder.getLocale()));
-                }
+                        });
             }
 
             userToUpdate.setEmail(newEmail);
@@ -232,10 +269,7 @@ public class UserService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userRepository.findByUsernameOrEmailAllIgnoreCase(username, username);
-        if (user == null) {
-            throw new UsernameNotFoundException("User not found with username or email: " + username);
-        }
-        return user;
+        return userRepository.findByUsernameOrEmailAllIgnoreCase(username, username)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + username));
     }
 }

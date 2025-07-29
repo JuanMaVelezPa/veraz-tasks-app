@@ -1,0 +1,86 @@
+<app-search-bar
+  placeholder="Search..."
+  (searchChange)="handleSearch($event)"
+/>
+
+<div class="overflow-x-auto">
+  <table class="table table-zebra">
+    <thead>
+      <tr>
+        @for (column of columns; track column.key) {
+        <th
+          [class.cursor-pointer]="column.sortable"
+          [class.hover:bg-base-200]="column.sortable"
+          (click)="handleSort(column.key)"
+          class="transition-colors duration-200"
+        >
+          <div class="flex items-center gap-2">
+            <span [class]="getSortClass(column.key)">
+              {{ column.label }}{{ getSortLabel(column.key) }}
+            </span>
+            @if (column.sortable) {
+            <i
+              class="fa-solid"
+              [class]="getSortIcon(column.key)"
+            ></i>
+            }
+          </div>
+        </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (user of usersResource.value()?.users ?? []; track user.id; let i = $index) {
+      <tr class="hover:bg-base-100">
+        <td>{{ i + 1 }}</td>
+        <td>
+          <div class="flex items-center gap-3">
+            <div>
+              <a
+                [routerLink]="['/admin/users', user.id]"
+                class="font-bold hover:text-accent transition-colors duration-300"
+              >
+                {{ user.username }}
+              </a>
+            </div>
+          </div>
+        </td>
+        <td>{{ user.email }}</td>
+        <td>
+          @for (role of user.roles; track role) {
+          <span class="badge badge-primary badge-sm mr-1">{{ role }}</span>
+          }
+        </td>
+        <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+        <td>
+          <a
+            [routerLink]="['/admin/users', user.id]"
+            class="btn btn-ghost btn-xs text-accent"
+          >
+            Details
+          </a>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if(usersResource.isLoading()) {
+<div class="flex justify-center items-center h-32">
+  <span class="loading loading-spinner loading-lg"></span>
+</div>
+}
+
+@if(usersResource.error()) {
+<div class="alert alert-error mt-4">
+  <i class="fa-solid fa-exclamation-triangle"></i>
+  <span>Error: {{ usersResource.error()?.message }}</span>
+</div>
+}
+
+<app-pagination
+  [totalPages]="usersResource.value()?.pagination?.totalPages ?? 0"
+  [totalItems]="usersResource.value()?.pagination?.totalElements ?? 0"
+  [itemsPerPage]="usersPerPage()"
+/>
