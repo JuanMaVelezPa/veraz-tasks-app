@@ -1,0 +1,24 @@
+<div class="text-center max-w-md">
+  <div class="mb-8">
+    <h1 class="text-6xl font-bold mb-4 font-custom-one text-primary-content drop-shadow-lg">{{ appName }}</h1>
+    <div class="w-24 h-1 bg-primary-content mx-auto rounded-full shadow-lg"></div>
+  </div>
+
+  <div class="space-y-6">
+    <h2 class="text-2xl font-semibold text-primary-content drop-shadow-md">{{ appTitle }}</h2>
+    <p class="text-lg opacity-95 leading-relaxed text-primary-content drop-shadow-sm">
+      {{ appDescription }}
+    </p>
+
+    <div class="space-y-6 mt-8">
+      @for (feature of features; track feature; let i = $index) {
+      <div class="flex items-start space-x-4">
+        <div class="flex-shrink-0 mt-1">
+          <div class="w-2 h-2 bg-primary-content rounded-full"></div>
+        </div>
+        <span class="text-primary-content drop-shadow-sm text-left leading-relaxed">{{ feature }}</span>
+      </div>
+      }
+    </div>
+  </div>
+</div>

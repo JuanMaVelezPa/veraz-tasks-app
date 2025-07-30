@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: corporate --default, dracula --prefersdark, synthwave, valentine, lemonade, aqua;
+  themes: corporate --default, forest, garden, lofi, winter;
 }
 
 @theme {
@@ -17,12 +17,44 @@
   }
 }
 
-@font-face {
-  font-family: "Montserrat";
-  src: url("@assets/fonts/montserrat_alternates/MontserratAlternates-Medium.ttf")
-    format("truetype");
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
 }
 
 .animate__fadeIn {
   animation: var(--animation-fadeIn);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out;
+}
+
+.animate-fade-in-delay {
+  animation: fadeIn 0.6s ease-out 0.2s both;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease-out both;
+}
+
+@font-face {
+  font-family: "Montserrat";
+  src: url("@assets/fonts/montserrat_alternates/MontserratAlternates-Medium.ttf")
+    format("truetype");
 }

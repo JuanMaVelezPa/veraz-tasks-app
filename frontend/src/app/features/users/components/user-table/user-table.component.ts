@@ -1,16 +1,17 @@
 import { DatePipe } from '@angular/common';
-import { Component, input, output, inject, signal, computed } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
-import { UserService } from '../../services/user.service';
-import { UserSearchOptions } from '../../../../shared/interfaces/search.interface';
+import { UserService } from '@users/services/user.service';
+import { UserSearchOptions } from '@shared/interfaces/search.interface';
 import { PaginationService } from '@shared/services/pagination.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { SearchBarComponent } from '@shared/components/search-bar/search-bar.component';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user-table',
-  imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent],
+  imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent, LoadingComponent],
   templateUrl: './user-table.component.html',
 })
 export class UserTableComponent {

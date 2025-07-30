@@ -1,0 +1,10 @@
+<div
+  [class]="fullScreen() ? 'flex justify-center items-center min-h-screen' : overlay() ? 'absolute inset-0 bg-base-100/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center' : 'flex justify-center items-center'"
+>
+  <div class="text-center">
+    <span class="loading loading-ring loading-xl"></span>
+    @if(text()) {
+    <p class="mt-2 text-base-content/70">{{ text() }}</p>
+    }
+  </div>
+</div>

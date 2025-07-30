@@ -9,7 +9,7 @@ export const authRoutes: Routes = [
     component: AuthLayoutComponent,
     children: [
       { path: 'sign-in', component: SignInPageComponent },
-      { path: 'sign-up', component: SignUpPageComponent, },
+      // { path: 'sign-up', component: SignUpPageComponent, },
       { path: '**', redirectTo: 'sign-in', },
     ],
   },

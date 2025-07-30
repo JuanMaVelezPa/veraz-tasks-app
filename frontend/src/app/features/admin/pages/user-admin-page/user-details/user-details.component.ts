@@ -8,10 +8,11 @@ import { Router } from '@angular/router';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { CommonModule } from '@angular/common';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'user-details',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, LoadingComponent],
   templateUrl: './user-details.component.html',
 })
 export class UserDetailsComponent {

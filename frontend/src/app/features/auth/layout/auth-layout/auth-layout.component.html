@@ -1,8 +1,29 @@
-<div class="flex items-center justify-center min-h-screen">
-  <div class="w-full max-w-xs shadow-xl md:shadow-2xl rounded-lg p-6 shadow-primary">
-    <h1 class="text-2xl font-bold text-center font-custom-one mb-4 text-primary">
-      Authentication
-    </h1>
-    <router-outlet></router-outlet>
+<div class="min-h-screen w-full flex flex-col lg:flex-row">
+
+  <div
+    class="hidden lg:flex lg:w-1/2 bg-gradient-to-r from-primary via-primary-focus to-accent text-primary-content p-8 flex-col justify-center items-center relative overflow-hidden"
+  >
+    <div class="absolute inset-0 opacity-5">
+      <div class="absolute top-0 left-0 w-32 h-32 bg-base-content rounded-full -translate-x-16 -translate-y-16"></div>
+      <div class="absolute bottom-0 right-0 w-24 h-24 bg-base-content rounded-full translate-x-12 translate-y-12"></div>
+      <div class="absolute top-1/2 left-1/4 w-16 h-16 bg-base-content rounded-full opacity-50"></div>
+    </div>
+
+    <div class="relative z-10">
+      <app-app-info></app-app-info>
+    </div>
+  </div>
+
+  <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+    <div class="w-full max-w-md mx-auto">
+      <app-mobile-app-info class="lg:hidden"></app-mobile-app-info>
+
+      <div class="w-full max-w-xs shadow-xl md:shadow-2xl rounded-lg p-6 shadow-primary mx-auto bg-base-100">
+        <h1 class="text-2xl font-bold text-center font-custom-one mb-4 text-primary">
+          {{ titleAuth }}
+        </h1>
+        <router-outlet></router-outlet>
+      </div>
+    </div>
   </div>
 </div>

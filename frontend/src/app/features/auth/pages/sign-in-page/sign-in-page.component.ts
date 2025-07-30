@@ -5,10 +5,11 @@ import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
 import { AppInitService } from '@core/services/app-init.service';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-sign-in-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, LoadingComponent],
   templateUrl: './sign-in-page.component.html',
 })
 export class SignInPageComponent {
@@ -77,7 +78,7 @@ export class SignInPageComponent {
     this.formUtils.resetForm(this.signInForm);
   }
 
-  navigateToSignUp() {
-    this.router.navigate(['/auth/sign-up']);
-  }
+  // navigateToSignUp() {
+  //   this.router.navigate(['/auth/sign-up']);
+  // }
 }

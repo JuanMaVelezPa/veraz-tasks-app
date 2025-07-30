@@ -4,10 +4,11 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 import { UserService } from '@users/services/user.service';
 import { UserDetailsComponent } from "./user-details/user-details.component";
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user-admin-page',
-  imports: [UserDetailsComponent],
+  imports: [UserDetailsComponent, LoadingComponent],
   templateUrl: './user-admin-page.component.html',
 })
 export class UserAdminPageComponent {
