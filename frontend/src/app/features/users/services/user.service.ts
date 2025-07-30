@@ -1,10 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { User } from '@auth/interfaces/user';
+import { User } from '@auth/interfaces/user.interface';
 import { environment } from '@env/environment';
 import { Observable, of, tap } from 'rxjs';
 import { UserSearchOptions } from '../../../shared/interfaces/search.interface';
-import { UsersResponse } from '../interfaces/userResponse.interface';
+import { UsersResponse } from '../interfaces/user-response.interface';
 
 const emptyUser: User = {
   id: 'new',
@@ -70,26 +70,20 @@ export class UserService {
   }
 
   createUser(userData: Partial<User>): Observable<User> {
-    // Remover permisos del envío ya que el backend los maneja automáticamente
     const { perms, ...dataToSend } = userData;
     return this.http.post<User>(`${environment.apiUrl}/users`, dataToSend)
       .pipe(
         tap(() => {
-          // Limpiar cache de usuarios para refrescar la lista
           this.usersCache.clear();
         })
       );
   }
 
-  updateUser(id: string, userData: Partial<User>): Observable<User> {
-    // Remover permisos del envío ya que el backend los maneja automáticamente
-    const { perms, ...dataToSend } = userData;
-    return this.http.put<User>(`${environment.apiUrl}/users/${id}`, dataToSend)
+  updateUser(id: string, updatedUser: Partial<User>): Observable<User> {
+    return this.http.patch<User>(`${environment.apiUrl}/users/${id}`, updatedUser)
       .pipe(
-        tap((updatedUser) => {
-          // Actualizar cache del usuario específico
-          this.userCache.set(id, updatedUser);
-          // Limpiar cache de usuarios para refrescar la lista
+        tap((user) => {
+          this.userCache.set(user.id, user);
           this.usersCache.clear();
         })
       );

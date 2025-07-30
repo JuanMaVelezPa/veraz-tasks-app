@@ -34,7 +34,6 @@
         <tbody>
           @for (user of usersResource.value()?.users ?? []; track user.id; let i = $index) {
           <tr class="hover:bg-base-100">
-            <td>{{ i + 1 }}</td>
             <td>
               <div class="flex items-center gap-3">
                 <div>
@@ -54,6 +53,14 @@
               }
             </td>
             <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td>
+              <span
+                class="badge badge-sm mr-1"
+                [class]="user.isActive ? 'badge-success' : 'badge-error'"
+              >
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
             <td>
               <a
                 [routerLink]="['/admin/users', user.id]"

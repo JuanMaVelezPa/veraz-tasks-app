@@ -1,0 +1,26 @@
+@if (message()) {
+<div
+  class="alert mb-4"
+  [ngClass]="{
+    'alert-success': message()?.type === 'success',
+    'alert-warning': message()?.type === 'warning',
+    'alert-error': message()?.type === 'error',
+    'alert-info': message()?.type === 'info'
+  }"
+>
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    class="h-6 w-6 shrink-0 stroke-current"
+    fill="none"
+    viewBox="0 0 24 24"
+  >
+    <path
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      stroke-width="2"
+      [attr.d]="getIconPath()"
+    />
+  </svg>
+  <span>{{ message()?.text }}</span>
+</div>
+}

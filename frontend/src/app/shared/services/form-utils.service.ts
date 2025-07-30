@@ -18,7 +18,7 @@ export class FormUtilsService {
   static emailPattern = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$';
   static notOnlySpacesPattern = '^[a-zA-Z0-9]+$';
   static slugPattern = '^[a-z0-9_]+(?:-[a-z0-9_]+)*$';
-  static usernamePattern = '^[a-z0-9]+$';
+  static usernamePattern = '^[a-zA-Z0-9_-]+$';
 
   constructor() { }
 
@@ -124,7 +124,10 @@ export class FormUtilsService {
   static notReservedWords(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
-    const reservedWords = ['admin', 'user', 'strider', 'root', 'test', 'guest'];
+    const reservedWords = ['admin', 'user', 'strider', 'root', 'test'
+      , 'guest', 'superadmin', 'super', 'manager', 'superuser', 'super-admin'
+      , 'super-user', 'super-manager', 'veraz', 'employee', 'abc123', '123abc'
+      , 'asdf', 'asdf123']
     const lowerCaseValue = value.toLowerCase();
 
     for (const word of reservedWords) {
@@ -209,7 +212,7 @@ export class FormUtilsService {
             return 'Slug cannot contain spaces.';
           }
           if (errors['pattern']?.requiredPattern === FormUtilsService.usernamePattern) {
-            return 'Username cannot contain spaces.';
+            return 'Username can only contain letters, numbers, hyphens and underscores.';
           }
           return `The format is not correct`;
         default:

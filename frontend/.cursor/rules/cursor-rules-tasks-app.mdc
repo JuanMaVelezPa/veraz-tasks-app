@@ -1,0 +1,134 @@
+# Angular 20 Project Rules
+
+## General Guidelines
+- Always use English for all naming conventions, comments, and documentation
+- Follow Angular 20 best practices and conventions
+- Use TypeScript strict mode
+- Implement proper error handling and loading states
+
+## Component Structure
+- **ALWAYS** create both `.component.ts` and `.component.html` files for every component
+- **NEVER** create `.component.css` files - use inline styles or global styles
+- Use the Angular CLI naming convention: `kebab-case` for files and `PascalCase` for component classes
+- Each component should be in its own folder with the component name
+
+## Angular 20 Directives
+- **PRIORITIZE** using Angular 20 built-in directives over custom logic:
+  - `@if` for conditional rendering (instead of `*ngIf`)
+  - `@for` for loops (instead of `*ngFor`)
+  - `@switch` for switch statements
+  - `@defer` for lazy loading
+  - `@placeholder` for loading states
+- Use structural directives with proper syntax: `@if (condition) { content }`
+- Implement proper loading and error states with `@placeholder` and `@error`
+
+## File Organization
+- **NEVER** create `index.ts` files for barrel exports
+- Use direct imports instead of barrel exports
+- Organize files by feature, not by type
+- Keep related files together in feature folders
+
+## Naming Conventions
+- **ENGLISH ONLY** for all names, comments, and documentation
+- Components: `PascalCase` (e.g., `UserProfileComponent`)
+- Files: `kebab-case` (e.g., `user-profile.component.ts`)
+- Services: `PascalCase` with `Service` suffix (e.g., `UserService`)
+- Interfaces: `PascalCase` with `Interface` suffix (e.g., `UserInterface`)
+- Enums: `PascalCase` (e.g., `UserRole`)
+
+## Component Template Rules
+- Use Angular 20 control flow syntax in templates
+- Implement proper accessibility attributes
+- Use semantic HTML elements
+- Include proper ARIA labels and roles
+- Use Angular Material or similar UI library components when appropriate
+
+## Service Guidelines
+- Create services for API calls and business logic
+- Use dependency injection properly
+- Implement proper error handling
+- Use observables for reactive programming
+- Include proper TypeScript typing
+
+## Routing
+- Use Angular Router with proper lazy loading
+- Implement route guards for authentication
+- Use proper route naming conventions
+- Include route resolvers when needed
+
+## State Management
+- Use Angular signals for local state management
+- Implement proper reactive forms
+- Use Angular's built-in state management features
+- Avoid complex state management libraries unless necessary
+
+## Code Quality
+- Use ESLint and Prettier for code formatting
+- Implement proper TypeScript strict typing
+- Use Angular's built-in validators
+- Include proper error boundaries
+- Implement proper loading states
+
+## Testing
+- Write unit tests for components and services
+- Use Angular Testing Utilities
+- Implement proper mocking strategies
+- Test both success and error scenarios
+
+## Performance
+- Use `OnPush` change detection strategy when appropriate
+- Implement proper lazy loading
+- Use Angular's built-in performance optimizations
+- Avoid memory leaks with proper subscription management
+
+## Security
+- Implement proper input validation
+- Use Angular's built-in XSS protection
+- Sanitize user inputs
+- Implement proper authentication and authorization
+
+## Examples
+
+### Component Structure:
+```
+user-profile/
+├── user-profile.component.ts
+├── user-profile.component.html
+└── user-profile.component.spec.ts
+```
+
+### Template with Angular 20 Directives:
+```html
+<div class="user-list">
+  @if (users.length > 0) {
+    @for (user of users; track user.id) {
+      <div class="user-item">
+        <h3>{{ user.name }}</h3>
+        <p>{{ user.email }}</p>
+      </div>
+    }
+  } @else {
+    <p>No users found</p>
+  }
+</div>
+```
+
+### Service Example:
+```typescript
+@Injectable({
+  providedIn: 'root'
+})
+export class UserService {
+  private users = signal<User[]>([]);
+
+  getUsers(): Observable<User[]> {
+    return this.http.get<User[]>('/api/users');
+  }
+}
+```
+
+Remember: Always prioritize Angular 20's new control flow syntax, use English naming, avoid index.ts files, and create HTML files for components instead of CSS files.
+description:
+globs:
+alwaysApply: false
+---

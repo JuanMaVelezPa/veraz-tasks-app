@@ -28,7 +28,7 @@ export class SignUpPageComponent {
     ]],
     email: ['', [
       Validators.required,
-      Validators.email,
+      Validators.pattern(FormUtilsService.emailPattern),
     ]],
     password: ['', [
       Validators.required,

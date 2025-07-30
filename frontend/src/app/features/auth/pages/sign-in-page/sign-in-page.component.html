@@ -63,6 +63,7 @@
           class="grow bg-transparent border-none outline-none min-w-0"
           placeholder="Username or Email"
           formControlName="usernameOrEmail"
+          autocomplete="username"
           [class.input-error]="formUtils.isValidField(signInForm, 'usernameOrEmail')"
           [disabled]="isLoading()"
         />
@@ -106,6 +107,7 @@
           class="grow bg-transparent border-none outline-none min-w-0"
           placeholder="Password"
           formControlName="password"
+          autocomplete="current-password"
           [class.input-error]="passwordUtils.isValidField(signInForm, 'password')"
           [disabled]="isLoading()"
         />

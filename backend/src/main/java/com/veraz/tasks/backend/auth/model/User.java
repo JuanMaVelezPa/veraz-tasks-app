@@ -83,9 +83,15 @@ public class User implements UserDetails {
         if (this.updatedAt == null) {
             this.updatedAt = LocalDateTime.now();
         }
-        this.email = this.email.toLowerCase().trim();
-        this.username = this.username.toLowerCase().trim();
-        this.isActive = false;
+        if (this.email != null) {
+            this.email = this.email.toLowerCase().trim();
+        }
+        if (this.username != null) {
+            this.username = this.username.toLowerCase().trim();
+        }
+        if (this.isActive == null) {
+            this.isActive = false;
+        }
     }
 
     @PreUpdate

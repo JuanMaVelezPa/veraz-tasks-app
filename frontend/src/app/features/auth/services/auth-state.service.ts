@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { AuthStatus } from '@auth/interfaces/auth-response';
-import { User } from '@auth/interfaces/user';
+import { AuthStatus } from '@auth/interfaces/auth-response.interface';
+import { User } from '@auth/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'

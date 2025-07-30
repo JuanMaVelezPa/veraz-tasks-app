@@ -45,11 +45,11 @@ export class UserTableComponent {
   });
 
   columns = [
-    { key: 'index', label: '#', sortable: false },
     { key: 'username', label: 'Username', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
-    { key: 'roles', label: 'Roles', sortable: false },
+    { key: 'roles', label: 'Roles', sortable: true },
     { key: 'createdAt', label: 'Created At', sortable: true },
+    { key: 'isActive', label: 'Status', sortable: true },
     { key: 'actions', label: 'Actions', sortable: false }
   ];
 
@@ -119,6 +119,6 @@ export class UserTableComponent {
 
     if (currentField !== field) return '';
 
-    return currentOrder === 'asc' ? ' ↑' : ' ↓';
+    return currentOrder === 'asc' ? ' ↓' : ' ↑';
   };
 }

@@ -54,7 +54,7 @@ public class UserController {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "desc") String sortDirection,
             @RequestParam(defaultValue = "") String search) {
-        
+
         PaginationRequestDTO paginationRequest = PaginationRequestDTO.builder()
                 .page(page)
                 .size(size)
@@ -62,7 +62,7 @@ public class UserController {
                 .sortDirection(sortDirection)
                 .search(search)
                 .build();
-        
+
         return ResponseEntity.ok(userService.getAllUsers(paginationRequest));
     }
 
@@ -93,14 +93,11 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
+    public ResponseEntity<UserDetailDto> updateUser(@PathVariable UUID id,
             @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        UserResponseDTO response = userService.patchUser(id, userUpdateDTO);
-        if (response.getUser() == null) {
-            if (response.getMessage() != null && response.getMessage().contains("not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        UserDetailDto response = userService.patchUser(id, userUpdateDTO);
+        if (response == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
         return ResponseEntity.ok(response);
     }

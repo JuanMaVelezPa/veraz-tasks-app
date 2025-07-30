@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
       <div class="w-full sm:w-auto text-center sm:text-left">
-        <h1 class="text-xl sm:text-2xl font-bold">{{ isEditMode() ? 'Editar' : 'Crear' }} Usuario</h1>
+        <h1 class="text-xl sm:text-2xl font-bold">{{ isEditMode() ? 'Edit' : 'Create' }} User</h1>
         <p class="text-sm text-gray-500">User management information</p>
       </div>
       <div class="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
@@ -50,264 +50,22 @@
       </div>
     </div>
 
-    <!-- Success Message -->
-    @if (wasSaved()) {
-    <div class="alert alert-success mb-4">
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        class="stroke-current shrink-0 h-5 w-5"
-        fill="none"
-        viewBox="0 0 24 24"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
-      </svg>
-      <span>Usuario {{ isEditMode() ? 'actualizado' : 'creado' }} exitosamente</span>
-    </div>
-    }
+                   <!-- Feedback Messages -->
+             <app-feedback-message />
 
-    <!-- Main Form Card -->
-    <div class="card bg-base-100 shadow-lg">
-      <div class="card-body p-4 sm:p-6">
-        <form
-          [formGroup]="userForm"
-          (ngSubmit)="onSubmit()"
-          class="space-y-6"
-        >
-
-          <!-- Status Section - Always first, right-aligned -->
-          <div class="form-control">
-            <div class="flex justify-end">
-              <label class="label cursor-pointer gap-3">
-                <span class="label-text font-medium">User Status</span>
-                <input
-                  type="checkbox"
-                  class="toggle toggle-primary toggle-sm"
-                  formControlName="isActive"
-                />
-                <span
-                  class="badge badge-sm"
-                  [class]="userForm.get('isActive')?.value ? 'badge-success' : 'badge-error'"
-                >
-                  {{ userForm.get('isActive')?.value ? 'Active' : 'Inactive' }}
-                </span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Main Content Grid -->
-          <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-
-            <!-- Left Column - User Info -->
-            <div class="lg:col-span-3 space-y-6">
-
-              <!-- Username and Email Row -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                <!-- Username -->
-                <div class="form-control">
-                  <div class="mb-2">
-                    <span class="text-sm font-semibold">Username</span>
-                    <span class="text-error">*</span>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="usuario123"
-                    class="input input-bordered"
-                    formControlName="username"
-                    [class.input-error]="formUtils.isValidField(userForm, 'username')"
-                  />
-                  @if (formUtils.isValidField(userForm, 'username')) {
-                  <div class="mt-1">
-                    <span class="text-error text-xs">{{ formUtils.getFieldError(userForm, 'username')
-                      }}</span>
-                  </div>
-                  }
-                </div>
-
-                <!-- Email -->
-                <div class="form-control">
-                  <div class="mb-2">
-                    <span class="text-sm font-semibold">Email</span>
-                    <span class="text-error">*</span>
-                  </div>
-                  <input
-                    type="email"
-                    placeholder="usuario@ejemplo.com"
-                    class="input input-bordered"
-                    formControlName="email"
-                    [class.input-error]="formUtils.isValidField(userForm, 'email')"
-                  />
-                  @if (formUtils.isValidField(userForm, 'email')) {
-                  <div class="mt-1">
-                    <span class="text-error text-xs">{{ formUtils.getFieldError(userForm, 'email') }}</span>
-                  </div>
-                  }
-                </div>
-              </div>
-
-              <!-- Dates Info -->
-              <div class="flex justify-center">
-                <div class="stats stats-horizontal shadow-sm">
-                  <div class="stat">
-                    <div class="stat-title text-xs">Created</div>
-                    <div class="stat-value text-sm">{{ user().createdAt | date:'dd/MM/yyyy' }}</div>
-                    <div class="stat-desc text-xs">{{ user().createdAt | date:'HH:mm' }}</div>
-                  </div>
-                  <div class="stat">
-                    <div class="stat-title text-xs">Updated</div>
-                    <div class="stat-value text-sm">{{ user().updatedAt ? (user().updatedAt | date:'dd/MM/yyyy') :
-                      'Nunca'
-                      }}</div>
-                    <div class="stat-desc text-xs">{{ user().updatedAt ? (user().updatedAt | date:'HH:mm') : '-' }}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Password Change Section -->
-              <div class="collapse collapse-arrow bg-base-200">
-                <input
-                  type="checkbox"
-                  (change)="togglePasswordSection()"
-                  [checked]="showPasswordSection()"
-                />
-                <div class="collapse-title text-sm font-medium">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke-width="2"
-                    stroke="currentColor"
-                    class="w-4 h-4 inline mr-2"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"
-                    />
-                  </svg>
-                  Change Password
-                </div>
-                <div class="collapse-content">
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text font-medium">Nueva Contraseña</span>
-                      </label>
-                      <input
-                        type="password"
-                        class="input input-bordered input-sm"
-                        placeholder="••••••••"
-                        disabled
-                      />
-                      <label class="label">
-                        <span class="label-text-alt text-gray-500">Pending function</span>
-                      </label>
-                    </div>
-                    <div class="form-control">
-                      <label class="label">
-                        <span class="label-text font-medium">Confirm</span>
-                      </label>
-                      <input
-                        type="password"
-                        class="input input-bordered input-sm"
-                        placeholder="••••••••"
-                        disabled
-                      />
-                      <label class="label">
-                        <span class="label-text-alt text-gray-500">Pending function</span>
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Right Column - Roles (Desktop) / Bottom (Mobile) -->
-            <div class="lg:col-span-1">
-              <div class="form-control">
-                <label class="label">
-                  <span class="label-text font-semibold text-sm">Roles</span>
-                </label>
-                <div class="space-y-2">
-                  @for (role of availableRoles(); track role.id) {
-                  <label
-                    class="flex items-center gap-3 p-3 rounded-lg border hover:bg-base-200 cursor-pointer transition-colors"
-                  >
-                    <input
-                      type="checkbox"
-                      class="checkbox checkbox-primary checkbox-sm"
-                      [checked]="isRoleSelected(role.name)"
-                      (change)="toggleRole(role.name)"
-                    />
-                    <div class="flex-1 min-w-0">
-                      <div class="font-medium text-sm">{{ role.name }}</div>
-                      <div class="text-xs text-gray-500">{{ role.description }}</div>
-                    </div>
-                  </label>
-                  }
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Form Actions -->
-          <div class="divider"></div>
-          <div class="flex flex-col sm:flex-row justify-end gap-3">
-            <button
-              type="button"
-              class="btn btn-warning btn-sm w-full sm:w-auto"
-              (click)="resetForm()"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="w-4 h-4 mr-1"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-                />
-              </svg>
-              Reset
-            </button>
-            <button
-              type="submit"
-              class="btn btn-primary btn-sm w-full sm:w-auto"
-              [disabled]="isLoading()"
-            >
-              @if (isLoading()) {
-              <app-loading></app-loading>
-              } @else {
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke-width="2"
-                stroke="currentColor"
-                class="w-4 h-4 mr-1"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              }
-              {{ isEditMode() ? 'Update' : 'Create' }} User
-            </button>
-          </div>
-        </form>
+           <!-- Main Form Card -->
+      <div class="card bg-base-100 shadow-lg">
+        <div class="card-body p-4 sm:p-6">
+                                <app-user-form
+             [userForm]="userForm"
+             [user]="user()"
+             [isEditMode]="isEditMode()"
+             [isLoading]="isLoading()"
+             (formSubmitted)="onSubmit()"
+             (formReset)="onReset()"
+             (roleSelected)="onRoleSelected($event)"
+           />
+        </div>
       </div>
-    </div>
   </div>
 </div>

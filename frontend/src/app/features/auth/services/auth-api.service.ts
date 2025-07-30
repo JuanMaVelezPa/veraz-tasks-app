@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthResponse } from '@auth/interfaces/auth-response';
+import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { environment } from '@env/environment';
 
 export interface SignInRequest {

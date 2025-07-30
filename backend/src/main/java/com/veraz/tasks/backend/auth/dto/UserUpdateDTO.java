@@ -1,5 +1,7 @@
 package com.veraz.tasks.backend.auth.dto;
 
+import java.util.Set;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -15,9 +17,10 @@ public class UserUpdateDTO {
     private String email;
 
     @Size(min = 8, max = 255, message = "{user.password.size}")
-    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", 
-             message = "{user.password.pattern}")
+    @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "{user.password.pattern}")
     private String password;
 
     private Boolean isActive;
-} 
+
+    private Set<String> roles;
+}

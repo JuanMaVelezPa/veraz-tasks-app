@@ -38,6 +38,7 @@
       class="form-control"
       placeholder="Username"
       formControlName="username"
+      autocomplete="username"
     />
   </label>
   @if(formUtils.isValidField(signUpForm, 'username')) {
@@ -78,6 +79,7 @@
       class="form-control"
       placeholder="mail@site.com"
       formControlName="email"
+      autocomplete="email"
     />
   </label>
   @if(formUtils.isValidField(signUpForm, 'email')) {
@@ -119,6 +121,7 @@
       class="form-control"
       placeholder="Password"
       formControlName="password"
+      autocomplete="new-password"
     />
   </label>
   @if(passwordUtils.isValidField(signUpForm, 'password')) {
@@ -164,6 +167,7 @@
       class="form-control"
       placeholder="Confirm Password"
       formControlName="confirmPassword"
+      autocomplete="new-password"
     />
   </label>
   @if(passwordUtils.isValidField(signUpForm, 'confirmPassword')) {

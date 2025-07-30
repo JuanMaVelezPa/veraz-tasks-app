@@ -1,4 +1,4 @@
-import { User } from "@auth/interfaces/user";
+import { User } from "@auth/interfaces/user.interface";
 
 export interface UsersResponse {
   users: User[];

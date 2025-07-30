@@ -1,5 +1,6 @@
 package com.veraz.tasks.backend.auth.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -70,7 +71,8 @@ public class UserService implements UserDetailsService {
             User newUser = toUser(userRequest, encodedPassword, defaultRole);
             userRepository.save(newUser);
 
-            logger.info("User created successfully: {}", newUser.getUsername());
+            logger.info("User created successfully: {} with createdAt: {} and updatedAt: {}",
+                    newUser.getUsername(), newUser.getCreatedAt(), newUser.getUpdatedAt());
 
             return new UserResponseDTO(
                     toUserDetailDto(newUser),
@@ -147,24 +149,22 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public UserResponseDTO patchUser(UUID id, UserUpdateDTO userUpdateDTO) {
+    public UserDetailDto patchUser(UUID id, UserUpdateDTO userUpdateDTO) {
         logger.info("Patching user with ID: {}", id);
+
         if (id == null) {
             throw new RuntimeException("User ID is required");
         }
 
         User userToUpdate = userRepository.findById(id).orElse(null);
         if (userToUpdate == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
+            return null;
         }
 
-        // Validar y actualizar username
         if (userUpdateDTO.getUsername() != null && !userUpdateDTO.getUsername().trim().isEmpty()) {
             String newUsername = userUpdateDTO.getUsername().trim();
             logger.info("Updating username from '{}' to '{}'", userToUpdate.getUsername(), newUsername);
 
-            // Solo validar si el username es diferente al actual
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
                 userRepository.findByUsername(newUsername)
                         .filter(existingUser -> !existingUser.getId().equals(id))
@@ -177,15 +177,12 @@ public class UserService implements UserDetailsService {
             }
 
             userToUpdate.setUsername(newUsername);
-            logger.info("Username set to: '{}'", userToUpdate.getUsername());
         }
 
-        // Validar y actualizar email
         if (userUpdateDTO.getEmail() != null && !userUpdateDTO.getEmail().trim().isEmpty()) {
             String newEmail = userUpdateDTO.getEmail().trim();
             logger.info("Updating email from '{}' to '{}'", userToUpdate.getEmail(), newEmail);
 
-            // Solo validar si el email es diferente al actual
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
                 userRepository.findByEmail(newEmail)
                         .filter(existingUser -> !existingUser.getId().equals(id))
@@ -197,29 +194,33 @@ public class UserService implements UserDetailsService {
             }
 
             userToUpdate.setEmail(newEmail);
-            logger.info("Email set to: '{}'", userToUpdate.getEmail());
         }
 
-        // Actualizar contraseña si se proporciona
         if (userUpdateDTO.getPassword() != null && !userUpdateDTO.getPassword().trim().isEmpty()) {
             String encodedPassword = passwordEncoder.encode(userUpdateDTO.getPassword());
             userToUpdate.setPassword(encodedPassword);
         }
 
-        // Actualizar otros campos
         if (userUpdateDTO.getIsActive() != null) {
             userToUpdate.setIsActive(userUpdateDTO.getIsActive());
         }
 
+        if (userUpdateDTO.getRoles() != null) {
+            userToUpdate.setRoles(userUpdateDTO.getRoles().stream()
+                    .map(roleRepository::findByName)
+                    .collect(Collectors.toSet()));
+        }
+
         logger.info("Updating user with ID: {}", userToUpdate.getId());
-        logger.info("Before save - Email: '{}', Username: '{}'", userToUpdate.getEmail(), userToUpdate.getUsername());
+        logger.info("Before save - Email: '{}', Username: '{}', UpdatedAt: '{}'",
+                userToUpdate.getEmail(), userToUpdate.getUsername());
 
         userRepository.save(userToUpdate);
 
-        logger.info("After save - Email: '{}', Username: '{}'", userToUpdate.getEmail(), userToUpdate.getUsername());
+        logger.info("After save - Email: '{}', Username: '{}', UpdatedAt: '{}' (was: '{}')",
+                userToUpdate.getEmail(), userToUpdate.getUsername(), userToUpdate.getUpdatedAt());
 
-        return new UserResponseDTO(toUserDetailDto(userToUpdate), null,
-                messageSource.getMessage("user.updated.successfully", null, LocaleContextHolder.getLocale()));
+        return toUserDetailDto(userToUpdate);
     }
 
     @Transactional
@@ -253,6 +254,7 @@ public class UserService implements UserDetailsService {
         userDto.setEmail(user.getEmail());
         userDto.setIsActive(user.getIsActive());
         userDto.setCreatedAt(user.getCreatedAt());
+        userDto.setUpdatedAt(user.getUpdatedAt());
         userDto.setRoles(roles);
         userDto.setPerms(perms);
 

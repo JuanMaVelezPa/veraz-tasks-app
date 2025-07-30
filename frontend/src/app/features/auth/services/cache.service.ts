@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { CacheAuthResponse } from '@auth/interfaces/auth-response';
+import { CacheAuthResponse } from '@auth/interfaces/auth-response.interface';
 
 @Injectable({
   providedIn: 'root'

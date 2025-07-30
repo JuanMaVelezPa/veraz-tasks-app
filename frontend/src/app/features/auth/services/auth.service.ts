@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
-import { AuthResponse } from '@auth/interfaces/auth-response';
+import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { AuthStateService } from './auth-state.service';
 import { TokenService } from './token.service';
 import { CacheService } from './cache.service';
@@ -61,11 +61,8 @@ export class AuthService {
     return this.authApi.signUp({ username, email, password })
       .pipe(
         map((response) => {
-          // Para signUp, el backend no devuelve token, solo crea el usuario
           if (response.user && !response.token) {
-            // Usuario creado exitosamente, pero no autenticado automáticamente
-            console.log('Usuario creado exitosamente:', response.message);
-            return false; // No autenticado automáticamente
+            return false;
           }
           return this.handleAuthSuccess(response);
         }),
@@ -109,7 +106,6 @@ export class AuthService {
       );
   }
 
-  // Método para refrescar el token si es necesario
   refreshToken(): Observable<boolean> {
     const currentToken = this.authState.token();
     if (!currentToken) {
@@ -164,7 +160,6 @@ export class AuthService {
   private handleAuthError(error: any): Observable<boolean> {
     console.error('AuthService: Error de autenticación:', error);
 
-    // Limpiar estado y storage
     this.authState.clearState();
     this.clearAllStorage();
 
