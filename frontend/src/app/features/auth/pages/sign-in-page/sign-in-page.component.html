@@ -13,7 +13,7 @@
       d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"
     />
   </svg>
-  <span>{{ errorMessage() }}</span>
+  <span class="break-words">{{ errorMessage() }}</span>
 </div>
 }
 
@@ -23,23 +23,23 @@
   </span>
 </div>
 
-<div class="relative">
+<div class="relative w-full">
   @if(isLoading()) {
   <app-loading [overlay]="true" [text]="'Signing in...'"></app-loading>
   }
 
   <form
     autocomplete="off"
-    class="flex flex-col gap-6"
+    class="flex flex-col gap-4 lg:gap-6 w-full"
     [formGroup]="signInForm"
     (ngSubmit)="onSubmit()"
   >
 
     <!-- Username - Email -->
-    <div class="form-control">
+    <div class="form-control w-full">
       <label class="input input-bordered flex items-center gap-3">
         <svg
-          class="w-4 h-4 opacity-60"
+          class="w-4 h-4 opacity-60 flex-shrink-0"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
         >
@@ -60,7 +60,7 @@
         </svg>
         <input
           type="text"
-          class="grow bg-transparent border-none outline-none"
+          class="grow bg-transparent border-none outline-none min-w-0"
           placeholder="Username or Email"
           formControlName="usernameOrEmail"
           [class.input-error]="formUtils.isValidField(signInForm, 'usernameOrEmail')"
@@ -76,10 +76,10 @@
     </div>
 
     <!-- Password -->
-    <div class="form-control">
+    <div class="form-control w-full">
       <label class="input input-bordered flex items-center gap-3">
         <svg
-          class="w-4 h-4 opacity-60"
+          class="w-4 h-4 opacity-60 flex-shrink-0"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
         >
@@ -103,7 +103,7 @@
         </svg>
         <input
           type="password"
-          class="grow bg-transparent border-none outline-none"
+          class="grow bg-transparent border-none outline-none min-w-0"
           placeholder="Password"
           formControlName="password"
           [class.input-error]="passwordUtils.isValidField(signInForm, 'password')"

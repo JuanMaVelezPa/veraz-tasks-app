@@ -18,16 +18,6 @@ export class LayoutService {
     });
   }
 
-  openSidebar() {
-    this._isSidebarOpen.set(true);
-    this.saveToStorage(true);
-  }
-
-  closeSidebar() {
-    this._isSidebarOpen.set(false);
-    this.saveToStorage(false);
-  }
-
   private getInitialState(): boolean {
     try {
       const stored = localStorage.getItem(this.STORAGE_KEY);

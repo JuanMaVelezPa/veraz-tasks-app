@@ -10,4 +10,5 @@ import { LayoutService } from '@shared/services/layout.service';
 export class SidebarComponent {
 
   layoutService = inject(LayoutService);
+
 }

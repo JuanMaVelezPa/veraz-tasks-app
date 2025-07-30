@@ -1,9 +1,9 @@
 <div
   class="bg-base-100 shadow-lg transition-all duration-300 ease-in-out overflow-hidden h-screen"
-  [class.w-36]="layoutService.isSidebarOpen()"
+  [class.w-42]="layoutService.isSidebarOpen()"
   [class.w-14]="!layoutService.isSidebarOpen()"
 >
-  <div class="flex items-center justify-between p-3 border-b border-base-300 h-14 min-w-0">
+  <div class="flex items-center justify-between p-3 border-b border-base-300 h-14 min-w-0 relative">
     <h2
       class="text-lg font-bold text-primary font-custom-one transition-all duration-300 whitespace-nowrap"
       [class.opacity-100]="layoutService.isSidebarOpen()"
@@ -11,8 +11,40 @@
     >
       Veraz
     </h2>
+
+    <div
+      class="flex items-center gap-2 absolute left-2"
+      [class.opacity-100]="!layoutService.isSidebarOpen()"
+      [class.opacity-0]="layoutService.isSidebarOpen()"
+    >
+      <h2 class="text-sm font-bold text-primary font-custom-one">
+        Vz
+      </h2>
+      <button
+        class="btn btn-ghost btn-xs btn-circle flex-shrink-0"
+        (click)="layoutService.toggleSidebar()"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          class="h-4 w-4"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M4 6h16M4 12h16M4 18h16"
+          />
+        </svg>
+      </button>
+    </div>
+
     <button
       class="btn btn-ghost btn-sm btn-circle flex-shrink-0"
+      [class.opacity-100]="layoutService.isSidebarOpen()"
+      [class.opacity-0]="!layoutService.isSidebarOpen()"
       (click)="layoutService.toggleSidebar()"
     >
       <svg
@@ -34,7 +66,6 @@
 
   <div>
     <ul class="menu menu-lg w-full">
-
       <li class="menu-title">
         <span
           class="transition-all duration-300 whitespace-nowrap select-none text-xs"

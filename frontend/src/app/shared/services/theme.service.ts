@@ -7,7 +7,7 @@ import { ThemeOption } from '@shared/interfaces/theme.interface';
 export class ThemeService {
   private readonly THEME_KEY = 'theme';
   private readonly VALID_THEMES = ['forest', 'corporate', 'garden', 'lofi', 'winter'];
-  private readonly DEFAULT_THEME = 'corporate';
+  private readonly DEFAULT_THEME = 'lofi';
 
   private _currentTheme = signal<string>(this.getInitialTheme());
 
