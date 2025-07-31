@@ -4,17 +4,8 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { environment } from '@env/environment';
-
-export interface SignInRequest {
-  usernameOrEmail: string;
-  password: string;
-}
-
-export interface SignUpRequest {
-  username: string;
-  email: string;
-  password: string;
-}
+import { SignInRequest } from '@auth/interfaces/sign-in.interface';
+import { SignUpRequest } from '@auth/interfaces/sign-up.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -55,38 +46,37 @@ export class AuthApiService {
     return this.http.post(`${this.baseUrl}/sign-out`, {})
       .pipe(
         catchError((error: HttpErrorResponse) => {
-          console.warn('AuthApiService: Error en sign-out del backend:', error);
           return [];
         })
       );
   }
 
   private handleError(error: HttpErrorResponse, context: string): Observable<never> {
-    console.error(`AuthApiService: ${context}:`, error);
 
-    let errorMessage = 'Error inesperado';
+    let errorMessage = 'Unexpected error';
 
     switch (error.status) {
       case 400:
-        errorMessage = 'Datos inválidos en la solicitud';
-        break;
       case 401:
-        errorMessage = 'Credenciales inválidas o token expirado';
+        errorMessage = error.error.message;
         break;
       case 403:
-        errorMessage = 'Acceso denegado';
+        errorMessage = 'Your account has been blocked. Contact the administrator.';
         break;
       case 409:
-        errorMessage = 'Usuario ya existe';
+        errorMessage = 'User already exists. Try with a different username or email.';
         break;
       case 422:
-        errorMessage = 'Datos de validación incorrectos';
+        errorMessage = 'Registration data does not meet requirements.';
+        break;
+      case 429:
+        errorMessage = 'Too many login attempts. Please wait a few minutes.';
         break;
       case 500:
-        errorMessage = 'Error interno del servidor';
+        errorMessage = 'Internal server error';
         break;
       case 0:
-        errorMessage = 'Error de conexión - verifica tu conexión a internet';
+        errorMessage = 'Connection error. Please check your internet connection.';
         break;
       default:
         errorMessage = `Error ${error.status}: ${error.message}`;
@@ -102,13 +92,4 @@ export class AuthApiService {
     return throwError(() => customError);
   }
 
-  ping(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/ping`)
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          console.warn('AuthApiService: Backend no disponible:', error);
-          return throwError(() => error);
-        })
-      );
-  }
 }

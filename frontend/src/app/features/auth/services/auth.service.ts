@@ -6,6 +6,7 @@ import { AuthStateService } from './auth-state.service';
 import { TokenService } from './token.service';
 import { CacheService } from './cache.service';
 import { AuthApiService } from './auth-api.service';
+import { SignInResponse } from '@auth/interfaces/sign-in.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -20,7 +21,6 @@ export class AuthService {
     this.initializeAuthState();
   }
 
-  // Computed properties delegadas al AuthStateService
   get user() { return this.authState.user; }
   get token() { return this.authState.token; }
   get authStatus() { return this.authState.authStatus; }
@@ -43,30 +43,24 @@ export class AuthService {
         this.authState.setAuthStatus('not-authenticated');
       }
     } catch (error) {
-      console.error('AuthService: Error inicializando estado:', error);
       this.authState.setAuthStatus('not-authenticated');
       this.clearAllStorage();
     }
   }
 
-  signIn(usernameOrEmail: string, password: string): Observable<boolean> {
+  signIn(usernameOrEmail: string, password: string): Observable<SignInResponse> {
     return this.authApi.signIn({ usernameOrEmail, password })
       .pipe(
-        map((response) => this.handleAuthSuccess(response)),
-        catchError((error) => this.handleAuthError(error))
+        map((response) => this.handleSignInSuccess(response)),
+        catchError((error) => this.handleSignInError(error))
       );
   }
 
-  signUp(username: string, email: string, password: string): Observable<boolean> {
+  signUp(username: string, email: string, password: string): Observable<SignInResponse> {
     return this.authApi.signUp({ username, email, password })
       .pipe(
-        map((response) => {
-          if (response.user && !response.token) {
-            return false;
-          }
-          return this.handleAuthSuccess(response);
-        }),
-        catchError((error) => this.handleAuthError(error))
+        map((response) => this.handleSignInSuccess(response)),
+        catchError((error) => this.handleSignInError(error))
       );
   }
 
@@ -101,8 +95,8 @@ export class AuthService {
 
     return this.authApi.checkStatus()
       .pipe(
-        map((response) => this.handleAuthSuccess(response)),
-        catchError((error) => this.handleAuthError(error))
+        map((response) => this.handleCheckStatusSuccess(response)),
+        catchError((error) => this.handleCheckStatusError(error))
       );
   }
 
@@ -114,11 +108,8 @@ export class AuthService {
 
     return this.authApi.refreshToken()
       .pipe(
-        map((response) => this.handleAuthSuccess(response)),
-        catchError((error) => {
-          console.error("AuthService: Error refrescando token:", error);
-          return this.handleAuthError(error);
-        })
+        map((response) => this.handleRefreshTokenSuccess(response)),
+        catchError((error) => this.handleRefreshTokenError(error))
       );
   }
 
@@ -133,19 +124,43 @@ export class AuthService {
     this.tokenService.removeToken();
   }
 
-  private handleAuthSuccess(response: AuthResponse): boolean {
-    if (!response || !response.user) {
-      console.warn('AuthService: Respuesta de autenticación inválida');
-      return false;
+  private handleSignInSuccess(response: AuthResponse): SignInResponse {
+
+    if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
+      return {
+        authStatus: 'not-authenticated',
+        message: 'Invalid credentials. Please verify your username and password.'
+      };
     }
 
-    if (!response.token) {
-      console.warn('AuthService: No token recibido en la respuesta');
-      return false;
-    }
+    const cacheValue = this.cacheService.createCache('authenticated', response.user, response.token);
+    this.cacheService.saveCache(cacheValue);
+    this.tokenService.saveToken(response.token);
+    this.authState.setAuthState(response.user, response.token, 'authenticated');
 
-    if (!this.tokenService.isValidToken(response.token)) {
-      console.warn('AuthService: Token inválido');
+    return {
+      authStatus: 'authenticated',
+      message: 'User authenticated successfully'
+    };
+  }
+
+  private handleSignInError(error: any): Observable<SignInResponse> {
+
+    this.authState.clearState();
+    this.clearAllStorage();
+
+    const errorMessage = error?.message || 'Unexpected error authenticating. Please try again.';
+
+    return of({
+      authStatus: 'not-authenticated',
+      message: errorMessage
+    });
+  }
+
+  private handleCheckStatusSuccess(response: AuthResponse): boolean {
+    if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
+      this.authState.clearState();
+      this.clearAllStorage();
       return false;
     }
 
@@ -157,13 +172,30 @@ export class AuthService {
     return true;
   }
 
-  private handleAuthError(error: any): Observable<boolean> {
-    console.error('AuthService: Error de autenticación:', error);
-
+  private handleCheckStatusError(error: any): Observable<boolean> {
     this.authState.clearState();
     this.clearAllStorage();
-
     return of(false);
   }
 
+  private handleRefreshTokenSuccess(response: AuthResponse): boolean {
+    if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
+      this.authState.clearState();
+      this.clearAllStorage();
+      return false;
+    }
+
+    const cacheValue = this.cacheService.createCache('authenticated', response.user, response.token);
+    this.cacheService.saveCache(cacheValue);
+    this.tokenService.saveToken(response.token);
+    this.authState.setAuthState(response.user, response.token, 'authenticated');
+
+    return true;
+  }
+
+  private handleRefreshTokenError(error: any): Observable<boolean> {
+    this.authState.clearState();
+    this.clearAllStorage();
+    return of(false);
+  }
 }

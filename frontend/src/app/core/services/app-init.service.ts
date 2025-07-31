@@ -11,18 +11,15 @@ export class AppInitService {
 
   initializeApp(): void {
     if (this.authService.authStatus() === 'authenticated') {
-      console.log('AppInitService: Usuario autenticado, iniciando TokenRefreshService');
       this.tokenRefreshService.startTokenRefresh();
     }
   }
 
   startTokenRefresh(): void {
-    console.log('AppInitService: Iniciando TokenRefreshService');
     this.tokenRefreshService.startTokenRefresh();
   }
 
   stopTokenRefresh(): void {
-    console.log('AppInitService: Deteniendo TokenRefreshService');
     this.tokenRefreshService.stopTokenRefresh();
   }
 }

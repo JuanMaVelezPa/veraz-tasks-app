@@ -59,7 +59,7 @@ public class AuthService {
 
             if (user == null) {
                 return new UserResponseDTO(null, null,
-                        messageSource.getMessage("user.invalid.password", null, LocaleContextHolder.getLocale()));
+                        messageSource.getMessage("signIn.invalid.credentials", null, LocaleContextHolder.getLocale()));
             }
 
             logger.info("SignIn attempt for user: {}", user.getUsername());
@@ -67,13 +67,13 @@ public class AuthService {
             if (!passwordEncoder.matches(signInRequest.getPassword(), user.getPassword())) {
                 logger.warn("Invalid password attempt for user: {}", user.getUsername());
                 return new UserResponseDTO(null, null,
-                        messageSource.getMessage("user.invalid.password", null, LocaleContextHolder.getLocale()));
+                        messageSource.getMessage("signIn.invalid.credentials", null, LocaleContextHolder.getLocale()));
             }
 
             if (!user.getIsActive()) {
                 logger.warn("User is not active: {}", user.getUsername());
                 return new UserResponseDTO(null, null,
-                        messageSource.getMessage("user.not.active", null, LocaleContextHolder.getLocale()));
+                        messageSource.getMessage("signIn.not.active", null, LocaleContextHolder.getLocale()));
             }
 
             logger.info("Successful signIn for user: {}", user.getUsername());
