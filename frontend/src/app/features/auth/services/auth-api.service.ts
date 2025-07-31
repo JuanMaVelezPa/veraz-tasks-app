@@ -1,95 +1,45 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
+import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
-import { AuthResponse } from '@auth/interfaces/auth-response.interface';
 import { environment } from '@env/environment';
 import { SignInRequest } from '@auth/interfaces/sign-in.interface';
 import { SignUpRequest } from '@auth/interfaces/sign-up.interface';
+import { HttpErrorService } from '@shared/services/http-error.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthApiService {
   private http = inject(HttpClient);
+  private httpErrorService = inject(HttpErrorService);
   private readonly baseUrl = `${environment.apiUrl}/auth`;
 
-  signIn(credentials: SignInRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/sign-in`, credentials)
+  signIn(request: SignInRequest): Observable<any> {
+    return this.http.post(`${this.baseUrl}/sign-in`, request)
       .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError(error, 'Error en sign-in'))
+        catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error sign-in'))
       );
   }
 
-  signUp(userData: SignUpRequest): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/sign-up`, userData)
+  signUp(request: SignUpRequest): Observable<any> {
+    return this.http.post(`${this.baseUrl}/sign-up`, request)
       .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError(error, 'Error en sign-up'))
+        catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error sign-up'))
       );
   }
 
-  checkStatus(): Observable<AuthResponse> {
-    return this.http.get<AuthResponse>(`${this.baseUrl}/check-status`)
+  checkAuthStatus(): Observable<any> {
+    return this.http.get(`${this.baseUrl}/check-status`)
       .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError(error, 'Error verificando estado'))
+        catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error check-status'))
       );
   }
 
-  refreshToken(): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.baseUrl}/refresh`, {})
+  refreshToken(): Observable<any> {
+    return this.http.post(`${this.baseUrl}/refresh-token`, {})
       .pipe(
-        catchError((error: HttpErrorResponse) => this.handleError(error, 'Error refrescando token'))
+        catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error refresh'))
       );
   }
-
-  signOut(): Observable<any> {
-    return this.http.post(`${this.baseUrl}/sign-out`, {})
-      .pipe(
-        catchError((error: HttpErrorResponse) => {
-          return [];
-        })
-      );
-  }
-
-  private handleError(error: HttpErrorResponse, context: string): Observable<never> {
-
-    let errorMessage = 'Unexpected error';
-
-    switch (error.status) {
-      case 400:
-      case 401:
-        errorMessage = error.error.message;
-        break;
-      case 403:
-        errorMessage = 'Your account has been blocked. Contact the administrator.';
-        break;
-      case 409:
-        errorMessage = 'User already exists. Try with a different username or email.';
-        break;
-      case 422:
-        errorMessage = 'Registration data does not meet requirements.';
-        break;
-      case 429:
-        errorMessage = 'Too many login attempts. Please wait a few minutes.';
-        break;
-      case 500:
-        errorMessage = 'Internal server error';
-        break;
-      case 0:
-        errorMessage = 'Connection error. Please check your internet connection.';
-        break;
-      default:
-        errorMessage = `Error ${error.status}: ${error.message}`;
-    }
-
-    const customError = {
-      message: errorMessage,
-      status: error.status,
-      originalError: error,
-      context
-    };
-
-    return throwError(() => customError);
-  }
-
 }

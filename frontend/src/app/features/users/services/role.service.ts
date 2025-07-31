@@ -1,8 +1,9 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
-import { Observable, of, map } from 'rxjs';
+import { Observable, of, map, catchError } from 'rxjs';
 import { RoleResponse } from '../interfaces/role-response.interface';
+import { HttpErrorService } from '@shared/services/http-error.service';
 
 @Injectable({
   providedIn: 'root'
@@ -10,11 +11,15 @@ import { RoleResponse } from '../interfaces/role-response.interface';
 export class RoleService {
 
   private http = inject(HttpClient);
+  private httpErrorService = inject(HttpErrorService);
 
   private activeRolesCache: RoleResponse[] | null = null;
 
   getAllRoles(): Observable<RoleResponse[]> {
-    return this.http.get<RoleResponse[]>(`${environment.apiUrl}/roles`);
+    return this.http.get<RoleResponse[]>(`${environment.apiUrl}/roles`)
+      .pipe(
+        catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error getting all roles'))
+      );
   }
 
   getActiveRoles(): Observable<RoleResponse[]> {
@@ -36,7 +41,8 @@ export class RoleService {
 
         this.activeRolesCache = roles;
         return roles;
-      })
+      }),
+      catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error getting active roles'))
     );
   }
 

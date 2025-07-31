@@ -90,37 +90,56 @@ public class UserController {
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions."),
+            @ApiResponse(responseCode = "409", description = "Conflict - Username or email already exists")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UserDetailDto> updateUser(@PathVariable UUID id,
+    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
             @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        UserDetailDto response = userService.patchUser(id, userUpdateDTO);
-        if (response == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        
+        UserResponseDTO response = userService.patchUser(id, userUpdateDTO);
+        
+        if (response.getUser() == null) {
+            if (response.getMessage() != null) {
+                if (response.getMessage().contains("not found")) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+                } else if (response.getMessage().contains("already exists")) {
+                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+                } else if (response.getMessage().contains("required") || response.getMessage().contains("invalid")) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+                }
+            }
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
+        
         return ResponseEntity.ok(response);
     }
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete user", description = "Delete user with id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "204", description = "User deleted successfully"),
+            @ApiResponse(responseCode = "200", description = "User deleted successfully"),
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<UserResponseDTO> deleteUser(@PathVariable UUID id) {
         UserResponseDTO response = userService.deleteUser(id);
-        if (response.getUser() == null) {
-            if (response.getMessage() != null && response.getMessage().contains("not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        
+        // Si el mensaje es exactamente "User deleted successfully", es un éxito 200
+        if (response.getMessage() != null && response.getMessage().equals("User deleted successfully")) {
+            return ResponseEntity.ok(response);
         }
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
+        
+        // Si el mensaje contiene "not found", es un error 404
+        if (response.getMessage() != null && response.getMessage().contains("not found")) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        }
+        
+        // Para cualquier otro caso, error 400
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
 }

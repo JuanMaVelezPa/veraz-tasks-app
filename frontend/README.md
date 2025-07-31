@@ -89,6 +89,32 @@ src/app/
 - **Footer:** Application footer
 - **Layout Components:** Consistent page layouts
 
+## 🆕 Recent Features & Improvements
+
+### 🛡️ Centralized Error Handling
+- **HttpErrorService:** Centralized HTTP error management
+- **Contextual Error Messages:** Specific messages based on operation type
+- **Backend Message Priority:** Uses backend messages when available
+- **Comprehensive Status Handling:** Covers all HTTP status codes (400, 401, 403, 404, 409, 422, 429, 500, 502, 503, 504, 0)
+
+### 👥 Enhanced User Management
+- **User Deletion:** Complete deletion with confirmation modal
+- **Cache Invalidation:** Automatic cache clearing after operations
+- **Navigation Protection:** Redirects when accessing deleted users
+- **Responsive Button Layout:** Optimized for desktop and mobile
+
+### 🎨 Improved UI/UX
+- **Button Consolidation:** All action buttons in header
+- **Modal System:** DaisyUI modals for destructive actions
+- **Loading States:** Visual feedback during operations
+- **Form Validation:** Enhanced validation with descriptive messages
+
+### 🔧 Architecture Improvements
+- **Service Layer:** Clear separation of concerns
+- **API Services:** Dedicated HTTP communication services
+- **Error Propagation:** Consistent error handling
+- **State Management:** Improved with signals and observables
+
 ## 🛠️ Development
 
 ```bash

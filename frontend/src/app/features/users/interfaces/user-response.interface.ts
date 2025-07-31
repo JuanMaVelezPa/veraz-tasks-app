@@ -1,17 +1,6 @@
-import { User } from "@auth/interfaces/user.interface";
+import { User } from "./user.interface";
 
-export interface UsersResponse {
-  users: User[];
-  pagination: Pagination;
-}
-
-export interface Pagination {
-  currentPage: number;
-  totalPages: number;
-  totalElements: number;
-  pageSize: number;
-  hasNext: boolean;
-  hasPrevious: boolean;
-  first: boolean;
-  last: boolean;
+export interface UserResponse {
+  user: User;
+  message: string;
 }

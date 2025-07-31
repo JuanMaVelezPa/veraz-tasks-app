@@ -1,5 +1,5 @@
 import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
-import { User } from '@auth/interfaces/user.interface';
+import { User } from '@users/interfaces/user.interface';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '@users/services/user.service';
 import { Router } from '@angular/router';
@@ -10,6 +10,7 @@ import { FeedbackMessageComponent } from '@shared/components/feedback-message/fe
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
 import { firstValueFrom } from 'rxjs';
+import { UserResponse } from '@users/interfaces/user-response.interface';
 
 @Component({
   selector: 'user-details',
@@ -33,7 +34,8 @@ export class UserDetailsComponent implements OnDestroy {
   wasSaved = signal(false);
   isLoading = signal(false);
   isEditMode = signal(false);
-  private currentUser = signal<User | null>(null);
+  showDeleteModal = signal(false);
+  currentUser = signal<User | null>(null);
 
   userForm = this.fb.nonNullable.group({
     username: ['', [
@@ -98,8 +100,7 @@ export class UserDetailsComponent implements OnDestroy {
         await this.createUser();
       }
     } catch (error) {
-      this.feedbackService.showError('An error occurred while saving the user. Please try again.');
-      this.router.navigate(['/admin/users']);
+      this.handleUserError(error);
     } finally {
       this.isLoading.set(false);
     }
@@ -108,32 +109,28 @@ export class UserDetailsComponent implements OnDestroy {
   private async createUser() {
     const formValue = this.userForm.value;
     const userData = {
-      username: formValue.username,
-      email: formValue.email,
+      username: formValue.username?.trim().toLowerCase(),
+      email: formValue.email?.trim().toLowerCase(),
+      password: formValue.password,
       isActive: formValue.isActive,
-      roles: formValue.selectedRole ? [formValue.selectedRole] : [],
-      password: formValue.password
+      roles: formValue.selectedRole ? [formValue.selectedRole] : []
     };
 
     const createdUser = await firstValueFrom(
       this.userService.createUser(userData)
     );
 
-    if (createdUser?.id) {
-      this.feedbackService.showSuccess('User created successfully!');
-      this.router.navigate(['/admin/users', createdUser.id]);
+    if (createdUser?.user?.id) {
+      this.currentUser.set(createdUser.user);
       this.wasSaved.set(true);
-    } else {
-      throw new Error('Created user has invalid ID');
+      this.feedbackService.showSuccess('User created successfully!');
+      this.router.navigate(['/admin/users']);
     }
   }
 
   private async updateUser() {
     const originalUser = this.currentUser();
-    if (!originalUser) {
-      this.feedbackService.showError('User data not available.');
-      return;
-    }
+    if (!originalUser) { return; }
 
     const formValue = this.userForm.value;
     const changes = this.detectChanges(formValue, originalUser);
@@ -143,15 +140,58 @@ export class UserDetailsComponent implements OnDestroy {
       return;
     }
 
-    const updatedUser = await firstValueFrom(
-      this.userService.updateUser(originalUser.id, changes)
-    );
+    try {
+      const updatedUser: UserResponse = await firstValueFrom(
+        this.userService.updateUser(originalUser.id, changes)
+      );
+      if (updatedUser.user) {
+        this.currentUser.set(updatedUser.user);
+        this.setFormValues(updatedUser.user);
+        this.feedbackService.showSuccess('User updated successfully!');
+        this.wasSaved.set(true);
+      } else {
+        this.handleUserError(updatedUser.message || 'Update failed');
+      }
+    } catch (error) {
+      this.handleUserError(error);
+    }
+  }
 
-    this.currentUser.set(updatedUser);
-    this.setFormValues(updatedUser);
+  async deleteUser() {
+    const user = this.currentUser();
+    if (!user || user.id === 'new') return;
 
-    this.feedbackService.showSuccess('User updated successfully!');
-    this.wasSaved.set(true);
+    this.isLoading.set(true);
+    this.feedbackService.clearMessage();
+
+    try {
+      const response = await firstValueFrom(
+        this.userService.deleteUser(user.id)
+      );
+
+      if (response && response.message) {
+        this.feedbackService.showSuccess('User deleted successfully!');
+        this.router.navigate(['/admin/users']);
+      }
+    } catch (error) {
+      this.handleUserError(error);
+    } finally {
+      this.isLoading.set(false);
+      this.showDeleteModal.set(false);
+    }
+  }
+
+  showDeleteConfirmation() {
+    this.showDeleteModal.set(true);
+  }
+
+  cancelDelete() {
+    this.showDeleteModal.set(false);
+  }
+
+  private handleUserError(error: any): void {
+    this.setFormValues(this.currentUser() || this.user());
+    this.feedbackService.showError(error?.message || 'An error occurred while saving the user. Please try again.');
   }
 
   private detectChanges(formValue: any, originalUser: User): any {
@@ -211,17 +251,7 @@ export class UserDetailsComponent implements OnDestroy {
     this.resetForm();
   }
 
-  updateFormDisabledState(disabled: boolean) {
-    if (disabled) {
-      this.userForm.disable();
-    } else {
-      this.userForm.enable();
-    }
-  }
-
   ngOnDestroy() {
     this.feedbackService.clearMessage();
   }
-
-
 }

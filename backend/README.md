@@ -72,6 +72,26 @@ src/main/java/com/veraz/tasks/backend/
 ### Protected Endpoints
 All endpoints except `/auth/sign-in`, `/auth/sign-up`, and Swagger documentation require authentication.
 
+## 🆕 Recent Features & Improvements
+
+### 👥 Enhanced User Management
+- **User Deletion:** Complete user deletion with proper response handling
+- **Response Optimization:** Improved HTTP status codes for better frontend integration
+- **Message Localization:** Enhanced message handling with i18n support
+- **Error Handling:** Comprehensive error responses with descriptive messages
+
+### 🔧 API Improvements
+- **Consistent Responses:** Standardized response format across all endpoints
+- **Status Code Optimization:** Proper HTTP status codes (200, 404, 409, 400)
+- **Message Prioritization:** Backend messages take priority over frontend defaults
+- **Validation Enhancement:** Improved input validation with descriptive error messages
+
+### 🛡️ Security Enhancements
+- **Role-based Access:** Enhanced permission system for user operations
+- **Input Validation:** Comprehensive validation for all user inputs
+- **Error Security:** Secure error messages that don't expose sensitive information
+- **Transaction Management:** Proper transaction handling for data consistency
+
 ## 📝 Logging
 
 - **File:** `./logs/tasks-backend.log`
@@ -109,6 +129,12 @@ mvn clean package
 - `POST /api/auth/sign-in` - User login
 - `POST /api/auth/sign-up` - User registration
 - `GET /api/auth/check-status` - Check authentication status
+
+### User Management
+- `GET /api/users` - Get all users (paginated)
+- `GET /api/users/{id}` - Get user by ID
+- `PATCH /api/users/{id}` - Update user
+- `DELETE /api/users/{id}` - Delete user
 
 ### Person Management
 - `GET /api/person` - Get all persons

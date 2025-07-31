@@ -35,6 +35,8 @@ export class SignInPageComponent {
   });
 
   async onSubmit() {
+    this.feedbackService.clearMessage();
+
     if (this.signInForm.invalid) {
       this.signInForm.markAllAsTouched();
       return;

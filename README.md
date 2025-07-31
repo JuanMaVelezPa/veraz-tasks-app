@@ -118,6 +118,32 @@ tasks-app/
 - **Default user:** `admin_user` / `Abc123456*`
 - **JWT Token:** Required for protected endpoints
 
+## 🆕 Recent Features & Improvements
+
+### 🛡️ Centralized Error Handling System
+- **HttpErrorService:** Centralized HTTP error management across the entire frontend
+- **Contextual Messages:** Specific error messages based on operation type
+- **Backend Integration:** Prioritizes backend-provided messages over frontend defaults
+- **Status Code Handling:** Comprehensive handling for 400, 401, 403, 404, 409, 422, 429, 500, 502, 503, 504, and connection errors
+
+### 👥 Enhanced User Management
+- **User Deletion:** Complete user deletion functionality with confirmation modal
+- **Cache Management:** Automatic cache invalidation after user operations
+- **Navigation Protection:** Automatic redirection when accessing deleted users
+- **Responsive UI:** Optimized button layout for desktop and mobile
+
+### 🎨 Improved UI/UX
+- **Button Organization:** Consolidated action buttons in header with responsive design
+- **Modal System:** DaisyUI modals for destructive actions
+- **Loading States:** Visual feedback during operations
+- **Form Validation:** Enhanced client-side validation with descriptive messages
+
+### 🔧 Architecture Improvements
+- **Service Layer:** Optimized service architecture with clear separation of concerns
+- **API Services:** Dedicated API services for HTTP communication
+- **Error Propagation:** Consistent error handling from backend to frontend
+- **State Management:** Improved state management with signals and observables
+
 ## 👥 Development Team
 
 - **Lead Developer:** JMVELEZ
@@ -132,4 +158,37 @@ tasks-app/
 - **Development Credentials:**
   - Database: `tasks_app_user` / `tasks_app_user`
   - PostgreSQL Superuser: `postgres` / `jmvelez`
-  - System Users: `admin_user` / `Abc123456*` 
+  - System Users: `admin_user` / `Abc123456*`
+
+## 📊 Current Project Status
+
+### ✅ Completed Features
+- **Authentication System:** Complete JWT-based authentication
+- **User Management:** Full CRUD operations with deletion
+- **Error Handling:** Centralized error management system
+- **UI/UX:** Responsive design with modern components
+- **Database:** PostgreSQL integration with proper schemas
+- **API Documentation:** Swagger/OpenAPI integration
+
+### 🔄 In Development
+- **Person Management:** Basic CRUD operations implemented
+- **Employee Management:** Initial structure in place
+- **Client Management:** Initial structure in place
+
+### 📋 Planned Features
+- **Task Management:** Core task functionality
+- **Project Management:** Project organization features
+- **Advanced Reporting:** Analytics and reporting tools
+- **Real-time Updates:** WebSocket integration for live updates
+
+### 🛠️ Technical Debt & Improvements
+- **Testing Coverage:** Need to increase unit and integration tests
+- **Performance Optimization:** Database query optimization
+- **Security Auditing:** Regular security reviews
+- **Documentation:** Continuous documentation updates
+
+## 🔗 Quick Links
+
+- **[API Documentation](http://localhost:3000/api/swagger-ui.html)** - Interactive API docs
+- **[Frontend Application](http://localhost:4200)** - Main application
+- **[Backend API](http://localhost:3000/api)** - REST API endpoint 

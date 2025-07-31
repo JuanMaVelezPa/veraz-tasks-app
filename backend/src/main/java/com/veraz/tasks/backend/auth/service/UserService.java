@@ -1,5 +1,6 @@
 package com.veraz.tasks.backend.auth.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -148,16 +149,18 @@ public class UserService implements UserDetailsService {
     }
 
     @Transactional
-    public UserDetailDto patchUser(UUID id, UserUpdateDTO userUpdateDTO) {
+    public UserResponseDTO patchUser(UUID id, UserUpdateDTO userUpdateDTO) {
         logger.info("Patching user with ID: {}", id);
 
         if (id == null) {
-            throw new RuntimeException("User ID is required");
+            return new UserResponseDTO(null, null,
+                    messageSource.getMessage("user.id.required", null, LocaleContextHolder.getLocale()));
         }
 
         User userToUpdate = userRepository.findById(id).orElse(null);
         if (userToUpdate == null) {
-            return null;
+            return new UserResponseDTO(null, null,
+                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
         }
 
         if (userUpdateDTO.getUsername() != null && !userUpdateDTO.getUsername().trim().isEmpty()) {
@@ -165,17 +168,15 @@ public class UserService implements UserDetailsService {
             logger.info("Updating username from '{}' to '{}'", userToUpdate.getUsername(), newUsername);
 
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
-                userRepository.findByUsername(newUsername)
-                        .filter(existingUser -> !existingUser.getId().equals(id))
-                        .ifPresent(existingUser -> {
-                            logger.warn("Username '{}' already exists for user ID: {}", newUsername,
-                                    existingUser.getId());
-                            throw new RuntimeException(messageSource.getMessage("user.username.already.exists", null,
+                User existingUser = userRepository.findByUsername(newUsername).orElse(null);
+                if (existingUser != null) {
+                    return new UserResponseDTO(null, null,
+                            messageSource.getMessage("user.username.already.exists", null,
                                     LocaleContextHolder.getLocale()));
-                        });
+                }
             }
 
-            userToUpdate.setUsername(newUsername);
+            userToUpdate.setUsername(newUsername.toLowerCase());
         }
 
         if (userUpdateDTO.getEmail() != null && !userUpdateDTO.getEmail().trim().isEmpty()) {
@@ -183,16 +184,15 @@ public class UserService implements UserDetailsService {
             logger.info("Updating email from '{}' to '{}'", userToUpdate.getEmail(), newEmail);
 
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
-                userRepository.findByEmail(newEmail)
-                        .filter(existingUser -> !existingUser.getId().equals(id))
-                        .ifPresent(existingUser -> {
-                            logger.warn("Email '{}' already exists for user ID: {}", newEmail, existingUser.getId());
-                            throw new RuntimeException(messageSource.getMessage("user.email.already.exists", null,
+                User existingUser = userRepository.findByEmail(newEmail).orElse(null);
+                if (existingUser != null) {
+                    return new UserResponseDTO(null, null,
+                            messageSource.getMessage("user.email.already.exists", null,
                                     LocaleContextHolder.getLocale()));
-                        });
+                }
             }
 
-            userToUpdate.setEmail(newEmail);
+            userToUpdate.setEmail(newEmail.toLowerCase());
         }
 
         if (userUpdateDTO.getPassword() != null && !userUpdateDTO.getPassword().trim().isEmpty()) {
@@ -214,12 +214,14 @@ public class UserService implements UserDetailsService {
         logger.info("Before save - Email: '{}', Username: '{}', UpdatedAt: '{}'",
                 userToUpdate.getEmail(), userToUpdate.getUsername());
 
+        userToUpdate.setUpdatedAt(LocalDateTime.now());
         userRepository.save(userToUpdate);
 
         logger.info("After save - Email: '{}', Username: '{}', UpdatedAt: '{}' (was: '{}')",
                 userToUpdate.getEmail(), userToUpdate.getUsername(), userToUpdate.getUpdatedAt());
 
-        return toUserDetailDto(userToUpdate);
+        return new UserResponseDTO(toUserDetailDto(userToUpdate), null,
+                messageSource.getMessage("user.updated.successfully", null, LocaleContextHolder.getLocale()));
     }
 
     @Transactional

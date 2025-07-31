@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { AuthResponse } from '@auth/interfaces/auth-response.interface';
@@ -72,28 +72,17 @@ export class AuthService {
 
   checkAuthStatus(): Observable<boolean> {
     const currentToken = this.authState.token();
-
     if (!currentToken) {
-      return this.signOut();
+      return of(false);
     }
 
-    const authResponseCache = this.cacheService.getValidCache();
-    if (authResponseCache) {
-      this.authState.setAuthState(authResponseCache.user ?? null, authResponseCache.token ?? null, authResponseCache.authStatus);
+    const cacheValue = this.cacheService.getCache();
+    if (cacheValue && cacheValue.authStatus === 'authenticated' && cacheValue.user && cacheValue.token) {
+      this.authState.setAuthStatus('authenticated');
       return of(true);
     }
 
-    if (this.tokenService.isValidToken(currentToken)) {
-      const user = this.authState.user();
-      if (user) {
-        const cacheValue = this.cacheService.createCache('authenticated', user, currentToken);
-        this.cacheService.saveCache(cacheValue);
-        this.authState.setAuthStatus('authenticated');
-        return of(true);
-      }
-    }
-
-    return this.authApi.checkStatus()
+    return this.authApi.checkAuthStatus()
       .pipe(
         map((response) => this.handleCheckStatusSuccess(response)),
         catchError((error) => this.handleCheckStatusError(error))

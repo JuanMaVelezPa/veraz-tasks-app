@@ -31,13 +31,11 @@ export class NavbarComponent {
     if (!user || !user.roles || user.roles.length === 0) {
       return 'Usuario';
     }
-    return user.roles[0]; // Show the first role
+    return user.roles[0];
   }
 
   onSignOut() {
-    console.log('Cerrando sesión...');
     this.authService.signOut().subscribe(() => {
-      console.log('Sesión cerrada exitosamente, deteniendo TokenRefreshService');
       this.appInitService.stopTokenRefresh();
       this.router.navigateByUrl('/auth/sign-in');
     });

@@ -1,10 +1,10 @@
-import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { User } from '@auth/interfaces/user.interface';
-import { environment } from '@env/environment';
+import { User } from '@users/interfaces/user.interface';
 import { Observable, of, tap } from 'rxjs';
 import { UserSearchOptions } from '../../../shared/interfaces/search.interface';
-import { UsersResponse } from '../interfaces/user-response.interface';
+import { UsersResponse } from '../interfaces/users-response.interface';
+import { UserResponse } from '@users/interfaces/user-response.interface';
+import { UserApiService } from './user-api.service';
 
 const emptyUser: User = {
   id: 'new',
@@ -22,7 +22,7 @@ const emptyUser: User = {
 })
 export class UserService {
 
-  private http = inject(HttpClient);
+  private userApi = inject(UserApiService);
 
   private usersCache = new Map<string, UsersResponse>();
   private userCache = new Map<string, User>();
@@ -35,19 +35,7 @@ export class UserService {
       return of(this.usersCache.get(cacheKey)!);
     }
 
-    const params: any = {
-      page,
-      size,
-      sortBy: sort,
-      sortDirection: order
-    };
-
-    if (search && search.trim()) {
-      params.search = search.trim();
-    }
-
-    return this.http
-      .get<UsersResponse>(`${environment.apiUrl}/users`, { params })
+    return this.userApi.getUsers(options)
       .pipe(
         tap(response => {
           this.usersCache.set(cacheKey, response);
@@ -56,12 +44,15 @@ export class UserService {
   }
 
   getUserById(id: string): Observable<User> {
+    if (id === 'new') {
+      return of(emptyUser)
+    }
 
-    if (id === 'new') { return of(emptyUser) }
+    if (this.userCache.has(id)) {
+      return of(this.userCache.get(id)!)
+    }
 
-    if (this.userCache.has(id)) { return of(this.userCache.get(id)!) }
-
-    return this.http.get<User>(`${environment.apiUrl}/users/${id}`)
+    return this.userApi.getUserById(id)
       .pipe(
         tap((user) => {
           this.userCache.set(id, user);
@@ -69,9 +60,8 @@ export class UserService {
       );
   }
 
-  createUser(userData: Partial<User>): Observable<User> {
-    const { perms, ...dataToSend } = userData;
-    return this.http.post<User>(`${environment.apiUrl}/users`, dataToSend)
+  createUser(userData: Partial<User>): Observable<UserResponse> {
+    return this.userApi.createUser(userData)
       .pipe(
         tap(() => {
           this.usersCache.clear();
@@ -79,14 +69,25 @@ export class UserService {
       );
   }
 
-  updateUser(id: string, updatedUser: Partial<User>): Observable<User> {
-    return this.http.patch<User>(`${environment.apiUrl}/users/${id}`, updatedUser)
+  updateUser(id: string, updatedUser: Partial<User>): Observable<UserResponse> {
+    return this.userApi.updateUser(id, updatedUser)
       .pipe(
-        tap((user) => {
-          this.userCache.set(user.id, user);
+        tap((userResponse: UserResponse) => {
+          if (userResponse.user) {
+            this.userCache.set(userResponse.user.id, userResponse.user);
+          }
           this.usersCache.clear();
         })
       );
   }
 
+  deleteUser(id: string): Observable<UserResponse> {
+    return this.userApi.deleteUser(id)
+      .pipe(
+        tap(() => {
+          this.userCache.delete(id);
+          this.usersCache.clear();
+        })
+      );
+  }
 }
