@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "42fb2593-0fc9-4211-80c6-7b9590c82f4b",
+		"_postman_id": "ca1e00a5-4362-421d-a735-d97aa2ab3937",
 		"name": "VerazDb - Tasks Backend API",
 		"description": "Colección de Postman para la API de Tasks Backend con endpoints optimizados",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -44,7 +44,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -55,7 +55,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"usernameOrEmail\": \"admin\",\n    \"password\": \"admin123\"\n}",
+							"raw": "{\n    \"usernameOrEmail\": \"jmvelez\",\n    \"password\": \"Abc123456*\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -63,13 +63,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/auth/sign-in",
+							"raw": "http://localhost:3000/api/auth/sign-in",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"auth",
 								"sign-in"
 							]
@@ -130,12 +131,12 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/auth/sign-up",
+							"raw": "http://localhost:3000/auth/sign-up",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
 								"auth",
 								"sign-up"
@@ -166,12 +167,12 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/auth/check-status",
+							"raw": "http://localhost:3000/auth/check-status",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
 								"auth",
 								"check-status"
@@ -207,13 +208,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/users?page=0&size=10&sort=username&direction=asc",
+							"raw": "http://localhost:3000/api/users?page=0&size=10&sort=username&direction=asc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"users"
 							],
 							"query": [
@@ -436,13 +438,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/persons?page=0&size=10&sort=firstName&direction=asc",
+							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"persons"
 							],
 							"query": [
@@ -692,13 +695,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/clients?page=0&size=10&sort=companyName&direction=asc",
+							"raw": "http://localhost:3000/api/clients?page=0&size=10&sort=companyName&direction=asc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"clients"
 							],
 							"query": [
@@ -948,13 +952,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/employees?page=0&size=10&sort=employeeCode&direction=asc",
+							"raw": "http://localhost:3000/api/employees?page=0&size=10&sort=employeeCode&direction=asc",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"employees"
 							],
 							"query": [
@@ -1204,13 +1209,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/roles",
+							"raw": "http://localhost:3000/api/roles",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"roles"
 							]
 						}

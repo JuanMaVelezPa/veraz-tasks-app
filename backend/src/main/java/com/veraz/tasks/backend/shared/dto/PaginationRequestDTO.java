@@ -1,5 +1,6 @@
 package com.veraz.tasks.backend.shared.dto;
 
+import com.veraz.tasks.backend.shared.constants.AppConstants;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -12,24 +13,24 @@ import lombok.NoArgsConstructor;
 public class PaginationRequestDTO {
     
     @Builder.Default
-    private int page = 0;
+    private int page = AppConstants.DEFAULT_PAGE_NUMBER;
     
     @Builder.Default
-    private int size = 10;
+    private int size = AppConstants.DEFAULT_PAGE_SIZE;
     
     @Builder.Default
-    private String sortBy = "createdAt";
+    private String sortBy = AppConstants.DEFAULT_SORT_BY;
     
     @Builder.Default
-    private String sortDirection = "desc";
+    private String sortDirection = AppConstants.DEFAULT_SORT_DIRECTION;
     
     @Builder.Default
     private String search = "";
     
-    public static final int MIN_PAGE = 0;
-    public static final int MIN_SIZE = 1;
-    public static final int MAX_SIZE = 100;
-    public static final int DEFAULT_SIZE = 10;
+    public static final int MIN_PAGE = AppConstants.DEFAULT_PAGE_NUMBER;
+    public static final int MIN_SIZE = AppConstants.MIN_PAGE_SIZE;
+    public static final int MAX_SIZE = AppConstants.MAX_PAGE_SIZE;
+    public static final int DEFAULT_SIZE = AppConstants.DEFAULT_PAGE_SIZE;
     
     public void validateAndNormalize() {
         if (page < MIN_PAGE) {

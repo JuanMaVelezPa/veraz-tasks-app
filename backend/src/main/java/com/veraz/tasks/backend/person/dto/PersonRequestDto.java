@@ -15,53 +15,55 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PersonRequestDto {
+public class PersonRequestDTO {
 
     private UUID userId;
 
-    @NotBlank(message = "{NotBlank.person.identType}")
-    @Size(max = 20, message = "{Size.person.identType}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(max = 20, message = "{validation.field.max.length}")
     private String identType;
 
-    @NotBlank(message = "{NotBlank.person.identNumber}")
-    @Size(min = 3, max = 20, message = "{Size.person.identNumber.min} {Size.person.identNumber.max}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String identNumber;
 
-    @NotBlank(message = "{NotBlank.person.firstName}")
-    @Size(min = 3, max = 100, message = "{Size.person.firstName.min} {Size.person.firstName.max}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String firstName;
 
-    @NotBlank(message = "{NotBlank.person.lastName}")
-    @Size(min = 3, max = 100, message = "{Size.person.lastName.min} {Size.person.lastName.max}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String lastName;
 
     private LocalDate birthDate;
 
-    @Size(max = 3, message = "{Size.person.gender}")
+    @Size(max = 3, message = "{validation.field.max.length}")
     private String gender;
 
-    @Size(max = 50, message = "{Size.person.nationality}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String nationality;
 
-    @Size(max = 20, message = "{Size.person.mobile}")
+    @Size(max = 20, message = "{validation.field.max.length}")
     private String mobile;
 
-    @Email(message = "{Email.person.email}")
-    @Size(min = 3, max = 100, message = "{Size.person.email.min} {Size.person.email.max}")
+    @Email(message = "{validation.field.email}")
+    @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String email;
 
-    @Size(max = 255, message = "{Size.person.address}")
+    @Size(max = 255, message = "{validation.field.max.length}")
     private String address;
 
-    @Size(max = 100, message = "{Size.person.city}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String city;
 
-    @Size(max = 100, message = "{Size.person.country}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String country;
 
-    @Size(max = 20, message = "{Size.person.postalCode}")
+    @Size(max = 20, message = "{validation.field.max.length}")
     private String postalCode;
 
-    @Size(max = 255, message = "{Size.person.notes}")
+    @Size(max = 255, message = "{validation.field.max.length}")
     private String notes;
+
+    private Boolean isActive;
 }

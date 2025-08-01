@@ -7,12 +7,16 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.auth.dto.SignInRequestDTO;
+import com.veraz.tasks.backend.auth.dto.AuthResponseDTO;
+import com.veraz.tasks.backend.auth.dto.AuthRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.service.AuthService;
 import com.veraz.tasks.backend.auth.service.UserService;
+import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
+import com.veraz.tasks.backend.shared.constants.MessageKeys;
+import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -45,30 +49,33 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data")
     })
-    public ResponseEntity<UserResponseDTO> signInUser(@Valid @RequestBody SignInRequestDTO signInRequest) {
-        UserResponseDTO response = authService.signInUser(signInRequest);
-        if (response.getUser() == null || response.getToken() == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> signInUser(@Valid @RequestBody AuthRequestDTO signInRequest) {
+        // Service already handles authentication logic
+        AuthResponseDTO response = authService.signInUser(signInRequest);
+        if (response.getUser() != null && response.getToken() != null) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), response, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, response.getMessage(), null, null));
         }
-        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/sign-up")
-    @Operation(summary = "Sign-up user", description = "Sign-up user with email, username, first name, last name, password and active")
+    @Operation(summary = "Register new user", description = "Creates a new user account")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "User sign-up successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data or user already exists"),
-            @ApiResponse(responseCode = "409", description = "Conflict - User already exists")
+            @ApiResponse(responseCode = "201", description = "User created successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public ResponseEntity<UserResponseDTO> signUpUser(@Valid @RequestBody UserRequestDTO user) {
-        UserResponseDTO response = userService.createUser(user);
-        if (response.getUser() == null) {
-            if (response.getMessage() != null && response.getMessage().contains("already exists")) {
-                return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> signUpUser(@Valid @RequestBody UserRequestDTO signUpRequest) {
+        try {
+            UserResponseDTO response = userService.create(signUpRequest);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "User"), response, null));
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
         }
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping("/check-status")
@@ -78,15 +85,15 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<UserResponseDTO> checkAuthStatus(@AuthenticationPrincipal User userPrincipal) {
-        UserResponseDTO response = authService.checkAuthStatus(userPrincipal);
-        if (response.getUser() == null) {
-            if (response.getMessage() != null && response.getMessage().contains("not found")) {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-            }
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> checkAuthStatus(@AuthenticationPrincipal User userPrincipal) {
+        AuthResponseDTO response = authService.checkAuthStatus(userPrincipal);
+        
+        if (response.getUser() != null) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), response, null));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, response.getMessage(), null, null));
         }
-        return ResponseEntity.ok(response);
     }
 
 }

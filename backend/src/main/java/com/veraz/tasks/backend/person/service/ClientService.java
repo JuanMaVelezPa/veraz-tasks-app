@@ -1,187 +1,203 @@
 package com.veraz.tasks.backend.person.service;
 
-import com.veraz.tasks.backend.person.dto.ClientRequestDto;
-import com.veraz.tasks.backend.person.dto.ClientResponseDto;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.veraz.tasks.backend.person.dto.ClientRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientResponseDTO;
 import com.veraz.tasks.backend.person.mapper.ClientMapper;
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
+import com.veraz.tasks.backend.shared.service.ServiceInterface;
 import com.veraz.tasks.backend.person.model.Client;
 import com.veraz.tasks.backend.person.model.Person;
 import com.veraz.tasks.backend.person.repository.ClientRepository;
 import com.veraz.tasks.backend.person.repository.PersonRepository;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.veraz.tasks.backend.exception.DataConflictException;
+import com.veraz.tasks.backend.exception.ResourceNotFoundException;
+import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class ClientService {
+public class ClientService implements ServiceInterface<Client, UUID, ClientRequestDTO, ClientResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
+
     private final ClientRepository clientRepository;
     private final PersonRepository personRepository;
-    private final MessageSource messageSource;
 
-    public ClientService(ClientRepository clientRepository, PersonRepository personRepository,
-            MessageSource messageSource) {
+    public ClientService(ClientRepository clientRepository, PersonRepository personRepository) {
         this.clientRepository = clientRepository;
         this.personRepository = personRepository;
-        this.messageSource = messageSource;
     }
 
     @Transactional(readOnly = true)
-    public List<ClientResponseDto> getClients() {
-        List<Client> clients = clientRepository.findAll();
-        List<ClientResponseDto> clientResponseDtos = new ArrayList<>();
-        for (Client client : clients) {
-            clientResponseDtos.add(ClientResponseDto.builder()
-                    .client(ClientMapper.toDto(client))
-                    .message(null)
-                    .status("OK")
-                    .build());
-        }
-        return clientResponseDtos;
-    }
+    public PaginatedResponseDTO<ClientResponseDTO> findAll(Pageable pageable) {
+        Page<Client> clientPage = clientRepository.findAll(pageable);
 
-    @Transactional(readOnly = true)
-    public ClientResponseDto getClientById(UUID id) {
-        Optional<Client> clientOpt = clientRepository.findById(id);
-        if (clientOpt.isEmpty()) {
-            return ClientResponseDto.builder()
-                    .client(null)
-                    .message(messageSource.getMessage("client.not.found", null, LocaleContextHolder.getLocale()))
-                    .status("NOT_FOUND")
-                    .build();
-        }
-        return ClientResponseDto.builder()
-                .client(ClientMapper.toDto(clientOpt.get()))
-                .message(null)
-                .status("OK")
+        List<ClientResponseDTO> clientDtos = clientPage.getContent().stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+
+        PaginationInfo paginationInfo = PaginationInfo
+                .builder()
+                .currentPage(clientPage.getNumber())
+                .totalPages(clientPage.getTotalPages())
+                .totalElements(clientPage.getTotalElements())
+                .pageSize(clientPage.getSize())
+                .hasNext(clientPage.hasNext())
+                .hasPrevious(clientPage.hasPrevious())
+                .isFirst(clientPage.isFirst())
+                .isLast(clientPage.isLast())
+                .build();
+
+        return PaginatedResponseDTO.<ClientResponseDTO>builder()
+                .data(clientDtos)
+                .pagination(paginationInfo)
                 .build();
     }
 
-    @Transactional
-    public ClientResponseDto createClient(ClientRequestDto dto) {
-        try {
-            Optional<Person> personOpt = personRepository.findById(dto.getPersonId());
-            if (personOpt.isEmpty()) {
-                return ClientResponseDto.builder()
-                        .client(null)
-                        .message(messageSource.getMessage("person.not.found", null, LocaleContextHolder.getLocale()))
-                        .status("NOT_FOUND")
-                        .build();
-            }
-            Client client = ClientMapper.toEntity(dto, personOpt.get());
-            client = clientRepository.save(client);
-            return ClientResponseDto.builder()
-                    .client(ClientMapper.toDto(client))
-                    .message(messageSource.getMessage("client.created.successfully", null,
-                            LocaleContextHolder.getLocale()))
-                    .status("CREATED")
-                    .build();
-        } catch (Exception e) {
-            logger.error("Error creating client: " + e.getMessage());
-            return ClientResponseDto.builder()
-                    .client(null)
-                    .message(messageSource.getMessage("client.error.creating", null, LocaleContextHolder.getLocale()))
-                    .status("ERROR")
-                    .build();
-        }
+    @Transactional(readOnly = true)
+    public Optional<ClientResponseDTO> findById(UUID id) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
+        
+        return Optional.of(ClientMapper.toDto(client));
+    }
+
+    @Transactional(readOnly = true)
+    public ClientResponseDTO findByClientCode(String clientCode) {
+        Client client = clientRepository.findByClientCode(clientCode)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
+        
+        return ClientMapper.toDto(client);
+    }
+
+    @Transactional(readOnly = true)
+    public ClientResponseDTO findByPersonId(UUID personId) {
+        Client client = clientRepository.findByPersonId(personId)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
+        
+        return ClientMapper.toDto(client);
     }
 
     @Transactional
-    public ClientResponseDto updateClient(UUID id, ClientRequestDto dto) {
-        try {
-            Optional<Client> clientOpt = clientRepository.findById(id);
-            if (clientOpt.isEmpty()) {
-                return ClientResponseDto.builder()
-                        .client(null)
-                        .message(messageSource.getMessage("client.not.found", null, LocaleContextHolder.getLocale()))
-                        .status("NOT_FOUND")
-                        .build();
-            }
-            Optional<Person> personOpt = personRepository.findById(dto.getPersonId());
-            if (personOpt.isEmpty()) {
-                return ClientResponseDto.builder()
-                        .client(null)
-                        .message(messageSource.getMessage("person.not.found", null, LocaleContextHolder.getLocale()))
-                        .status("NOT_FOUND")
-                        .build();
-            }
-            Client client = clientOpt.get();
-            // Actualizar campos
-            client.setPerson(personOpt.get());
-            client.setClientCode(dto.getClientCode());
-            client.setType(dto.getType());
-            client.setCategory(dto.getCategory());
-            client.setSource(dto.getSource());
-            client.setCompanyName(dto.getCompanyName());
-            client.setCompanyWebsite(dto.getCompanyWebsite());
-            client.setCompanyIndustry(dto.getCompanyIndustry());
-            client.setContactPerson(dto.getContactPerson());
-            client.setContactPosition(dto.getContactPosition());
-            client.setAddress(dto.getAddress());
-            client.setCity(dto.getCity());
-            client.setCountry(dto.getCountry());
-            client.setPostalCode(dto.getPostalCode());
-            client.setTaxId(dto.getTaxId());
-            client.setCreditLimit(dto.getCreditLimit());
-            client.setCurrency(dto.getCurrency());
-            client.setPaymentTerms(dto.getPaymentTerms());
-            client.setPaymentMethod(dto.getPaymentMethod());
-            client.setNotes(dto.getNotes());
-            client.setPreferences(dto.getPreferences());
-            client.setTags(dto.getTags());
-            client.setRating(dto.getRating());
-            client.setStatus(dto.getStatus());
-            client = clientRepository.save(client);
-            return ClientResponseDto.builder()
-                    .client(ClientMapper.toDto(client))
-                    .message(messageSource.getMessage("client.updated.successfully", null,
-                            LocaleContextHolder.getLocale()))
-                    .status("UPDATED")
-                    .build();
-        } catch (Exception e) {
-            logger.error("Error updating client: " + e.getMessage());
-            return ClientResponseDto.builder()
-                    .client(null)
-                    .message(messageSource.getMessage("client.error.updating", null, LocaleContextHolder.getLocale()))
-                    .status("ERROR")
-                    .build();
+    public ClientResponseDTO create(ClientRequestDTO clientRequest) {
+        // Check if client already exists with same client code
+        if (clientRepository.existsByClientCode(clientRequest.getClientCode())) {
+            throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Client"));
         }
+
+        // Check if person already has a client record
+        if (clientRepository.existsByPersonId(clientRequest.getPersonId())) {
+            throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Client"));
+        }
+
+        // Get the person
+        Person person = personRepository.findById(clientRequest.getPersonId())
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
+
+        Client newClient = ClientMapper.toEntity(clientRequest, person);
+        clientRepository.save(newClient);
+
+        logger.info("Client created successfully: {} with createdAt: {} and updatedAt: {}",
+                newClient.getClientCode(), newClient.getCreatedAt(), newClient.getUpdatedAt());
+
+        return ClientMapper.toDto(newClient);
     }
 
     @Transactional
-    public ClientResponseDto deleteClient(UUID id) {
-        try {
-            Optional<Client> clientOpt = clientRepository.findById(id);
-            if (clientOpt.isEmpty()) {
-                return ClientResponseDto.builder()
-                        .client(null)
-                        .message(messageSource.getMessage("client.not.found", null, LocaleContextHolder.getLocale()))
-                        .status("NOT_FOUND")
-                        .build();
+    public ClientResponseDTO update(UUID id, ClientRequestDTO clientRequestDTO) {
+        Client clientToUpdate = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
+
+        // Update client code if provided
+        if (clientRequestDTO.getClientCode() != null && !clientRequestDTO.getClientCode().trim().isEmpty()) {
+            String newClientCode = clientRequestDTO.getClientCode().trim();
+            
+            if (!newClientCode.equalsIgnoreCase(clientToUpdate.getClientCode())) {
+                if (clientRepository.existsByClientCode(newClientCode)) {
+                    throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Client"));
+                }
             }
-            clientRepository.delete(clientOpt.get());
-            return ClientResponseDto.builder()
-                    .client(null)
-                    .message(messageSource.getMessage("client.deleted.successfully", null,
-                            LocaleContextHolder.getLocale()))
-                    .status("DELETED")
-                    .build();
-        } catch (Exception e) {
-            logger.error("Error deleting client: " + e.getMessage());
-            return ClientResponseDto.builder()
-                    .client(null)
-                    .message(messageSource.getMessage("client.error.deleting", null, LocaleContextHolder.getLocale()))
-                    .status("ERROR")
-                    .build();
         }
+
+        // Update client using mapper
+        ClientMapper.updateEntity(clientToUpdate, clientRequestDTO);
+        clientToUpdate.setUpdatedAt(LocalDateTime.now());
+        clientRepository.save(clientToUpdate);
+
+        logger.info("Client updated successfully with ID: {}", clientToUpdate.getId());
+
+        return ClientMapper.toDto(clientToUpdate);
     }
+
+    @Transactional
+    public void deleteById(UUID id) {
+        Client client = clientRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
+        
+        clientRepository.delete(client);
+        logger.info("Client deleted successfully with ID: {}", id);
+    }
+
+    // Additional useful methods
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByIsActive(Boolean isActive) {
+        return clientRepository.findByIsActive(isActive).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByType(String type) {
+        return clientRepository.findByType(type).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByCategory(String category) {
+        return clientRepository.findByCategory(category).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByStatus(String status) {
+        return clientRepository.findByStatus(status).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByCity(String city) {
+        return clientRepository.findByCity(city).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByCountry(String country) {
+        return clientRepository.findByCountry(country).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ClientResponseDTO> findByRatingGreaterThanOrEqualTo(Integer minRating) {
+        return clientRepository.findByRatingGreaterThanOrEqualTo(minRating).stream()
+                .map(ClientMapper::toDto)
+                .collect(Collectors.toList());
+    }
+
 }

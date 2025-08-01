@@ -2,17 +2,15 @@ package com.veraz.tasks.backend.auth.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.MessageSource;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -20,103 +18,43 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.veraz.tasks.backend.auth.dto.UserDetailDto;
-import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
-import com.veraz.tasks.backend.auth.dto.UserUpdateDTO;
-import com.veraz.tasks.backend.auth.dto.UsersResponseDTO;
-import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
+import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
+import com.veraz.tasks.backend.auth.mapper.UserMapper;
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
-import com.veraz.tasks.backend.shared.util.PaginationUtils;
-import com.veraz.tasks.backend.auth.model.Perm;
+import com.veraz.tasks.backend.shared.service.ServiceInterface;
 import com.veraz.tasks.backend.auth.model.Role;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.repository.RoleRepository;
 import com.veraz.tasks.backend.auth.repository.UserRepository;
+import com.veraz.tasks.backend.exception.DataConflictException;
+import com.veraz.tasks.backend.exception.ResourceNotFoundException;
+import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class UserService implements UserDetailsService {
+public class UserService implements UserDetailsService, ServiceInterface<User, UUID, UserRequestDTO, UserResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    private final MessageSource messageSource;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(MessageSource messageSource,
-            UserRepository userRepository,
+    public UserService(UserRepository userRepository,
             RoleRepository roleRepository,
             PasswordEncoder passwordEncoder) {
-        this.messageSource = messageSource;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
-    @Transactional
-    public UserResponseDTO createUser(UserRequestDTO userRequest) {
-        try {
-            if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(),
-                    userRequest.getEmail()).isPresent()) {
-                return new UserResponseDTO(null, null,
-                        messageSource.getMessage("user.already.exists",
-                                new Object[] { userRequest.getUsername() + " or " + userRequest.getEmail() },
-                                LocaleContextHolder.getLocale()));
-            }
-
-            Role defaultRole = roleRepository.findByName("USER");
-            String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-
-            User newUser = toUser(userRequest, encodedPassword, defaultRole);
-            userRepository.save(newUser);
-
-            logger.info("User created successfully: {} with createdAt: {} and updatedAt: {}",
-                    newUser.getUsername(), newUser.getCreatedAt(), newUser.getUpdatedAt());
-
-            return new UserResponseDTO(
-                    toUserDetailDto(newUser),
-                    null, // No JWT token for user creation
-                    messageSource.getMessage("user.created.successfully", null, LocaleContextHolder.getLocale()));
-        } catch (Exception e) {
-            logger.error("Error creating user: " + e.getMessage());
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.error.creating", null, LocaleContextHolder.getLocale()));
-        }
-    }
-
     @Transactional(readOnly = true)
-    public UserDetailDto getUserByID(UUID id) {
-        logger.info("Getting user by id: {}", id);
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            return null;
-        }
-        user.getRoles().size();
-        return toUserDetailDto(user);
-    }
+    public PaginatedResponseDTO<UserResponseDTO> findAll(Pageable pageable) {
+        Page<User> userPage = userRepository.findAll(pageable);
 
-    @Transactional(readOnly = true)
-    public UsersResponseDTO getAllUsers(PaginationRequestDTO paginationRequest) {
-        logger.info("Getting all users with pagination - page: {}, size: {}, search: {}",
-                paginationRequest.getPage(), paginationRequest.getSize(),
-                paginationRequest.getSearch());
-
-        paginationRequest.validateAndNormalize();
-
-        Pageable pageable = PaginationUtils.createPageable(paginationRequest);
-        Page<User> userPage;
-
-        if (paginationRequest.hasSearch()) {
-            String searchTerm = paginationRequest.getSearch().trim();
-            logger.info("Searching users with term: '{}' in username, email and roles", searchTerm);
-            userPage = userRepository.findByUsernameOrEmailOrRolesNameContainingIgnoreCase(searchTerm, pageable);
-        } else {
-            userPage = userRepository.findAll(pageable);
-        }
-
-        List<UserDetailDto> userDetailDtos = userPage.getContent().stream()
-                .map(this::toUserDetailDto)
+        List<UserResponseDTO> userDtos = userPage.getContent().stream()
+                .map(UserMapper::toDto)
                 .collect(Collectors.toList());
 
         PaginationInfo paginationInfo = PaginationInfo
@@ -131,143 +69,121 @@ public class UserService implements UserDetailsService {
                 .isLast(userPage.isLast())
                 .build();
 
-        logger.info("Found {} users out of {} total", userPage.getContent().size(), userPage.getTotalElements());
-
-        return UsersResponseDTO.builder()
-                .users(userDetailDtos)
+        return PaginatedResponseDTO.<UserResponseDTO>builder()
+                .data(userDtos)
                 .pagination(paginationInfo)
                 .build();
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDTO getUserByEmailOrUsername(String query) {
-        logger.info("Searching user by email or username: {}", query);
-        return userRepository.findByUsernameOrEmailAllIgnoreCase(query, query)
-                .map(user -> new UserResponseDTO(toUserDetailDto(user), null, null))
-                .orElse(new UserResponseDTO(null, null,
-                        messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale())));
+    public Optional<UserResponseDTO> findById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+        
+        // Force lazy loading of roles
+        user.getRoles().size();
+        return Optional.of(UserMapper.toDto(user));
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO findByEmailOrUsername(String query) {
+        User user = userRepository.findByUsernameOrEmailAllIgnoreCase(query, query)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+        
+        return UserMapper.toDto(user);
     }
 
     @Transactional
-    public UserResponseDTO patchUser(UUID id, UserUpdateDTO userUpdateDTO) {
-        logger.info("Patching user with ID: {}", id);
-
-        if (id == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.id.required", null, LocaleContextHolder.getLocale()));
+    public UserResponseDTO create(UserRequestDTO userRequest) {
+        // Check if user already exists
+        if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(), userRequest.getEmail()).isPresent()) {
+            throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
         }
 
-        User userToUpdate = userRepository.findById(id).orElse(null);
-        if (userToUpdate == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
+        Role defaultRole = roleRepository.findByName("USER");
+        if (defaultRole == null) {
+            throw new ResourceNotFoundException(MessageUtils.getEntityNotFound("Role"));
         }
 
-        if (userUpdateDTO.getUsername() != null && !userUpdateDTO.getUsername().trim().isEmpty()) {
-            String newUsername = userUpdateDTO.getUsername().trim();
-            logger.info("Updating username from '{}' to '{}'", userToUpdate.getUsername(), newUsername);
+        String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
+        User newUser = UserMapper.toEntity(userRequest, encodedPassword, defaultRole);
+        userRepository.save(newUser);
+
+        logger.info("User created successfully: {} with createdAt: {} and updatedAt: {}",
+                newUser.getUsername(), newUser.getCreatedAt(), newUser.getUpdatedAt());
+
+        return UserMapper.toDto(newUser);
+    }
+
+    @Transactional
+    public UserResponseDTO update(UUID id, UserRequestDTO userRequestDTO) {
+        User userToUpdate = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+
+        // Update username if provided
+        if (userRequestDTO.getUsername() != null && !userRequestDTO.getUsername().trim().isEmpty()) {
+            String newUsername = userRequestDTO.getUsername().trim();
 
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
-                User existingUser = userRepository.findByUsername(newUsername).orElse(null);
-                if (existingUser != null) {
-                    return new UserResponseDTO(null, null,
-                            messageSource.getMessage("user.username.already.exists", null,
-                                    LocaleContextHolder.getLocale()));
+                if (userRepository.findByUsername(newUsername).isPresent()) {
+                    throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
                 }
             }
-
             userToUpdate.setUsername(newUsername.toLowerCase());
         }
 
-        if (userUpdateDTO.getEmail() != null && !userUpdateDTO.getEmail().trim().isEmpty()) {
-            String newEmail = userUpdateDTO.getEmail().trim();
-            logger.info("Updating email from '{}' to '{}'", userToUpdate.getEmail(), newEmail);
+        // Update email if provided
+        if (userRequestDTO.getEmail() != null && !userRequestDTO.getEmail().trim().isEmpty()) {
+            String newEmail = userRequestDTO.getEmail().trim();
 
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
-                User existingUser = userRepository.findByEmail(newEmail).orElse(null);
-                if (existingUser != null) {
-                    return new UserResponseDTO(null, null,
-                            messageSource.getMessage("user.email.already.exists", null,
-                                    LocaleContextHolder.getLocale()));
+                if (userRepository.findByEmail(newEmail).isPresent()) {
+                    throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
                 }
             }
-
             userToUpdate.setEmail(newEmail.toLowerCase());
         }
 
-        if (userUpdateDTO.getPassword() != null && !userUpdateDTO.getPassword().trim().isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(userUpdateDTO.getPassword());
+        // Update password if provided
+        if (userRequestDTO.getPassword() != null && !userRequestDTO.getPassword().trim().isEmpty()) {
+            String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword());
             userToUpdate.setPassword(encodedPassword);
         }
 
-        if (userUpdateDTO.getIsActive() != null) {
-            userToUpdate.setIsActive(userUpdateDTO.getIsActive());
+        // Update active status if provided
+        if (userRequestDTO.getIsActive() != null) {
+            userToUpdate.setIsActive(userRequestDTO.getIsActive());
         }
 
-        if (userUpdateDTO.getRoles() != null) {
-            userToUpdate.setRoles(userUpdateDTO.getRoles().stream()
-                    .map(roleRepository::findByName)
-                    .collect(Collectors.toSet()));
+        // Update roles if provided
+        if (userRequestDTO.getRoles() != null) {
+            Set<Role> newRoles = userRequestDTO.getRoles().stream()
+                    .map(roleName -> {
+                        Role role = roleRepository.findByName(roleName);
+                        if (role == null) {
+                            throw new ResourceNotFoundException(MessageUtils.getEntityNotFound("Role"));
+                        }
+                        return role;
+                    })
+                    .collect(Collectors.toSet());
+            userToUpdate.setRoles(newRoles);
         }
-
-        logger.info("Updating user with ID: {}", userToUpdate.getId());
-        logger.info("Before save - Email: '{}', Username: '{}', UpdatedAt: '{}'",
-                userToUpdate.getEmail(), userToUpdate.getUsername());
 
         userToUpdate.setUpdatedAt(LocalDateTime.now());
         userRepository.save(userToUpdate);
 
-        logger.info("After save - Email: '{}', Username: '{}', UpdatedAt: '{}' (was: '{}')",
-                userToUpdate.getEmail(), userToUpdate.getUsername(), userToUpdate.getUpdatedAt());
+        logger.info("User updated successfully with ID: {}", userToUpdate.getId());
 
-        return new UserResponseDTO(toUserDetailDto(userToUpdate), null,
-                messageSource.getMessage("user.updated.successfully", null, LocaleContextHolder.getLocale()));
+        return UserMapper.toDto(userToUpdate);
     }
 
     @Transactional
-    public UserResponseDTO deleteUser(UUID id) {
-        User user = userRepository.findById(id).orElse(null);
-        if (user == null) {
-            return new UserResponseDTO(null, null,
-                    messageSource.getMessage("user.not.found", null, LocaleContextHolder.getLocale()));
-        }
+    public void deleteById(UUID id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+        
         userRepository.delete(user);
-        return new UserResponseDTO(null, null,
-                messageSource.getMessage("user.deleted.successfully", null, LocaleContextHolder.getLocale()));
-    }
-
-    // Mapper
-    public UserDetailDto toUserDetailDto(User user) {
-        Set<String> roles = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toSet());
-
-        Set<String> perms = user.getRoles()
-                .stream()
-                .flatMap(role -> role.getPerms()
-                        .stream())
-                .map(Perm::getName)
-                .collect(Collectors.toSet());
-
-        UserDetailDto userDto = new UserDetailDto();
-        userDto.setId(user.getId());
-        userDto.setUsername(user.getUsername());
-        userDto.setEmail(user.getEmail());
-        userDto.setIsActive(user.getIsActive());
-        userDto.setCreatedAt(user.getCreatedAt());
-        userDto.setUpdatedAt(user.getUpdatedAt());
-        userDto.setRoles(roles);
-        userDto.setPerms(perms);
-
-        return userDto;
-    }
-
-    public User toUser(UserRequestDTO userRequest, String encodedPassword, Role defaultRole) {
-        return new User(
-                userRequest.getUsername(),
-                userRequest.getEmail(),
-                encodedPassword,
-                defaultRole);
+        logger.info("User deleted successfully with ID: {}", id);
     }
 
     @Override
@@ -275,4 +191,5 @@ public class UserService implements UserDetailsService {
         return userRepository.findByUsernameOrEmailAllIgnoreCase(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + username));
     }
+
 }

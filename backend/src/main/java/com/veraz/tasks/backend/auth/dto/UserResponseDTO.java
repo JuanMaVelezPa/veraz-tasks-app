@@ -1,18 +1,25 @@
 package com.veraz.tasks.backend.auth.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.UUID;
+
 import lombok.Data;
+import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UserResponseDTO {
 
-    private UserDetailDto user;
-    private String token;
-    private String message;
+    private UUID id;
+    private String username;
+    private String email;
+    private Boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+    private Set<String> roles;
+    private Set<String> perms;
 
 }

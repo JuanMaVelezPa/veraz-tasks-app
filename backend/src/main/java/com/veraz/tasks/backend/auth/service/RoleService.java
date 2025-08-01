@@ -21,7 +21,7 @@ public class RoleService {
     }
 
     @Transactional(readOnly = true)
-    public RolesResponseDTO getRoles() {
+    public RolesResponseDTO findAll() {
         List<Role> roles = roleRepository.findAll();
         List<RoleResponseDTO> roleResponseDTOs = roles.stream()
                 .map(role -> new RoleResponseDTO(role.getName(), role.getDescription(), role.getIsActive()))
@@ -30,7 +30,7 @@ public class RoleService {
     }
 
     @Transactional(readOnly = true)
-    public RolesResponseDTO getRolesActive() {
+    public RolesResponseDTO findAllActive() {
         List<Role> roles = roleRepository.findAllByIsActiveTrue();
         List<RoleResponseDTO> roleResponseDTOs = roles.stream()
                 .map(role -> new RoleResponseDTO(role.getName(), role.getDescription(), role.getIsActive()))

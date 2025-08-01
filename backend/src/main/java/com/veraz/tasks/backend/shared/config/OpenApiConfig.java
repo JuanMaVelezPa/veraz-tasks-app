@@ -72,9 +72,9 @@ public class OpenApiConfig {
                                                         """)))
                 .addServersItem(new Server()
                         .url("http://localhost:3000/api")
-                        .description("Servidor de Desarrollo"))
+                        .description("Development Server"))
                 .addServersItem(new Server()
                         .url("https://api.tu-dominio.com")
-                        .description("Servidor de Producción"));
+                        .description("Production Server"));
     }
 }

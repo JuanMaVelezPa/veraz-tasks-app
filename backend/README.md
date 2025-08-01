@@ -1,4 +1,4 @@
-# Backend - Tasks App
+# Tasks Backend API
 
 REST API for task management built with Spring Boot 3.5.4.
 
@@ -7,6 +7,7 @@ REST API for task management built with Spring Boot 3.5.4.
 ### Prerequisites
 - Java 21
 - Maven 3.6+
+- PostgreSQL 14+
 
 ### Installation
 ```bash
@@ -18,21 +19,21 @@ mvn clean install
 ```
 
 ### Verification
-- **API:** http://localhost:3000/api
-- **Swagger:** http://localhost:3000/api/swagger-ui.html
+- **API:** http://localhost:8080/api
+- **Swagger:** http://localhost:8080/api/swagger-ui.html
 
 ## 🔧 Configuration
 
 ### Database
 ```properties
 spring.datasource.url=jdbc:postgresql://localhost:5432/tasks_app_db
-spring.datasource.username=tasks_app_user
-spring.datasource.password=tasks_app_user
+spring.datasource.username=postgres
+spring.datasource.password=your_password
 ```
 
 ### JWT
 ```properties
-veraz.app.jwtSecret=V3r4zT4sks@AppP@sS@pP@sS@w0Rd1o10sS
+veraz.app.jwtSecret=your_secure_jwt_secret_min_32_chars
 veraz.app.jwtExpirationMs=86400000
 ```
 
@@ -54,19 +55,19 @@ src/main/java/com/veraz/tasks/backend/
 │   ├── model/      # Person entities
 │   ├── repository/ # Data access
 │   └── service/    # Business logic
-├── project/        # Project management (in development)
-├── task/           # Task management (in development)
 ├── exception/      # Global exception handling
 └── shared/         # Shared configurations
     ├── config/     # Application configs
+    ├── constants/  # Message keys and constants
+    ├── dto/        # Shared DTOs
     └── util/       # Utility classes
 ```
 
 ## 🔐 Authentication
 
-- **Sign-in endpoint:** `/api/auth/sign-in`
-- **Sign-up endpoint:** `/api/auth/sign-up`
-- **Default user:** `admin_user` / `Abc123456*`
+- **Sign-in endpoint:** `/auth/sign-in`
+- **Sign-up endpoint:** `/auth/sign-up`
+- **Default user:** `admin` / `admin123`
 - **JWT Token:** Required for protected endpoints
 
 ### Protected Endpoints
@@ -95,7 +96,7 @@ All endpoints except `/auth/sign-in`, `/auth/sign-up`, and Swagger documentation
 ## 📝 Logging
 
 - **File:** `./logs/tasks-backend.log`
-- **Level:** DEBUG for development
+- **Level:** INFO for production, DEBUG for development
 - **Console:** Formatted output with timestamps
 
 ## 🛠️ Development
@@ -122,37 +123,44 @@ mvn clean package
 - **Global Exception Handling:** Centralized error management
 - **Database Integration:** PostgreSQL with JPA/Hibernate
 - **CORS Configuration:** Cross-origin resource sharing enabled
+- **Message Internationalization:** Multi-language support
+- **Pagination Support:** Efficient data pagination
+- **Validation Framework:** Comprehensive input validation
 
 ## 📊 API Endpoints
 
 ### Authentication
-- `POST /api/auth/sign-in` - User login
-- `POST /api/auth/sign-up` - User registration
-- `GET /api/auth/check-status` - Check authentication status
+- `POST /auth/sign-in` - User login
+- `POST /auth/sign-up` - User registration
+- `GET /auth/check-status` - Check authentication status
 
 ### User Management
-- `GET /api/users` - Get all users (paginated)
-- `GET /api/users/{id}` - Get user by ID
-- `PATCH /api/users/{id}` - Update user
-- `DELETE /api/users/{id}` - Delete user
+- `GET /users` - Get all users (paginated)
+- `GET /users/{id}` - Get user by ID
+- `POST /users` - Create user
+- `PATCH /users/{id}` - Update user
+- `DELETE /users/{id}` - Delete user
 
 ### Person Management
-- `GET /api/person` - Get all persons
-- `POST /api/person` - Create person
-- `PUT /api/person/{id}` - Update person
-- `DELETE /api/person/{id}` - Delete person
+- `GET /persons` - Get all persons (paginated)
+- `GET /persons/{id}` - Get person by ID
+- `POST /persons` - Create person
+- `PATCH /persons/{id}` - Update person
+- `DELETE /persons/{id}` - Delete person
 
 ### Employee Management
-- `GET /api/employee` - Get all employees
-- `POST /api/employee` - Create employee
-- `PUT /api/employee/{id}` - Update employee
-- `DELETE /api/employee/{id}` - Delete employee
+- `GET /employees` - Get all employees (paginated)
+- `GET /employees/{id}` - Get employee by ID
+- `POST /employees` - Create employee
+- `PATCH /employees/{id}` - Update employee
+- `DELETE /employees/{id}` - Delete employee
 
 ### Client Management
-- `GET /api/client` - Get all clients
-- `POST /api/client` - Create client
-- `PUT /api/client/{id}` - Update client
-- `DELETE /api/client/{id}` - Delete client
+- `GET /clients` - Get all clients (paginated)
+- `GET /clients/{id}` - Get client by ID
+- `POST /clients` - Create client
+- `PATCH /clients/{id}` - Update client
+- `DELETE /clients/{id}` - Delete client
 
 ## 🚀 Deployment
 
@@ -162,4 +170,51 @@ mvn clean package -Pprod
 
 # Run JAR file
 java -jar target/backend-0.0.1-SNAPSHOT.jar
-``` 
+```
+
+## 📋 Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `JWT_SECRET` | JWT signing secret | Development secret |
+| `JWT_EXPIRATION_MS` | JWT expiration time | 86400000 (24h) |
+| `DB_URL` | Database connection URL | jdbc:postgresql://localhost:5432/tasks_app_db |
+| `DB_USERNAME` | Database username | postgres |
+| `DB_PASSWORD` | Database password | - |
+
+## 🔍 API Response Format
+
+All API responses follow a standardized format:
+
+```json
+{
+  "success": true,
+  "status": "OK",
+  "message": "Operation completed successfully",
+  "data": {
+    // Response data
+  },
+  "errors": null
+}
+```
+
+## 🛡️ Security Considerations
+
+- **JWT Secret:** Use a strong secret (minimum 32 characters) in production
+- **Database:** Use environment variables for database credentials
+- **CORS:** Configure CORS properly for your frontend domain
+- **Logging:** Avoid logging sensitive information
+- **Validation:** All inputs are validated server-side
+
+## 📚 Documentation
+
+- **Swagger UI:** http://localhost:8080/api/swagger-ui.html
+- **API Docs:** Auto-generated from code annotations
+- **Postman Collection:** Available in `src/test/postman/`
+
+## 🤝 Contributing
+
+1. Follow the existing code style
+2. Add tests for new features
+3. Update documentation as needed
+4. Use meaningful commit messages 

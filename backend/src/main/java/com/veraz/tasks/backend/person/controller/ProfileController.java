@@ -1,9 +1,10 @@
 package com.veraz.tasks.backend.person.controller;
 
 import com.veraz.tasks.backend.auth.model.User;
-import com.veraz.tasks.backend.person.dto.PersonRequestDto;
-import com.veraz.tasks.backend.person.dto.PersonResponseDto;
+import com.veraz.tasks.backend.person.dto.PersonRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
 import com.veraz.tasks.backend.person.service.ProfileService;
+import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -19,7 +20,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/profile")
-@Tag(name = "Profile", description = "Profile endpoints")
+@Tag(name = "Profile", description = "Profile management endpoints - Self-service only")
 public class ProfileController {
 
     private final ProfileService profileService;
@@ -30,75 +31,73 @@ public class ProfileController {
 
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Get my person", description = "Get my person")
+    @Operation(summary = "Get my profile", description = "Get current user's person profile")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Person fetched successfully"),
+            @ApiResponse(responseCode = "200", description = "Profile fetched successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "404", description = "User not found or person not associated")
+            @ApiResponse(responseCode = "404", description = "Profile not found for current user")
     })
-    public ResponseEntity<PersonResponseDto> getMyPerson(@AuthenticationPrincipal User user) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        PersonResponseDto response = profileService.getPersonByUser(user);
-        if (response.getPerson() == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-        
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> getMyProfile(@AuthenticationPrincipal User user) {
+        PersonResponseDTO response = profileService.getPersonByUser(user);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile fetched successfully", response, null));
+    }
+
+    @GetMapping("/exists")
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Check if profile exists", description = "Check if current user has a profile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profile existence checked successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token.")
+    })
+    public ResponseEntity<ApiResponseDTO<Boolean>> checkProfileExists(@AuthenticationPrincipal User user) {
+        boolean exists = profileService.hasPerson(user);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile existence checked", exists, null));
     }
 
     @PostMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Create my person", description = "Create my person")
+    @Operation(summary = "Create my profile", description = "Create person profile for current user")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Person created successfully"),
+            @ApiResponse(responseCode = "201", description = "Profile created successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "409", description = "Conflict - Person already exists for user")
+            @ApiResponse(responseCode = "409", description = "Conflict - Profile already exists for user or with same email/identification")
     })
-    public ResponseEntity<PersonResponseDto> createMyPerson(@AuthenticationPrincipal User user,
-            @Valid @RequestBody PersonRequestDto personRequestDto) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        PersonResponseDto response = profileService.createPersonForUser(user, personRequestDto);
-        if ("CREATED".equals(response.getStatus())) {
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
-        } else if ("ERROR".equals(response.getStatus())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        } else if (response.getMessage() != null && response.getMessage().contains("already exists")) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-        }
-        
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> createMyProfile(@AuthenticationPrincipal User user,
+            @Valid @RequestBody PersonRequestDTO personRequestDto) {
+        PersonResponseDTO response = profileService.createPersonForUser(user, personRequestDto);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, "Profile created successfully", response, null));
     }
 
-    @PutMapping
+    @PatchMapping
     @PreAuthorize("isAuthenticated()")
-    @Operation(summary = "Update my person", description = "Update my person")
+    @Operation(summary = "Update my profile", description = "Update current user's person profile")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Person updated successfully"),
+            @ApiResponse(responseCode = "200", description = "Profile updated successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "404", description = "Person not found for user")
+            @ApiResponse(responseCode = "404", description = "Profile not found for current user"),
+            @ApiResponse(responseCode = "409", description = "Conflict - Profile already exists with same email/identification")
     })
-    public ResponseEntity<PersonResponseDto> updateMyPerson(@AuthenticationPrincipal User user,
-            @Valid @RequestBody PersonRequestDto personRequestDto) {
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-        }
-        
-        PersonResponseDto response = profileService.updatePersonForUser(user, personRequestDto);
-        if ("NOT_FOUND".equals(response.getStatus())) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        } else if ("ERROR".equals(response.getStatus())) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-        }
-        
-        return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> updateMyProfile(@AuthenticationPrincipal User user,
+            @Valid @RequestBody PersonRequestDTO personRequestDto) {
+        PersonResponseDTO response = profileService.updatePersonForUser(user, personRequestDto);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile updated successfully", response, null));
+    }
+
+    @DeleteMapping
+    @PreAuthorize("isAuthenticated()")
+    @Operation(summary = "Delete my profile", description = "Delete current user's person profile")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Profile deleted successfully"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "404", description = "Profile not found for current user")
+    })
+    public ResponseEntity<ApiResponseDTO<Void>> deleteMyProfile(@AuthenticationPrincipal User user) {
+        profileService.deletePersonForUser(user);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile deleted successfully", null, null));
     }
 
 }

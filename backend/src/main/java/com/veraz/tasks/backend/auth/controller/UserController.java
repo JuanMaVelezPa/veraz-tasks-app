@@ -1,25 +1,32 @@
 package com.veraz.tasks.backend.auth.controller;
 
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.auth.dto.UserDetailDto;
+import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
-import com.veraz.tasks.backend.auth.dto.UserUpdateDTO;
-import com.veraz.tasks.backend.auth.dto.UsersResponseDTO;
+import com.veraz.tasks.backend.shared.controller.ControllerInterface;
+import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
+import com.veraz.tasks.backend.shared.util.PaginationUtils;
 import com.veraz.tasks.backend.auth.service.UserService;
+import com.veraz.tasks.backend.shared.constants.MessageKeys;
+import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -32,7 +39,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/users")
 @Tag(name = "User", description = "User endpoints")
-public class UserController {
+public class UserController implements ControllerInterface<UUID, UserRequestDTO, UserResponseDTO> {
 
     private final UserService userService;
 
@@ -48,71 +55,76 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
-    public ResponseEntity<UsersResponseDTO> getAllUsers(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDirection,
-            @RequestParam(defaultValue = "") String search) {
+    public ResponseEntity<ApiResponseDTO<PaginatedResponseDTO<UserResponseDTO>>> findAll(
+            @ModelAttribute PaginationRequestDTO paginationRequest) {
 
-        PaginationRequestDTO paginationRequest = PaginationRequestDTO.builder()
-                .page(page)
-                .size(size)
-                .sortBy(sortBy)
-                .sortDirection(sortDirection)
-                .search(search)
-                .build();
+        paginationRequest.validateAndNormalize();
+        Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        return ResponseEntity.ok(userService.getAllUsers(paginationRequest));
+        PaginatedResponseDTO<UserResponseDTO> response = userService.findAll(pageable);
+
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Users"),
+                response, null));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get user", description = "Get user with id")
+    @Operation(summary = "Get user by ID", description = "Retrieves a specific user by their ID")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "200", description = "User found successfully"),
+            @ApiResponse(responseCode = "404", description = "User not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
-    public ResponseEntity<UserDetailDto> getUser(@PathVariable UUID id) {
-        UserDetailDto response = userService.getUserByID(id);
-        if (response == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> findById(@PathVariable UUID id) {
+        try {
+            Optional<UserResponseDTO> response = userService.findById(id);
+            if (response.isPresent()) {
+                return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "User"), response.get(), null));
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND, MessageUtils.getEntityNotFound("User"), null, null));
+            }
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
         }
-        return ResponseEntity.ok(response);
     }
 
-    @PatchMapping("/{id}")
-    @Operation(summary = "Update user", description = "Update user with id")
+    @PostMapping
+    @Operation(summary = "Create user", description = "Create user with id")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "User updated successfully"),
-            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "201", description = "User created successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions."),
             @ApiResponse(responseCode = "409", description = "Conflict - Username or email already exists")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UserResponseDTO> updateUser(@PathVariable UUID id,
-            @Valid @RequestBody UserUpdateDTO userUpdateDTO) {
-        
-        UserResponseDTO response = userService.patchUser(id, userUpdateDTO);
-        
-        if (response.getUser() == null) {
-            if (response.getMessage() != null) {
-                if (response.getMessage().contains("not found")) {
-                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-                } else if (response.getMessage().contains("already exists")) {
-                    return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
-                } else if (response.getMessage().contains("required") || response.getMessage().contains("invalid")) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
-                }
-            }
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> create(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        try {
+            UserResponseDTO response = userService.create(userRequestDTO);
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "User"), response, null));
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
         }
-        
-        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    @Operation(summary = "Update user", description = "Updates an existing user")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User updated successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid input data"),
+            @ApiResponse(responseCode = "404", description = "User not found"),
+            @ApiResponse(responseCode = "409", description = "User already exists")
+    })
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody UserRequestDTO userRequest) {
+        try {
+            UserResponseDTO response = userService.update(id, userRequest);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "User"), response, null));
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -125,21 +137,14 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<UserResponseDTO> deleteUser(@PathVariable UUID id) {
-        UserResponseDTO response = userService.deleteUser(id);
-        
-        // Si el mensaje es exactamente "User deleted successfully", es un éxito 200
-        if (response.getMessage() != null && response.getMessage().equals("User deleted successfully")) {
-            return ResponseEntity.ok(response);
+    public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
+        try {
+            userService.deleteById(id);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "User"), null, null));
+        } catch (Exception e) {
+            // El GlobalExceptionHandler manejará las excepciones específicas
+            throw e;
         }
-        
-        // Si el mensaje contiene "not found", es un error 404
-        if (response.getMessage() != null && response.getMessage().contains("not found")) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
-        }
-        
-        // Para cualquier otro caso, error 400
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
 }

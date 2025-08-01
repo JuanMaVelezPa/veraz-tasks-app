@@ -27,24 +27,24 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     private SecretKey getSigningKey() {
+        // Security validation: secret must be at least 32 characters (256 bits)
         if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
             logger.error("JWT secret is null or empty!");
-            throw new IllegalStateException("JWT secret is not configured");
+            throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
-        
-        // Validación de seguridad: el secreto debe tener al menos 32 caracteres (256 bits)
+
         if (jwtSecret.length() < 32) {
             logger.error("JWT secret is too short! Must be at least 32 characters for security.");
-            throw new IllegalStateException("JWT secret must be at least 32 characters long");
+            throw new IllegalArgumentException("JWT secret must be at least 32 characters long");
         }
-        
-        // Validación adicional: no usar el valor por defecto en producción
+
+        // Additional validation: don't use default value in production
         if (jwtSecret.equals("V3r4zT4sks@AppP@sS@pP@sS@w0Rd1o10sS")) {
             logger.warn("Using default JWT secret! This is not secure for production.");
         }
-        
-        // Validación adicional: no usar el valor de desarrollo en producción
-        if (jwtSecret.equals("dev-jwt-secret-for-development-only-32-chars")) {
+
+        // Additional validation: don't use development value in production
+        if (jwtSecret.contains("development") || jwtSecret.contains("dev")) {
             logger.warn("Using development JWT secret! This is not secure for production.");
         }
         

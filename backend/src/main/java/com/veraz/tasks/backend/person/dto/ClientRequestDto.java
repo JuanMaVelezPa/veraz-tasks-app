@@ -15,76 +15,78 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientRequestDto {
-    @NotNull(message = "{NotNull.client.personId}")
+public class ClientRequestDTO {
+    @NotNull(message = "{validation.field.required}")
     private UUID personId;
 
-    @NotBlank(message = "{NotBlank.client.clientCode}")
-    @Size(min = 3, max = 20, message = "{Size.client.clientCode.min} {Size.client.clientCode.max}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String clientCode;
 
-    @NotBlank(message = "{NotBlank.client.type}")
-    @Size(min = 3, max = 20, message = "{Size.client.type.min} {Size.client.type.max}")
+    @NotBlank(message = "{validation.field.required}")
+    @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String type;
 
-    @Size(max = 50, message = "{Size.client.category}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String category;
 
-    @Size(max = 50, message = "{Size.client.source}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String source;
 
-    @Size(max = 200, message = "{Size.client.companyName}")
+    @Size(max = 200, message = "{validation.field.max.length}")
     private String companyName;
 
-    @Size(max = 255, message = "{Size.client.companyWebsite}")
+    @Size(max = 255, message = "{validation.field.max.length}")
     private String companyWebsite;
 
-    @Size(max = 100, message = "{Size.client.companyIndustry}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String companyIndustry;
 
-    @Size(max = 200, message = "{Size.client.contactPerson}")
+    @Size(max = 200, message = "{validation.field.max.length}")
     private String contactPerson;
 
-    @Size(max = 100, message = "{Size.client.contactPosition}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String contactPosition;
 
-    @Size(max = 255, message = "{Size.client.address}")
+    @Size(max = 255, message = "{validation.field.max.length}")
     private String address;
 
-    @Size(max = 100, message = "{Size.client.city}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String city;
 
-    @Size(max = 100, message = "{Size.client.country}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String country;
 
-    @Size(max = 20, message = "{Size.client.postalCode}")
+    @Size(max = 20, message = "{validation.field.max.length}")
     private String postalCode;
 
-    @Size(max = 50, message = "{Size.client.taxId}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String taxId;
 
     private BigDecimal creditLimit;
 
-    @Size(max = 3, message = "{Size.client.currency}")
+    @Size(max = 3, message = "{validation.field.max.length}")
     private String currency;
 
-    @Size(max = 50, message = "{Size.client.paymentTerms}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String paymentTerms;
 
-    @Size(max = 50, message = "{Size.client.paymentMethod}")
+    @Size(max = 50, message = "{validation.field.max.length}")
     private String paymentMethod;
 
-    @Size(max = 500, message = "{Size.client.notes}")
+    @Size(max = 500, message = "{validation.field.max.length}")
     private String notes;
     
-    @Size(max = 500, message = "{Size.client.preferences}")
+    @Size(max = 500, message = "{validation.field.max.length}")
     private String preferences;
     
-    @Size(max = 500, message = "{Size.client.tags}")
+    @Size(max = 500, message = "{validation.field.max.length}")
     private String tags;
     
     private Integer rating;
     
-    @Size(max = 20, message = "{Size.client.status}")
+    @Size(max = 20, message = "{validation.field.max.length}")
     private String status;
+
+    private Boolean isActive;
 }

@@ -1,21 +1,19 @@
 package com.veraz.tasks.backend.auth.dto;
 
-import java.util.List;
-
-import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class UsersResponseDTO {
-
-    private List<UserDetailDto> users;
+    private List<UserResponseDTO> users;
     private PaginationInfo pagination;
-
 }
