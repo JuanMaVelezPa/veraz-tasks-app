@@ -32,7 +32,7 @@
           </tr>
         </thead>
         <tbody>
-          @for (user of usersResource.value()?.users ?? []; track user.id; let i = $index) {
+          @for (user of usersResource.value()?.data ?? []; track user.id; let i = $index) {
           <tr class="hover:bg-base-100">
             <td>
               <div class="flex items-center gap-3">

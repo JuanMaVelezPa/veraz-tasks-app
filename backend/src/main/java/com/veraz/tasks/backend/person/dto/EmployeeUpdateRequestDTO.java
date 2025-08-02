@@ -1,8 +1,6 @@
 package com.veraz.tasks.backend.person.dto;
 
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,19 +11,20 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * DTO for updating existing employees
+ * Contains optional fields with format validations but no mandatory constraints
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class EmployeeRequestDTO {
-    @NotNull(message = "{validation.field.required}")
+public class EmployeeUpdateRequestDTO {
     private UUID personId;
 
-    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String employeeCode;
 
-    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String position;
 
@@ -34,7 +33,6 @@ public class EmployeeRequestDTO {
 
     private UUID supervisorId;
 
-    @NotNull(message = "{validation.field.required}")
     private LocalDate hireDate;
 
     private LocalDate terminationDate;
@@ -44,7 +42,6 @@ public class EmployeeRequestDTO {
     @Size(max = 3, message = "{validation.field.max.length}")
     private String currency;
 
-    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String employmentType;
 

@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.veraz.tasks.backend.person.dto.ClientRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.ClientResponseDTO;
 import com.veraz.tasks.backend.person.mapper.ClientMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
@@ -28,7 +29,7 @@ import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class ClientService implements ServiceInterface<Client, UUID, ClientRequestDTO, ClientResponseDTO> {
+public class ClientService implements ServiceInterface<Client, UUID, ClientCreateRequestDTO, ClientUpdateRequestDTO, ClientResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientService.class);
 
@@ -91,7 +92,7 @@ public class ClientService implements ServiceInterface<Client, UUID, ClientReque
     }
 
     @Transactional
-    public ClientResponseDTO create(ClientRequestDTO clientRequest) {
+    public ClientResponseDTO create(ClientCreateRequestDTO clientRequest) {
         // Check if client already exists with same client code
         if (clientRepository.existsByClientCode(clientRequest.getClientCode())) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Client"));
@@ -116,15 +117,17 @@ public class ClientService implements ServiceInterface<Client, UUID, ClientReque
     }
 
     @Transactional
-    public ClientResponseDTO update(UUID id, ClientRequestDTO clientRequestDTO) {
+    public ClientResponseDTO update(UUID id, ClientUpdateRequestDTO clientRequestDTO) {
         Client clientToUpdate = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Client")));
 
-        // Update client code if provided
+        // Update client code if provided and not empty
         if (clientRequestDTO.getClientCode() != null && !clientRequestDTO.getClientCode().trim().isEmpty()) {
             String newClientCode = clientRequestDTO.getClientCode().trim();
             
+            // Check if client code is different from current
             if (!newClientCode.equalsIgnoreCase(clientToUpdate.getClientCode())) {
+                // Check if new client code already exists
                 if (clientRepository.existsByClientCode(newClientCode)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Client"));
                 }
@@ -199,5 +202,4 @@ public class ClientService implements ServiceInterface<Client, UUID, ClientReque
                 .map(ClientMapper::toDto)
                 .collect(Collectors.toList());
     }
-
 }

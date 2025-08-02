@@ -11,11 +11,15 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.UUID;
 
+/**
+ * DTO for creating new clients
+ * Contains all required fields with mandatory validations
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ClientRequestDTO {
+public class ClientCreateRequestDTO {
     @NotNull(message = "{validation.field.required}")
     private UUID personId;
 
@@ -89,4 +93,4 @@ public class ClientRequestDTO {
     private String status;
 
     private Boolean isActive;
-}
+} 

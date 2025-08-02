@@ -3,13 +3,19 @@ package com.veraz.tasks.backend.person.mapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.veraz.tasks.backend.person.dto.ClientRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.ClientResponseDTO;
 import com.veraz.tasks.backend.person.model.Client;
 import com.veraz.tasks.backend.person.model.Person;
 
 public class ClientMapper {
 
+    /**
+     * Converts Client entity to ClientResponseDTO
+     * @param client Client entity
+     * @return ClientResponseDTO
+     */
     public static ClientResponseDTO toDto(Client client) {
         if (client == null) return null;
         
@@ -45,7 +51,13 @@ public class ClientMapper {
                 .build();
     }
 
-    public static Client toEntity(ClientRequestDTO clientRequest, Person person) {
+    /**
+     * Converts ClientCreateRequestDTO to Client entity for creation
+     * @param clientRequest Create request DTO
+     * @param person Person entity
+     * @return Client entity
+     */
+    public static Client toEntity(ClientCreateRequestDTO clientRequest, Person person) {
         if (clientRequest == null) return null;
         
         return Client.builder()
@@ -78,106 +90,130 @@ public class ClientMapper {
     }
 
     /**
-     * Actualiza una entidad Client existente con datos del DTO
-     * @param client Entidad existente
-     * @param clientRequest DTO con datos a actualizar
-     * @return Client actualizado
+     * Updates an existing Client entity with data from ClientUpdateRequestDTO
+     * @param client Existing client entity
+     * @param clientRequest Update request DTO
+     * @return Updated Client entity
      */
-    public static Client updateEntity(Client client, ClientRequestDTO clientRequest) {
+    public static Client updateEntity(Client client, ClientUpdateRequestDTO clientRequest) {
         if (client == null || clientRequest == null) return client;
         
-        if (clientRequest.getClientCode() != null) {
+        // Update client code if provided and not empty
+        if (clientRequest.getClientCode() != null && !clientRequest.getClientCode().trim().isEmpty()) {
             client.setClientCode(clientRequest.getClientCode().trim());
         }
         
-        if (clientRequest.getType() != null) {
-            client.setType(clientRequest.getType());
+        // Update type if provided and not empty
+        if (clientRequest.getType() != null && !clientRequest.getType().trim().isEmpty()) {
+            client.setType(clientRequest.getType().trim());
         }
         
-        if (clientRequest.getCategory() != null) {
-            client.setCategory(clientRequest.getCategory());
+        // Update category if provided and not empty
+        if (clientRequest.getCategory() != null && !clientRequest.getCategory().trim().isEmpty()) {
+            client.setCategory(clientRequest.getCategory().trim());
         }
         
-        if (clientRequest.getSource() != null) {
-            client.setSource(clientRequest.getSource());
+        // Update source if provided and not empty
+        if (clientRequest.getSource() != null && !clientRequest.getSource().trim().isEmpty()) {
+            client.setSource(clientRequest.getSource().trim());
         }
         
-        if (clientRequest.getCompanyName() != null) {
+        // Update company name if provided and not empty
+        if (clientRequest.getCompanyName() != null && !clientRequest.getCompanyName().trim().isEmpty()) {
             client.setCompanyName(clientRequest.getCompanyName().trim());
         }
         
-        if (clientRequest.getCompanyWebsite() != null) {
+        // Update company website if provided and not empty
+        if (clientRequest.getCompanyWebsite() != null && !clientRequest.getCompanyWebsite().trim().isEmpty()) {
             client.setCompanyWebsite(clientRequest.getCompanyWebsite().trim());
         }
         
-        if (clientRequest.getCompanyIndustry() != null) {
-            client.setCompanyIndustry(clientRequest.getCompanyIndustry());
+        // Update company industry if provided and not empty
+        if (clientRequest.getCompanyIndustry() != null && !clientRequest.getCompanyIndustry().trim().isEmpty()) {
+            client.setCompanyIndustry(clientRequest.getCompanyIndustry().trim());
         }
         
-        if (clientRequest.getContactPerson() != null) {
+        // Update contact person if provided and not empty
+        if (clientRequest.getContactPerson() != null && !clientRequest.getContactPerson().trim().isEmpty()) {
             client.setContactPerson(clientRequest.getContactPerson().trim());
         }
         
-        if (clientRequest.getContactPosition() != null) {
-            client.setContactPosition(clientRequest.getContactPosition());
+        // Update contact position if provided and not empty
+        if (clientRequest.getContactPosition() != null && !clientRequest.getContactPosition().trim().isEmpty()) {
+            client.setContactPosition(clientRequest.getContactPosition().trim());
         }
         
-        if (clientRequest.getAddress() != null) {
+        // Update address if provided and not empty
+        if (clientRequest.getAddress() != null && !clientRequest.getAddress().trim().isEmpty()) {
             client.setAddress(clientRequest.getAddress().trim());
         }
         
-        if (clientRequest.getCity() != null) {
-            client.setCity(clientRequest.getCity());
+        // Update city if provided and not empty
+        if (clientRequest.getCity() != null && !clientRequest.getCity().trim().isEmpty()) {
+            client.setCity(clientRequest.getCity().trim());
         }
         
-        if (clientRequest.getCountry() != null) {
-            client.setCountry(clientRequest.getCountry());
+        // Update country if provided and not empty
+        if (clientRequest.getCountry() != null && !clientRequest.getCountry().trim().isEmpty()) {
+            client.setCountry(clientRequest.getCountry().trim());
         }
         
-        if (clientRequest.getPostalCode() != null) {
-            client.setPostalCode(clientRequest.getPostalCode());
+        // Update postal code if provided and not empty
+        if (clientRequest.getPostalCode() != null && !clientRequest.getPostalCode().trim().isEmpty()) {
+            client.setPostalCode(clientRequest.getPostalCode().trim());
         }
         
-        if (clientRequest.getTaxId() != null) {
+        // Update tax ID if provided and not empty
+        if (clientRequest.getTaxId() != null && !clientRequest.getTaxId().trim().isEmpty()) {
             client.setTaxId(clientRequest.getTaxId().trim());
         }
         
+        // Update credit limit if provided
         if (clientRequest.getCreditLimit() != null) {
             client.setCreditLimit(clientRequest.getCreditLimit());
         }
         
-        if (clientRequest.getCurrency() != null) {
-            client.setCurrency(clientRequest.getCurrency());
+        // Update currency if provided and not empty
+        if (clientRequest.getCurrency() != null && !clientRequest.getCurrency().trim().isEmpty()) {
+            client.setCurrency(clientRequest.getCurrency().trim());
         }
         
-        if (clientRequest.getPaymentTerms() != null) {
-            client.setPaymentTerms(clientRequest.getPaymentTerms());
+        // Update payment terms if provided and not empty
+        if (clientRequest.getPaymentTerms() != null && !clientRequest.getPaymentTerms().trim().isEmpty()) {
+            client.setPaymentTerms(clientRequest.getPaymentTerms().trim());
         }
         
-        if (clientRequest.getPaymentMethod() != null) {
-            client.setPaymentMethod(clientRequest.getPaymentMethod());
+        // Update payment method if provided and not empty
+        if (clientRequest.getPaymentMethod() != null && !clientRequest.getPaymentMethod().trim().isEmpty()) {
+            client.setPaymentMethod(clientRequest.getPaymentMethod().trim());
         }
         
-        if (clientRequest.getNotes() != null) {
+        // Update notes if provided and not empty
+        if (clientRequest.getNotes() != null && !clientRequest.getNotes().trim().isEmpty()) {
             client.setNotes(clientRequest.getNotes().trim());
         }
         
-        if (clientRequest.getPreferences() != null) {
+        // Update preferences if provided and not empty
+        if (clientRequest.getPreferences() != null && !clientRequest.getPreferences().trim().isEmpty()) {
             client.setPreferences(clientRequest.getPreferences().trim());
         }
         
-        if (clientRequest.getTags() != null) {
+        // Update tags if provided and not empty
+        if (clientRequest.getTags() != null && !clientRequest.getTags().trim().isEmpty()) {
             client.setTags(clientRequest.getTags().trim());
         }
         
+        // Update rating if provided
         if (clientRequest.getRating() != null) {
             client.setRating(clientRequest.getRating());
         }
         
-        if (clientRequest.getStatus() != null) {
-            client.setStatus(clientRequest.getStatus());
+        // Update status if provided and not empty
+        if (clientRequest.getStatus() != null && !clientRequest.getStatus().trim().isEmpty()) {
+            client.setStatus(clientRequest.getStatus().trim());
         }
         
+        // Update active status if provided
         if (clientRequest.getIsActive() != null) {
             client.setIsActive(clientRequest.getIsActive());
         }
@@ -186,9 +222,9 @@ public class ClientMapper {
     }
 
     /**
-     * Convierte una lista de Clients a DTOs
-     * @param clients Lista de clientes
-     * @return Lista de DTOs
+     * Converts a set of Clients to DTOs
+     * @param clients Set of clients
+     * @return Set of DTOs
      */
     public static Set<ClientResponseDTO> toDtoSet(Set<Client> clients) {
         if (clients == null) return Set.of();
@@ -197,5 +233,4 @@ public class ClientMapper {
                 .map(ClientMapper::toDto)
                 .collect(Collectors.toSet());
     }
-
 } 

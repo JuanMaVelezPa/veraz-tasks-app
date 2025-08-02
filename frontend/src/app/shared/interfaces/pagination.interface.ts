@@ -17,6 +17,12 @@ export interface PaginationInfo {
   pageSize: number;
   hasNext: boolean;
   hasPrevious: boolean;
-  first: boolean;
-  last: boolean;
+  isFirst: boolean;
+  isLast: boolean;
+}
+
+// Interfaz para la respuesta paginada del backend
+export interface PaginatedResponseDTO<T> {
+  data: T[];
+  pagination: PaginationInfo;
 }

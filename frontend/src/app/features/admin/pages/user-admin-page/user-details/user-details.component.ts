@@ -10,7 +10,6 @@ import { FeedbackMessageComponent } from '@shared/components/feedback-message/fe
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
 import { firstValueFrom } from 'rxjs';
-import { UserResponse } from '@users/interfaces/user-response.interface';
 
 @Component({
   selector: 'user-details',
@@ -120,8 +119,8 @@ export class UserDetailsComponent implements OnDestroy {
       this.userService.createUser(userData)
     );
 
-    if (createdUser?.user?.id) {
-      this.currentUser.set(createdUser.user);
+    if (createdUser?.id) {
+      this.currentUser.set(createdUser);
       this.wasSaved.set(true);
       this.feedbackService.showSuccess('User created successfully!');
       this.router.navigate(['/admin/users']);
@@ -141,16 +140,15 @@ export class UserDetailsComponent implements OnDestroy {
     }
 
     try {
-      const updatedUser: UserResponse = await firstValueFrom(
+      const updatedUser: User = await firstValueFrom(
         this.userService.updateUser(originalUser.id, changes)
       );
-      if (updatedUser.user) {
-        this.currentUser.set(updatedUser.user);
-        this.setFormValues(updatedUser.user);
+
+      if (updatedUser?.id) {
+        this.currentUser.set(updatedUser);
+        this.setFormValues(updatedUser);
         this.feedbackService.showSuccess('User updated successfully!');
         this.wasSaved.set(true);
-      } else {
-        this.handleUserError(updatedUser.message || 'Update failed');
       }
     } catch (error) {
       this.handleUserError(error);
@@ -169,9 +167,11 @@ export class UserDetailsComponent implements OnDestroy {
         this.userService.deleteUser(user.id)
       );
 
-      if (response && response.message) {
+      if (response) {
         this.feedbackService.showSuccess('User deleted successfully!');
         this.router.navigate(['/admin/users']);
+      } else {
+        this.feedbackService.showError('Failed to delete user');
       }
     } catch (error) {
       this.handleUserError(error);
@@ -191,7 +191,17 @@ export class UserDetailsComponent implements OnDestroy {
 
   private handleUserError(error: any): void {
     this.setFormValues(this.currentUser() || this.user());
-    this.feedbackService.showError(error?.message || 'An error occurred while saving the user. Please try again.');
+
+    // Extract error message from ErrorResponse if available
+    let errorMessage = 'An error occurred while saving the user. Please try again.';
+
+    if (error?.errorResponse?.message) {
+      errorMessage = error.errorResponse.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
+
+    this.feedbackService.showError(errorMessage);
   }
 
   private detectChanges(formValue: any, originalUser: User): any {

@@ -10,7 +10,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
-import com.veraz.tasks.backend.person.dto.PersonRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
 import com.veraz.tasks.backend.person.mapper.PersonMapper;
 import com.veraz.tasks.backend.person.model.Person;
@@ -37,7 +38,7 @@ public class ProfileService {
     }
 
     @Transactional
-    public PersonResponseDTO createPersonForUser(User user, PersonRequestDTO personRequestDto) {
+    public PersonResponseDTO createPersonForUser(User user, PersonCreateRequestDTO personRequestDto) {
         logger.info("Creating person for user: {}", user.getUsername());
         
         // Check if person already exists with same email or identification
@@ -59,23 +60,24 @@ public class ProfileService {
     }
 
     @Transactional
-    public PersonResponseDTO updatePersonForUser(User user, PersonRequestDTO personRequestDto) {
+    public PersonResponseDTO updatePersonForUser(User user, PersonUpdateRequestDTO personRequestDto) {
         logger.info("Updating person for user: {}", user.getUsername());
 
         // Get existing person for user
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
 
-        // Check if identification already exists in another person
-        if (!person.getIdentNumber().equals(personRequestDto.getIdentNumber()) || 
-            !person.getIdentType().equals(personRequestDto.getIdentType())) {
+        // Check if identification already exists in another person (only if provided and different)
+        if (personRequestDto.getIdentNumber() != null && personRequestDto.getIdentType() != null &&
+            (!person.getIdentNumber().equals(personRequestDto.getIdentNumber()) || 
+             !person.getIdentType().equals(personRequestDto.getIdentType()))) {
             
             if (personRepository.existsByIdentNumberAndIdentType(personRequestDto.getIdentNumber(), personRequestDto.getIdentType())) {
                 throw new DataConflictException("Person already exists with identification: " + personRequestDto.getIdentType() + " " + personRequestDto.getIdentNumber());
             }
         }
 
-        // Actualizar la persona usando el mapper
+        // Update person using mapper
         PersonMapper.updateEntity(person, personRequestDto);
         person = personRepository.save(person);
         
@@ -101,7 +103,7 @@ public class ProfileService {
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
 
-        // Verificar si el usuario actual es el mismo que el usuario de la persona
+        // Verify if the current user is the same as the person's user
         if (!user.getId().equals(person.getUser().getId())) {
             throw new ResourceNotFoundException("Person not found for user: " + user.getUsername());
         }
@@ -109,5 +111,4 @@ public class ProfileService {
         personRepository.delete(person);
         logger.info("Person deleted successfully for user: {}", user.getUsername());
     }
-
 }

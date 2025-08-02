@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.*;
 /**
  * Base interface for controllers with generic CRUD operations
  * 
- * @param <T>            Type of the entity
  * @param <ID>           Type of the entity ID
- * @param <REQUEST_DTO>  Type of the request DTO
+ * @param <CREATE_DTO>   Type of the create request DTO
+ * @param <UPDATE_DTO>   Type of the update request DTO
  * @param <RESPONSE_DTO> Type of the response DTO
  */
-public interface ControllerInterface<ID, REQUEST_DTO, RESPONSE_DTO> {
+public interface ControllerInterface<ID, CREATE_DTO, UPDATE_DTO, RESPONSE_DTO> {
 
     /**
      * Gets all elements with pagination
@@ -38,21 +38,21 @@ public interface ControllerInterface<ID, REQUEST_DTO, RESPONSE_DTO> {
     /**
      * Creates a new element
      * 
-     * @param requestDTO DTO with the element data
+     * @param requestDTO DTO with the element data for creation
      * @return Created element
      */
     @PostMapping
-    ResponseEntity<ApiResponseDTO<RESPONSE_DTO>> create(@RequestBody REQUEST_DTO requestDTO);
+    ResponseEntity<ApiResponseDTO<RESPONSE_DTO>> create(@RequestBody CREATE_DTO requestDTO);
 
     /**
      * Updates an existing element
      * 
      * @param id         ID of the element to update
      * @param requestDTO DTO with the updated data
-     * @return Elemento actualizado
+     * @return Updated element
      */
     @PatchMapping("/{id}")
-    ResponseEntity<ApiResponseDTO<RESPONSE_DTO>> update(@PathVariable ID id, @RequestBody REQUEST_DTO requestDTO);
+    ResponseEntity<ApiResponseDTO<RESPONSE_DTO>> update(@PathVariable ID id, @RequestBody UPDATE_DTO requestDTO);
 
     /**
      * Deletes an element by its ID

@@ -13,12 +13,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.veraz.tasks.backend.person.dto.PersonRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
 import com.veraz.tasks.backend.person.mapper.PersonMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
-import com.veraz.tasks.backend.shared.service.ServiceInterface;
 import com.veraz.tasks.backend.person.model.Person;
 import com.veraz.tasks.backend.person.repository.PersonRepository;
 import com.veraz.tasks.backend.exception.DataConflictException;
@@ -26,7 +26,7 @@ import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class PersonService implements ServiceInterface<Person, UUID, PersonRequestDTO, PersonResponseDTO> {
+public class PersonService {
 
     private static final Logger logger = LoggerFactory.getLogger(PersonService.class);
 
@@ -87,7 +87,7 @@ public class PersonService implements ServiceInterface<Person, UUID, PersonReque
     }
 
     @Transactional
-    public PersonResponseDTO create(PersonRequestDTO personRequest) {
+    public PersonResponseDTO create(PersonCreateRequestDTO personRequest) {
         // Check if person already exists with same identification
         if (personRepository.existsByIdentNumberAndIdentType(personRequest.getIdentNumber(), personRequest.getIdentType())) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
@@ -108,29 +108,35 @@ public class PersonService implements ServiceInterface<Person, UUID, PersonReque
     }
 
     @Transactional
-    public PersonResponseDTO update(UUID id, PersonRequestDTO personRequestDTO) {
+    public PersonResponseDTO update(UUID id, PersonUpdateRequestDTO personRequestDTO) {
         Person personToUpdate = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
 
-        // Update identification if provided
-        if (personRequestDTO.getIdentNumber() != null && personRequestDTO.getIdentType() != null) {
+        // Update identification if provided and not empty
+        if (personRequestDTO.getIdentNumber() != null && !personRequestDTO.getIdentNumber().trim().isEmpty() &&
+            personRequestDTO.getIdentType() != null && !personRequestDTO.getIdentType().trim().isEmpty()) {
+            
             String newIdentNumber = personRequestDTO.getIdentNumber().trim();
             String newIdentType = personRequestDTO.getIdentType().trim();
             
+            // Check if identification is different from current
             if (!newIdentNumber.equals(personToUpdate.getIdentNumber()) || 
                 !newIdentType.equals(personToUpdate.getIdentType())) {
                 
+                // Check if new identification already exists
                 if (personRepository.existsByIdentNumberAndIdentType(newIdentNumber, newIdentType)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
                 }
             }
         }
 
-        // Update email if provided
+        // Update email if provided and not empty
         if (personRequestDTO.getEmail() != null && !personRequestDTO.getEmail().trim().isEmpty()) {
             String newEmail = personRequestDTO.getEmail().trim();
             
+            // Check if email is different from current
             if (!newEmail.equalsIgnoreCase(personToUpdate.getEmail())) {
+                // Check if new email already exists
                 if (personRepository.existsByEmail(newEmail)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
                 }
@@ -191,5 +197,4 @@ public class PersonService implements ServiceInterface<Person, UUID, PersonReque
                 .map(PersonMapper::toDto)
                 .collect(Collectors.toList());
     }
-
 }

@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.veraz.tasks.backend.auth.dto.AuthResponseDTO;
 import com.veraz.tasks.backend.auth.dto.AuthRequestDTO;
-import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
+import com.veraz.tasks.backend.auth.dto.UserCreateRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.service.AuthService;
@@ -67,7 +67,7 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> signUpUser(@Valid @RequestBody UserRequestDTO signUpRequest) {
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> signUpUser(@Valid @RequestBody UserCreateRequestDTO signUpRequest) {
         try {
             UserResponseDTO response = userService.create(signUpRequest);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -95,5 +95,4 @@ public class AuthController {
                     .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, response.getMessage(), null, null));
         }
     }
-
 }

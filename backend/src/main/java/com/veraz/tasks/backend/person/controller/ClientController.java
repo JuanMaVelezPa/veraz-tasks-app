@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.person.dto.ClientRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.ClientUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.ClientResponseDTO;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
@@ -39,7 +40,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/clients")
 @Tag(name = "Client", description = "Client endpoints")
-public class ClientController implements ControllerInterface<UUID, ClientRequestDTO, ClientResponseDTO> {
+public class ClientController implements ControllerInterface<UUID, ClientCreateRequestDTO, ClientUpdateRequestDTO, ClientResponseDTO> {
 
     private final ClientService clientService;
 
@@ -98,7 +99,7 @@ public class ClientController implements ControllerInterface<UUID, ClientRequest
             @ApiResponse(responseCode = "409", description = "Conflict - Client already exists")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> create(@Valid @RequestBody ClientRequestDTO clientRequestDTO) {
+    public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> create(@Valid @RequestBody ClientCreateRequestDTO clientRequestDTO) {
         try {
             ClientResponseDTO response = clientService.create(clientRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -117,7 +118,7 @@ public class ClientController implements ControllerInterface<UUID, ClientRequest
             @ApiResponse(responseCode = "404", description = "Client not found"),
             @ApiResponse(responseCode = "409", description = "Client already exists")
     })
-    public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody ClientRequestDTO clientRequest) {
+    public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody ClientUpdateRequestDTO clientRequest) {
         try {
             ClientResponseDTO response = clientService.update(id, clientRequest);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Client"), response, null));
@@ -142,9 +143,8 @@ public class ClientController implements ControllerInterface<UUID, ClientRequest
             clientService.deleteById(id);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Client"), null, null));
         } catch (Exception e) {
-            // El GlobalExceptionHandler manejará las excepciones específicas
+            // GlobalExceptionHandler will handle specific exceptions
             throw e;
         }
     }
-
 }

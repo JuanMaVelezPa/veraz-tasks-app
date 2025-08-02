@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.person.dto.PersonRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
@@ -39,7 +40,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/persons")
 @Tag(name = "Person", description = "Person endpoints")
-public class PersonController implements ControllerInterface<UUID, PersonRequestDTO, PersonResponseDTO> {
+public class PersonController implements ControllerInterface<UUID, PersonCreateRequestDTO, PersonUpdateRequestDTO, PersonResponseDTO> {
 
     private final PersonService personService;
 
@@ -89,7 +90,7 @@ public class PersonController implements ControllerInterface<UUID, PersonRequest
     }
 
     @PostMapping
-    @Operation(summary = "Create person", description = "Create person with id")
+    @Operation(summary = "Create person", description = "Create a new person with required fields")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Person created successfully"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
@@ -98,7 +99,7 @@ public class PersonController implements ControllerInterface<UUID, PersonRequest
             @ApiResponse(responseCode = "409", description = "Conflict - Person already exists")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> create(@Valid @RequestBody PersonRequestDTO personRequestDTO) {
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> create(@Valid @RequestBody PersonCreateRequestDTO personRequestDTO) {
         try {
             PersonResponseDTO response = personService.create(personRequestDTO);
             return ResponseEntity.status(HttpStatus.CREATED)
@@ -110,14 +111,14 @@ public class PersonController implements ControllerInterface<UUID, PersonRequest
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Update person", description = "Updates an existing person")
+    @Operation(summary = "Update person", description = "Updates an existing person with partial data")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Person updated successfully"),
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "404", description = "Person not found"),
             @ApiResponse(responseCode = "409", description = "Person already exists")
     })
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody PersonRequestDTO personRequest) {
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody PersonUpdateRequestDTO personRequest) {
         try {
             PersonResponseDTO response = personService.update(id, personRequest);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Person"), response, null));
@@ -142,9 +143,8 @@ public class PersonController implements ControllerInterface<UUID, PersonRequest
             personService.deleteById(id);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Person"), null, null));
         } catch (Exception e) {
-            // El GlobalExceptionHandler manejará las excepciones específicas
+            // GlobalExceptionHandler will handle specific exceptions
             throw e;
         }
     }
-
 }

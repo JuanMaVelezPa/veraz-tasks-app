@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '@env/environment';
 import { User } from '@users/interfaces/user.interface';
-import { UserResponse } from '@users/interfaces/user-response.interface';
-import { UsersResponse } from '@users/interfaces/users-response.interface';
 import { UserSearchOptions } from '@shared/interfaces/search.interface';
 import { HttpErrorService } from '@shared/services/http-error.service';
+import { ApiResponse } from '@shared/interfaces/api-response.interface';
+import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,7 @@ export class UserApiService {
   private httpErrorService = inject(HttpErrorService);
   private readonly baseUrl = `${environment.apiUrl}/users`;
 
-  getUsers(options: UserSearchOptions): Observable<UsersResponse> {
+  getUsers(options: UserSearchOptions): Observable<ApiResponse<PaginatedResponseDTO<any>>> {
     const { page, size, sort, order, search } = options;
 
     const params: any = {
@@ -31,36 +31,36 @@ export class UserApiService {
       params.search = search.trim();
     }
 
-    return this.http.get<UsersResponse>(`${this.baseUrl}`, { params })
+    return this.http.get<ApiResponse<PaginatedResponseDTO<any>>>(`${this.baseUrl}`, { params })
       .pipe(
         catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error getting users'))
       );
   }
 
-  getUserById(id: string): Observable<User> {
-    return this.http.get<User>(`${this.baseUrl}/${id}`)
+  getUserById(id: string): Observable<ApiResponse<User>> {
+    return this.http.get<ApiResponse<User>>(`${this.baseUrl}/${id}`)
       .pipe(
         catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error getting user'))
       );
   }
 
-  createUser(userData: Partial<User>): Observable<UserResponse> {
+  createUser(userData: Partial<User>): Observable<ApiResponse<User>> {
     const { perms, ...dataToSend } = userData;
-    return this.http.post<UserResponse>(`${this.baseUrl}`, dataToSend)
+    return this.http.post<ApiResponse<User>>(`${this.baseUrl}`, dataToSend)
       .pipe(
         catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error creating user'))
       );
   }
 
-  updateUser(id: string, updatedUser: Partial<User>): Observable<UserResponse> {
-    return this.http.patch<UserResponse>(`${this.baseUrl}/${id}`, updatedUser)
+  updateUser(id: string, updatedUser: Partial<User>): Observable<ApiResponse<User>> {
+    return this.http.patch<ApiResponse<User>>(`${this.baseUrl}/${id}`, updatedUser)
       .pipe(
         catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error updating user'))
       );
   }
 
-  deleteUser(id: string): Observable<UserResponse> {
-    return this.http.delete<UserResponse>(`${this.baseUrl}/${id}`)
+  deleteUser(id: string): Observable<ApiResponse<void>> {
+    return this.http.delete<ApiResponse<void>>(`${this.baseUrl}/${id}`)
       .pipe(
         catchError((error: HttpErrorResponse) => this.httpErrorService.handleError(error, 'Error deleting user'))
       );

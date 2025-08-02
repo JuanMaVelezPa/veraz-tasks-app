@@ -19,7 +19,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
-import com.veraz.tasks.backend.auth.dto.UserRequestDTO;
+import com.veraz.tasks.backend.auth.dto.UserCreateRequestDTO;
+import com.veraz.tasks.backend.auth.dto.UserUpdateRequestDTO;
 import com.veraz.tasks.backend.auth.mapper.UserMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
@@ -33,7 +34,7 @@ import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class UserService implements UserDetailsService, ServiceInterface<User, UUID, UserRequestDTO, UserResponseDTO> {
+public class UserService implements UserDetailsService, ServiceInterface<User, UUID, UserCreateRequestDTO, UserUpdateRequestDTO, UserResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
@@ -94,7 +95,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
     }
 
     @Transactional
-    public UserResponseDTO create(UserRequestDTO userRequest) {
+    public UserResponseDTO create(UserCreateRequestDTO userRequest) {
         // Check if user already exists
         if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(), userRequest.getEmail()).isPresent()) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
@@ -116,15 +117,17 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
     }
 
     @Transactional
-    public UserResponseDTO update(UUID id, UserRequestDTO userRequestDTO) {
+    public UserResponseDTO update(UUID id, UserUpdateRequestDTO userRequestDTO) {
         User userToUpdate = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
 
-        // Update username if provided
+        // Update username if provided and not empty
         if (userRequestDTO.getUsername() != null && !userRequestDTO.getUsername().trim().isEmpty()) {
             String newUsername = userRequestDTO.getUsername().trim();
-
+            
+            // Check if username is different from current
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
+                // Check if new username already exists
                 if (userRepository.findByUsername(newUsername).isPresent()) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
                 }
@@ -132,11 +135,13 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
             userToUpdate.setUsername(newUsername.toLowerCase());
         }
 
-        // Update email if provided
+        // Update email if provided and not empty
         if (userRequestDTO.getEmail() != null && !userRequestDTO.getEmail().trim().isEmpty()) {
             String newEmail = userRequestDTO.getEmail().trim();
-
+            
+            // Check if email is different from current
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
+                // Check if new email already exists
                 if (userRepository.findByEmail(newEmail).isPresent()) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
                 }
@@ -144,7 +149,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
             userToUpdate.setEmail(newEmail.toLowerCase());
         }
 
-        // Update password if provided
+        // Update password if provided and not empty
         if (userRequestDTO.getPassword() != null && !userRequestDTO.getPassword().trim().isEmpty()) {
             String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword());
             userToUpdate.setPassword(encodedPassword);
@@ -156,7 +161,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
         }
 
         // Update roles if provided
-        if (userRequestDTO.getRoles() != null) {
+        if (userRequestDTO.getRoles() != null && !userRequestDTO.getRoles().isEmpty()) {
             Set<Role> newRoles = userRequestDTO.getRoles().stream()
                     .map(roleName -> {
                         Role role = roleRepository.findByName(roleName);
@@ -191,5 +196,4 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
         return userRepository.findByUsernameOrEmailAllIgnoreCase(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + username));
     }
-
 }

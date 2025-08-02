@@ -17,7 +17,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.veraz.tasks.backend.person.dto.EmployeeRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.EmployeeResponseDTO;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
@@ -37,7 +38,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/employees")
 @Tag(name = "Employee", description = "Employee endpoints")
-public class EmployeeController implements ControllerInterface<UUID, EmployeeRequestDTO, EmployeeResponseDTO> {
+public class EmployeeController implements ControllerInterface<UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
 
     private final EmployeeService employeeService;
 
@@ -90,7 +91,7 @@ public class EmployeeController implements ControllerInterface<UUID, EmployeeReq
             @ApiResponse(responseCode = "409", description = "Conflict - Employee already exists")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(@Valid @RequestBody EmployeeRequestDTO employeeRequestDTO) {
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(@Valid @RequestBody EmployeeCreateRequestDTO employeeRequestDTO) {
         EmployeeResponseDTO response = employeeService.create(employeeRequestDTO);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -109,7 +110,7 @@ public class EmployeeController implements ControllerInterface<UUID, EmployeeReq
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> update(@PathVariable UUID id,
-            @Valid @RequestBody EmployeeRequestDTO employeeRequestDTO) {
+            @Valid @RequestBody EmployeeUpdateRequestDTO employeeRequestDTO) {
 
         EmployeeResponseDTO response = employeeService.update(id, employeeRequestDTO);
         return ResponseEntity
@@ -130,5 +131,4 @@ public class EmployeeController implements ControllerInterface<UUID, EmployeeReq
         employeeService.deleteById(id);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Employee deleted successfully", null, null));
     }
-
 }

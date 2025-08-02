@@ -11,11 +11,15 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.UUID;
 
+/**
+ * DTO for creating new persons
+ * Contains all required fields with mandatory validations
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PersonRequestDTO {
+public class PersonCreateRequestDTO {
 
     private UUID userId;
 
@@ -47,6 +51,7 @@ public class PersonRequestDTO {
     private String mobile;
 
     @Email(message = "{validation.field.email}")
+    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String email;
 
@@ -66,4 +71,4 @@ public class PersonRequestDTO {
     private String notes;
 
     private Boolean isActive;
-}
+} 

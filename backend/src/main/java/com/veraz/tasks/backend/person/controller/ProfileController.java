@@ -1,7 +1,8 @@
 package com.veraz.tasks.backend.person.controller;
 
 import com.veraz.tasks.backend.auth.model.User;
-import com.veraz.tasks.backend.person.dto.PersonRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
 import com.veraz.tasks.backend.person.service.ProfileService;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
@@ -64,7 +65,7 @@ public class ProfileController {
             @ApiResponse(responseCode = "409", description = "Conflict - Profile already exists for user or with same email/identification")
     })
     public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> createMyProfile(@AuthenticationPrincipal User user,
-            @Valid @RequestBody PersonRequestDTO personRequestDto) {
+            @Valid @RequestBody PersonCreateRequestDTO personRequestDto) {
         PersonResponseDTO response = profileService.createPersonForUser(user, personRequestDto);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -82,7 +83,7 @@ public class ProfileController {
             @ApiResponse(responseCode = "409", description = "Conflict - Profile already exists with same email/identification")
     })
     public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> updateMyProfile(@AuthenticationPrincipal User user,
-            @Valid @RequestBody PersonRequestDTO personRequestDto) {
+            @Valid @RequestBody PersonUpdateRequestDTO personRequestDto) {
         PersonResponseDTO response = profileService.updatePersonForUser(user, personRequestDto);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile updated successfully", response, null));
     }
@@ -99,5 +100,4 @@ public class ProfileController {
         profileService.deletePersonForUser(user);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Profile deleted successfully", null, null));
     }
-
 }

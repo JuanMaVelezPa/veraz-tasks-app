@@ -7,6 +7,7 @@ import { TokenService } from './token.service';
 import { CacheService } from './cache.service';
 import { AuthApiService } from './auth-api.service';
 import { SignInResponse } from '@auth/interfaces/sign-in.interface';
+import { ApiResponse } from '@shared/interfaces/api-response.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -51,7 +52,7 @@ export class AuthService {
   signIn(usernameOrEmail: string, password: string): Observable<SignInResponse> {
     return this.authApi.signIn({ usernameOrEmail, password })
       .pipe(
-        map((response) => this.handleSignInSuccess(response)),
+        map((apiResponse) => this.handleSignInSuccess(apiResponse)),
         catchError((error) => this.handleSignInError(error))
       );
   }
@@ -59,7 +60,7 @@ export class AuthService {
   signUp(username: string, email: string, password: string): Observable<SignInResponse> {
     return this.authApi.signUp({ username, email, password })
       .pipe(
-        map((response) => this.handleSignInSuccess(response)),
+        map((apiResponse) => this.handleSignInSuccess(apiResponse)),
         catchError((error) => this.handleSignInError(error))
       );
   }
@@ -84,7 +85,7 @@ export class AuthService {
 
     return this.authApi.checkAuthStatus()
       .pipe(
-        map((response) => this.handleCheckStatusSuccess(response)),
+        map((apiResponse) => this.handleCheckStatusSuccess(apiResponse)),
         catchError((error) => this.handleCheckStatusError(error))
       );
   }
@@ -97,7 +98,7 @@ export class AuthService {
 
     return this.authApi.refreshToken()
       .pipe(
-        map((response) => this.handleRefreshTokenSuccess(response)),
+        map((apiResponse) => this.handleRefreshTokenSuccess(apiResponse)),
         catchError((error) => this.handleRefreshTokenError(error))
       );
   }
@@ -113,7 +114,16 @@ export class AuthService {
     this.tokenService.removeToken();
   }
 
-  private handleSignInSuccess(response: AuthResponse): SignInResponse {
+  private handleSignInSuccess(apiResponse: ApiResponse<AuthResponse>): SignInResponse {
+    // Verificar si la respuesta de la API fue exitosa
+    if (!apiResponse.success || !apiResponse.data) {
+      return {
+        authStatus: 'not-authenticated',
+        message: apiResponse.message || 'Error en la autenticación'
+      };
+    }
+
+    const response = apiResponse.data;
 
     if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
       return {
@@ -134,11 +144,17 @@ export class AuthService {
   }
 
   private handleSignInError(error: any): Observable<SignInResponse> {
-
     this.authState.clearState();
     this.clearAllStorage();
 
-    const errorMessage = error?.message || 'Unexpected error authenticating. Please try again.';
+    // Extraer el mensaje de error de la estructura ErrorResponse si está disponible
+    let errorMessage = 'Unexpected error authenticating. Please try again.';
+
+    if (error?.errorResponse?.message) {
+      errorMessage = error.errorResponse.message;
+    } else if (error?.message) {
+      errorMessage = error.message;
+    }
 
     return of({
       authStatus: 'not-authenticated',
@@ -146,7 +162,16 @@ export class AuthService {
     });
   }
 
-  private handleCheckStatusSuccess(response: AuthResponse): boolean {
+  private handleCheckStatusSuccess(apiResponse: ApiResponse<AuthResponse>): boolean {
+    // Verificar si la respuesta de la API fue exitosa
+    if (!apiResponse.success || !apiResponse.data) {
+      this.authState.clearState();
+      this.clearAllStorage();
+      return false;
+    }
+
+    const response = apiResponse.data;
+
     if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
       this.authState.clearState();
       this.clearAllStorage();
@@ -167,7 +192,16 @@ export class AuthService {
     return of(false);
   }
 
-  private handleRefreshTokenSuccess(response: AuthResponse): boolean {
+  private handleRefreshTokenSuccess(apiResponse: ApiResponse<AuthResponse>): boolean {
+    // Verificar si la respuesta de la API fue exitosa
+    if (!apiResponse.success || !apiResponse.data) {
+      this.authState.clearState();
+      this.clearAllStorage();
+      return false;
+    }
+
+    const response = apiResponse.data;
+
     if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
       this.authState.clearState();
       this.clearAllStorage();

@@ -3,13 +3,19 @@ package com.veraz.tasks.backend.person.mapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.veraz.tasks.backend.person.dto.EmployeeRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.EmployeeResponseDTO;
 import com.veraz.tasks.backend.person.model.Employee;
 import com.veraz.tasks.backend.person.model.Person;
 
 public class EmployeeMapper {
 
+    /**
+     * Converts Employee entity to EmployeeResponseDTO
+     * @param employee Employee entity
+     * @return EmployeeResponseDTO
+     */
     public static EmployeeResponseDTO toDto(Employee employee) {
         if (employee == null) return null;
         
@@ -41,7 +47,13 @@ public class EmployeeMapper {
                 .build();
     }
 
-    public static Employee toEntity(EmployeeRequestDTO employeeRequest, Person person) {
+    /**
+     * Converts EmployeeCreateRequestDTO to Employee entity for creation
+     * @param employeeRequest Create request DTO
+     * @param person Person entity
+     * @return Employee entity
+     */
+    public static Employee toEntity(EmployeeCreateRequestDTO employeeRequest, Person person) {
         if (employeeRequest == null) return null;
         
         return Employee.builder()
@@ -70,90 +82,110 @@ public class EmployeeMapper {
     }
 
     /**
-     * Actualiza una entidad Employee existente con datos del DTO
-     * @param employee Entidad existente
-     * @param employeeRequest DTO con datos a actualizar
-     * @return Employee actualizado
+     * Updates an existing Employee entity with data from EmployeeUpdateRequestDTO
+     * @param employee Existing employee entity
+     * @param employeeRequest Update request DTO
+     * @return Updated Employee entity
      */
-    public static Employee updateEntity(Employee employee, EmployeeRequestDTO employeeRequest) {
+    public static Employee updateEntity(Employee employee, EmployeeUpdateRequestDTO employeeRequest) {
         if (employee == null || employeeRequest == null) return employee;
         
-        if (employeeRequest.getEmployeeCode() != null) {
+        // Update employee code if provided and not empty
+        if (employeeRequest.getEmployeeCode() != null && !employeeRequest.getEmployeeCode().trim().isEmpty()) {
             employee.setEmployeeCode(employeeRequest.getEmployeeCode().trim());
         }
         
-        if (employeeRequest.getPosition() != null) {
+        // Update position if provided and not empty
+        if (employeeRequest.getPosition() != null && !employeeRequest.getPosition().trim().isEmpty()) {
             employee.setPosition(employeeRequest.getPosition().trim());
         }
         
-        if (employeeRequest.getDepartment() != null) {
-            employee.setDepartment(employeeRequest.getDepartment());
+        // Update department if provided and not empty
+        if (employeeRequest.getDepartment() != null && !employeeRequest.getDepartment().trim().isEmpty()) {
+            employee.setDepartment(employeeRequest.getDepartment().trim());
         }
         
+        // Update supervisor ID if provided
         if (employeeRequest.getSupervisorId() != null) {
             employee.setSupervisorId(employeeRequest.getSupervisorId());
         }
         
+        // Update hire date if provided
         if (employeeRequest.getHireDate() != null) {
             employee.setHireDate(employeeRequest.getHireDate());
         }
         
+        // Update termination date if provided
         if (employeeRequest.getTerminationDate() != null) {
             employee.setTerminationDate(employeeRequest.getTerminationDate());
         }
         
+        // Update salary if provided
         if (employeeRequest.getSalary() != null) {
             employee.setSalary(employeeRequest.getSalary());
         }
         
-        if (employeeRequest.getCurrency() != null) {
-            employee.setCurrency(employeeRequest.getCurrency());
+        // Update currency if provided and not empty
+        if (employeeRequest.getCurrency() != null && !employeeRequest.getCurrency().trim().isEmpty()) {
+            employee.setCurrency(employeeRequest.getCurrency().trim());
         }
         
-        if (employeeRequest.getEmploymentType() != null) {
-            employee.setEmploymentType(employeeRequest.getEmploymentType());
+        // Update employment type if provided and not empty
+        if (employeeRequest.getEmploymentType() != null && !employeeRequest.getEmploymentType().trim().isEmpty()) {
+            employee.setEmploymentType(employeeRequest.getEmploymentType().trim());
         }
         
-        if (employeeRequest.getStatus() != null) {
-            employee.setStatus(employeeRequest.getStatus());
+        // Update status if provided and not empty
+        if (employeeRequest.getStatus() != null && !employeeRequest.getStatus().trim().isEmpty()) {
+            employee.setStatus(employeeRequest.getStatus().trim());
         }
         
-        if (employeeRequest.getWorkEmail() != null) {
+        // Update work email if provided and not empty
+        if (employeeRequest.getWorkEmail() != null && !employeeRequest.getWorkEmail().trim().isEmpty()) {
             employee.setWorkEmail(employeeRequest.getWorkEmail().trim().toLowerCase());
         }
         
-        if (employeeRequest.getWorkMobile() != null) {
+        // Update work mobile if provided and not empty
+        if (employeeRequest.getWorkMobile() != null && !employeeRequest.getWorkMobile().trim().isEmpty()) {
             employee.setWorkMobile(employeeRequest.getWorkMobile().trim());
         }
         
-        if (employeeRequest.getWorkLocation() != null) {
-            employee.setWorkLocation(employeeRequest.getWorkLocation());
+        // Update work location if provided and not empty
+        if (employeeRequest.getWorkLocation() != null && !employeeRequest.getWorkLocation().trim().isEmpty()) {
+            employee.setWorkLocation(employeeRequest.getWorkLocation().trim());
         }
         
-        if (employeeRequest.getWorkSchedule() != null) {
-            employee.setWorkSchedule(employeeRequest.getWorkSchedule());
+        // Update work schedule if provided and not empty
+        if (employeeRequest.getWorkSchedule() != null && !employeeRequest.getWorkSchedule().trim().isEmpty()) {
+            employee.setWorkSchedule(employeeRequest.getWorkSchedule().trim());
         }
         
-        if (employeeRequest.getSkills() != null) {
+        // Update skills if provided and not empty
+        if (employeeRequest.getSkills() != null && !employeeRequest.getSkills().trim().isEmpty()) {
             employee.setSkills(employeeRequest.getSkills().trim());
         }
         
-        if (employeeRequest.getCertifications() != null) {
+        // Update certifications if provided and not empty
+        if (employeeRequest.getCertifications() != null && !employeeRequest.getCertifications().trim().isEmpty()) {
             employee.setCertifications(employeeRequest.getCertifications().trim());
         }
         
-        if (employeeRequest.getEducation() != null) {
+        // Update education if provided and not empty
+        if (employeeRequest.getEducation() != null && !employeeRequest.getEducation().trim().isEmpty()) {
             employee.setEducation(employeeRequest.getEducation().trim());
         }
         
-        if (employeeRequest.getBenefits() != null) {
+        // Update benefits if provided and not empty
+        if (employeeRequest.getBenefits() != null && !employeeRequest.getBenefits().trim().isEmpty()) {
             employee.setBenefits(employeeRequest.getBenefits().trim());
         }
         
-        if (employeeRequest.getNotes() != null) {
+        // Update notes if provided and not empty
+        if (employeeRequest.getNotes() != null && !employeeRequest.getNotes().trim().isEmpty()) {
             employee.setNotes(employeeRequest.getNotes().trim());
         }
         
+        // Update active status if provided
         if (employeeRequest.getIsActive() != null) {
             employee.setIsActive(employeeRequest.getIsActive());
         }
@@ -162,9 +194,9 @@ public class EmployeeMapper {
     }
 
     /**
-     * Convierte una lista de Employees a DTOs
-     * @param employees Lista de empleados
-     * @return Lista de DTOs
+     * Converts a set of Employees to DTOs
+     * @param employees Set of employees
+     * @return Set of DTOs
      */
     public static Set<EmployeeResponseDTO> toDtoSet(Set<Employee> employees) {
         if (employees == null) return Set.of();
@@ -173,5 +205,4 @@ public class EmployeeMapper {
                 .map(EmployeeMapper::toDto)
                 .collect(Collectors.toSet());
     }
-
 } 

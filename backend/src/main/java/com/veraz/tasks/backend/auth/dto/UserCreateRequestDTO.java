@@ -10,10 +10,14 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO for creating new users
+ * Contains all required fields with mandatory validations
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class UserRequestDTO {
+public class UserCreateRequestDTO {
 
     @NotBlank(message = "{validation.field.required}")
     @Size(min = 6, max = 50, message = "{validation.field.size}")
@@ -31,5 +35,4 @@ public class UserRequestDTO {
     private Boolean isActive = false;
 
     private Set<String> roles = Set.of("USER");
-
-}
+} 

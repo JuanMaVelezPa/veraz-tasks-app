@@ -11,10 +11,11 @@ import org.springframework.data.domain.Pageable;
  * 
  * @param <T>            Type of the entity
  * @param <ID>           Type of the entity ID
- * @param <REQUEST_DTO>  Type of the request DTO
+ * @param <CREATE_DTO>   Type of the create request DTO
+ * @param <UPDATE_DTO>   Type of the update request DTO
  * @param <RESPONSE_DTO> Type of the response DTO
  */
-public interface ServiceInterface<T, ID, REQUEST_DTO, RESPONSE_DTO> {
+public interface ServiceInterface<T, ID, CREATE_DTO, UPDATE_DTO, RESPONSE_DTO> {
 
     /**
      * Finds all elements with pagination
@@ -35,10 +36,10 @@ public interface ServiceInterface<T, ID, REQUEST_DTO, RESPONSE_DTO> {
     /**
      * Creates a new element
      * 
-     * @param requestDTO DTO with the element data
+     * @param requestDTO DTO with the element data for creation
      * @return Created element
      */
-    RESPONSE_DTO create(REQUEST_DTO requestDTO);
+    RESPONSE_DTO create(CREATE_DTO requestDTO);
 
     /**
      * Updates an existing element
@@ -47,7 +48,7 @@ public interface ServiceInterface<T, ID, REQUEST_DTO, RESPONSE_DTO> {
      * @param requestDTO DTO with the updated data
      * @return Updated element
      */
-    RESPONSE_DTO update(ID id, REQUEST_DTO requestDTO);
+    RESPONSE_DTO update(ID id, UPDATE_DTO requestDTO);
 
     /**
      * Deletes an element by its ID
@@ -55,5 +56,4 @@ public interface ServiceInterface<T, ID, REQUEST_DTO, RESPONSE_DTO> {
      * @param id ID of the element to delete
      */
     void deleteById(ID id);
-
 }

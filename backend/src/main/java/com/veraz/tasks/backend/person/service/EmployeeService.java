@@ -13,7 +13,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.veraz.tasks.backend.person.dto.EmployeeRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeCreateRequestDTO;
+import com.veraz.tasks.backend.person.dto.EmployeeUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.EmployeeResponseDTO;
 import com.veraz.tasks.backend.person.mapper.EmployeeMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
@@ -28,7 +29,7 @@ import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class EmployeeService implements ServiceInterface<Employee, UUID, EmployeeRequestDTO, EmployeeResponseDTO> {
+public class EmployeeService implements ServiceInterface<Employee, UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
@@ -91,7 +92,7 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     }
 
     @Transactional
-    public EmployeeResponseDTO create(EmployeeRequestDTO employeeRequest) {
+    public EmployeeResponseDTO create(EmployeeCreateRequestDTO employeeRequest) {
         // Check if employee already exists with same employee code
         if (employeeRepository.existsByEmployeeCode(employeeRequest.getEmployeeCode())) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Employee"));
@@ -116,15 +117,17 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     }
 
     @Transactional
-    public EmployeeResponseDTO update(UUID id, EmployeeRequestDTO employeeRequestDTO) {
+    public EmployeeResponseDTO update(UUID id, EmployeeUpdateRequestDTO employeeRequestDTO) {
         Employee employeeToUpdate = employeeRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Employee")));
 
-        // Update employee code if provided
+        // Update employee code if provided and not empty
         if (employeeRequestDTO.getEmployeeCode() != null && !employeeRequestDTO.getEmployeeCode().trim().isEmpty()) {
             String newEmployeeCode = employeeRequestDTO.getEmployeeCode().trim();
             
+            // Check if employee code is different from current
             if (!newEmployeeCode.equalsIgnoreCase(employeeToUpdate.getEmployeeCode())) {
+                // Check if new employee code already exists
                 if (employeeRepository.existsByEmployeeCode(newEmployeeCode)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Employee"));
                 }
@@ -206,5 +209,4 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
                 .map(EmployeeMapper::toDto)
                 .collect(Collectors.toList());
     }
-
 }
