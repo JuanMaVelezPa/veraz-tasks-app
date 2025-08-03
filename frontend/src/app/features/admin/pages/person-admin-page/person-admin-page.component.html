@@ -1,0 +1,16 @@
+@if(personResource.isLoading()) {
+<div class="flex justify-center items-center h-32">
+  <app-loading></app-loading>
+</div>
+}
+
+@if(personResource.error()) {
+<div class="alert alert-error mt-4">
+  <i class="fa-solid fa-exclamation-triangle"></i>
+  <span>Error: {{ personResource.error()?.message }}</span>
+</div>
+}
+
+@if(personResource.hasValue()) {
+<person-details [person]="personResource.value()"></person-details>
+}

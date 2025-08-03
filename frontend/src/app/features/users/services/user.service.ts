@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { User } from '@users/interfaces/user.interface';
 import { Observable, of, tap, map, catchError } from 'rxjs';
-import { UserSearchOptions } from '../../../shared/interfaces/search.interface';
+import { SearchOptions } from '@shared/interfaces/search.interface';
 import { UserApiService } from './user-api.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
@@ -41,7 +41,7 @@ export class UserService {
   private usersCache = new Map<string, PaginatedResponseDTO<User>>();
   private userCache = new Map<string, User>();
 
-  getUsers(options: UserSearchOptions): Observable<PaginatedResponseDTO<User>> {
+  getUsers(options: SearchOptions): Observable<PaginatedResponseDTO<User>> {
     const cacheKey = this.generateCacheKey(options);
 
     if (this.usersCache.has(cacheKey)) {
@@ -101,7 +101,7 @@ export class UserService {
       );
   }
 
-  private generateCacheKey(options: UserSearchOptions): string {
+  private generateCacheKey(options: SearchOptions): string {
     const { page, size, sort, order, search } = options;
     return `users-page-${page}-size-${size}-sort-${sort}-order-${order}-search-${search}`;
   }

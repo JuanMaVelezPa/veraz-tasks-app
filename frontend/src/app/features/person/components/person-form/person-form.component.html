@@ -1,0 +1,273 @@
+<form
+  [formGroup]="personForm()"
+  (ngSubmit)="onSubmit()"
+  class="space-y-6"
+>
+
+  <!-- Personal Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <i class="fa-solid fa-user mr-2"></i>
+        Personal Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Identification Type -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">ID Type *</span>
+          </label>
+          <select
+            formControlName="identType"
+            class="select select-bordered w-full"
+            [class.select-error]="personForm().get('identType')?.invalid && personForm().get('identType')?.touched"
+          >
+            <option value="">Select type</option>
+            @for (type of identificationTypes(); track type.id) {
+            <option [value]="type.code">{{ type.name }}</option>
+            }
+          </select>
+          @if (personForm().get('identType')?.invalid && personForm().get('identType')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">ID type is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Identification Number -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">ID Number *</span>
+          </label>
+          <input
+            type="text"
+            formControlName="identNumber"
+            placeholder="Enter ID number"
+            class="input input-bordered w-full"
+            [class.input-error]="personForm().get('identNumber')?.invalid && personForm().get('identNumber')?.touched"
+          />
+          @if (personForm().get('identNumber')?.invalid && personForm().get('identNumber')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">ID number is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- First Name -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">First Name *</span>
+          </label>
+          <input
+            type="text"
+            formControlName="firstName"
+            placeholder="Enter first name"
+            class="input input-bordered w-full"
+            [class.input-error]="personForm().get('firstName')?.invalid && personForm().get('firstName')?.touched"
+          />
+          @if (personForm().get('firstName')?.invalid && personForm().get('firstName')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">First name is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Last Name *</span>
+          </label>
+          <input
+            type="text"
+            formControlName="lastName"
+            placeholder="Enter last name"
+            class="input input-bordered w-full"
+            [class.input-error]="personForm().get('lastName')?.invalid && personForm().get('lastName')?.touched"
+          />
+          @if (personForm().get('lastName')?.invalid && personForm().get('lastName')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Last name is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Birth Date -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Birth Date</span>
+          </label>
+          <input
+            type="date"
+            formControlName="birthDate"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Gender -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Gender</span>
+          </label>
+          <select
+            formControlName="gender"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select gender</option>
+            @for (gender of genders(); track gender.id) {
+            <option [value]="gender.code">{{ gender.name }}</option>
+            }
+          </select>
+        </div>
+
+        <!-- Nationality -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Nationality</span>
+          </label>
+          <select
+            formControlName="nationality"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select nationality</option>
+            @for (nationality of nationalities(); track nationality.id) {
+            <option [value]="nationality.code">{{ nationality.name }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <i class="fa-solid fa-address-book mr-2"></i>
+        Contact Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Email -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Email</span>
+          </label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="example@email.com"
+            class="input input-bordered w-full"
+            [class.input-error]="personForm().get('email')?.invalid && personForm().get('email')?.touched"
+          />
+          @if (personForm().get('email')?.invalid && personForm().get('email')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Invalid email</span>
+          </label>
+          }
+        </div>
+
+        <!-- Mobile -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Mobile</span>
+          </label>
+          <input
+            type="tel"
+            formControlName="mobile"
+            placeholder="+51 999 999 999"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Country -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Country</span>
+          </label>
+          <input
+            type="text"
+            formControlName="country"
+            placeholder="Enter country"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- City -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">City</span>
+          </label>
+          <input
+            type="text"
+            formControlName="city"
+            placeholder="Enter city"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Postal Code -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Postal Code</span>
+          </label>
+          <input
+            type="text"
+            formControlName="postalCode"
+            placeholder="Enter postal code"
+            class="input input-bordered w-full"
+          />
+        </div>
+      </div>
+
+      <!-- Address -->
+      <div class="form-control mt-4">
+        <label class="label">
+          <span class="label-text font-medium">Address</span>
+        </label>
+        <textarea
+          formControlName="address"
+          placeholder="Enter complete address"
+          class="textarea textarea-bordered w-full h-16"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <i class="fa-solid fa-info-circle mr-2"></i>
+        Additional Information
+      </h3>
+
+      <div class="grid grid-cols-1 gap-4">
+        <!-- Notes -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Notes</span>
+          </label>
+          <textarea
+            formControlName="notes"
+            placeholder="Additional information or notes about the person"
+            class="textarea textarea-bordered w-full h-20"
+          ></textarea>
+        </div>
+
+        <!-- Status -->
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <span class="label-text font-medium">Active Status</span>
+            <input
+              type="checkbox"
+              formControlName="isActive"
+              class="checkbox checkbox-primary"
+            />
+          </label>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</form>

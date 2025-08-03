@@ -1,4 +1,4 @@
-export interface UserSearchOptions {
+export interface SearchOptions {
   page: number;
   size: number;
   sort?: string;

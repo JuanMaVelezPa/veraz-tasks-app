@@ -3,7 +3,9 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-@Injectable({ providedIn: 'root' })
+@Injectable({
+  providedIn: 'root'
+})
 export class PaginationService {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
@@ -16,12 +18,36 @@ export class PaginationService {
     { initialValue: 1 }
   );
 
-  goToPage = (page: number) => {
+  goToPage(page: number): void {
     const params = { ...this.route.snapshot.queryParams, page };
     this.router.navigate([], { queryParams: params });
-  };
+  }
 
-  goToFirst = () => this.goToPage(1);
-  goToPrev = () => this.goToPage(Math.max(1, this.currentPage() - 1));
-  goToNext = (totalPages: number) => this.goToPage(Math.min(totalPages, this.currentPage() + 1));
+  goToFirst(): void {
+    this.goToPage(1);
+  }
+
+  goToPrev(): void {
+    this.goToPage(Math.max(1, this.currentPage() - 1));
+  }
+
+  goToNext(totalPages: number): void {
+    this.goToPage(Math.min(totalPages, this.currentPage() + 1));
+  }
+
+  goToLast(totalPages: number): void {
+    this.goToPage(totalPages);
+  }
+
+  getCurrentPage(): number {
+    return this.currentPage();
+  }
+
+  isFirstPage(): boolean {
+    return this.currentPage() === 1;
+  }
+
+  isLastPage(totalPages: number): boolean {
+    return this.currentPage() >= totalPages;
+  }
 }

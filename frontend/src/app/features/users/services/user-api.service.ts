@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { environment } from '@env/environment';
 import { User } from '@users/interfaces/user.interface';
-import { UserSearchOptions } from '@shared/interfaces/search.interface';
+import { SearchOptions } from '@shared/interfaces/search.interface';
 import { HttpErrorService } from '@shared/services/http-error.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
@@ -17,7 +17,7 @@ export class UserApiService {
   private httpErrorService = inject(HttpErrorService);
   private readonly baseUrl = `${environment.apiUrl}/users`;
 
-  getUsers(options: UserSearchOptions): Observable<ApiResponse<PaginatedResponseDTO<any>>> {
+  getUsers(options: SearchOptions): Observable<ApiResponse<PaginatedResponseDTO<any>>> {
     const { page, size, sort, order, search } = options;
 
     const params: any = {

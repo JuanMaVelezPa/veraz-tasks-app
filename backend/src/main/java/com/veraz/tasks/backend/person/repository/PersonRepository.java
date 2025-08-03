@@ -29,8 +29,9 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
            "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
            "LOWER(p.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.identNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<Person> findByFirstNameOrLastNameOrEmailOrIdentNumberContainingIgnoreCase(
+           "LOWER(p.identNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(p.mobile) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Person> findByFirstNameOrLastNameOrEmailOrIdentNumberOrMobileContainingIgnoreCase(
             @Param("searchTerm") String searchTerm, Pageable pageable);
 
     // Additional useful methods
