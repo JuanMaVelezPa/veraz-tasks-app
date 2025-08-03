@@ -19,6 +19,7 @@ public class PersonMapper {
         if (person == null) return null;
         
         return PersonResponseDTO.builder()
+                .userId(person.getUser() != null ? person.getUser().getId() : null)
                 .id(person.getId())
                 .identType(person.getIdentType())
                 .identNumber(person.getIdentNumber())

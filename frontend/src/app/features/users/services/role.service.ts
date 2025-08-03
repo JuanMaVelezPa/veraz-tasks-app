@@ -2,7 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable, of, map, catchError } from 'rxjs';
-import { RoleResponse } from '../interfaces/role-response.interface';
+import { RoleResponse } from '../interfaces/role.interface';
 import { HttpErrorService } from '@shared/services/http-error.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 
@@ -36,50 +36,35 @@ export class RoleService {
       );
   }
 
-  private handleGetRolesSuccess(apiResponse: ApiResponse<RoleResponse[]>): RoleResponse[] {
+  private handleGetRolesSuccess(apiResponse: ApiResponse<any>): RoleResponse[] {
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error(apiResponse.message || 'Error getting roles');
     }
-    return apiResponse.data;
+
+    const rolesData = apiResponse.data;
+    const roles = rolesData.roles || rolesData;
+    return roles;
   }
 
   private handleGetRolesError(error: any): Observable<RoleResponse[]> {
     console.error('Error getting roles:', error);
-
-    // Extraer mensaje de error de ErrorResponse si está disponible
-    let errorMessage = 'Error getting roles';
-    if (error?.errorResponse?.message) {
-      errorMessage = error.errorResponse.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-
-    console.error(errorMessage);
     return of([]);
   }
 
-  private handleGetActiveRolesSuccess(apiResponse: ApiResponse<RoleResponse[]>): RoleResponse[] {
+  private handleGetActiveRolesSuccess(apiResponse: ApiResponse<any>): RoleResponse[] {
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error(apiResponse.message || 'Error getting active roles');
     }
 
-    const roles = apiResponse.data;
+    const rolesData = apiResponse.data;
+    const roles = rolesData.roles || rolesData;
+
     this.activeRolesCache = roles;
     return roles;
   }
 
   private handleGetActiveRolesError(error: any): Observable<RoleResponse[]> {
     console.error('Error getting active roles:', error);
-
-    // Extraer mensaje de error de ErrorResponse si está disponible
-    let errorMessage = 'Error getting active roles';
-    if (error?.errorResponse?.message) {
-      errorMessage = error.errorResponse.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-
-    console.error(errorMessage);
     return of([]);
   }
 

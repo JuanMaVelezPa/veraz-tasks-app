@@ -67,28 +67,40 @@ export class SignInPageComponent {
       );
 
       if (signInResponse.authStatus === 'authenticated') {
-        this.resetForm();
+        this.signInForm.reset();
+        this.hasError.set(false);
+        this.feedbackService.clearMessage();
         this.appInitService.startTokenRefresh();
-        this.router.navigateByUrl('/');
+        this.feedbackService.showSuccess('Login successful! Redirecting...', 1000);
+
+        setTimeout(() => {
+          this.isLoading.set(false);
+          this.router.navigateByUrl('/');
+        }, 300);
       } else {
         this.showError(signInResponse.message, 10000);
       }
     } catch (error) {
       this.showError('Unexpected error signing in. Please try again.');
     } finally {
-      this.isLoading.set(false);
+      if (this.isLoading()) {
+        setTimeout(() => {
+          this.isLoading.set(false);
+        }, 1000);
+      }
     }
   }
 
   private showError(message: string, timeout: number = 2000) {
     this.hasError.set(true);
+    this.isLoading.set(false);
     this.feedbackService.showError(message, timeout);
   }
 
   resetForm() {
     this.hasError.set(false);
     this.feedbackService.clearMessage();
-    this.formUtils.resetForm(this.signInForm);
+    this.signInForm.reset();
   }
 
   // navigateToSignUp() {

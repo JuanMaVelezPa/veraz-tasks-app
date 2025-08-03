@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class PersonResponseDTO {
+    private UUID userId;
     private UUID id;
     private String identType;
     private String identNumber;

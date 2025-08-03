@@ -53,10 +53,10 @@
           placeholder="Username or Email"
           formControlName="usernameOrEmail"
           autocomplete="off"
-          [class.input-error]="formUtils.isValidField(signInForm, 'usernameOrEmail')"
+          [class.input-error]="!isLoading() && formUtils.isValidField(signInForm, 'usernameOrEmail')"
         />
       </label>
-      @if(formUtils.isValidField(signInForm, 'usernameOrEmail')) {
+      @if(!isLoading() && formUtils.isValidField(signInForm, 'usernameOrEmail')) {
       <div class="label">
         <span class="label-text-alt text-error break-words mt-1 ml-1">{{ formUtils.getFieldError(signInForm,
           'usernameOrEmail')
@@ -97,10 +97,10 @@
           placeholder="Password"
           formControlName="password"
           autocomplete="off"
-          [class.input-error]="passwordUtils.isValidField(signInForm, 'password')"
+          [class.input-error]="!isLoading() && passwordUtils.isValidField(signInForm, 'password')"
         />
       </label>
-      @if(passwordUtils.isValidField(signInForm, 'password')) {
+      @if(!isLoading() && passwordUtils.isValidField(signInForm, 'password')) {
       <div class="label">
         <div class="space-y-1">
           @for (error of passwordUtils.getFieldError(signInForm, 'password'); track $index) {
@@ -145,8 +145,14 @@
     <button
       class="btn btn-primary w-full"
       type="submit"
+      [disabled]="isLoading()"
     >
-      Sign in
+      @if(isLoading()) {
+        <span class="loading loading-spinner loading-sm"></span>
+        Signing in...
+      } @else {
+        Sign in
+      }
     </button>
 
   </form>

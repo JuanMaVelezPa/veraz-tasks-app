@@ -159,7 +159,6 @@ export class FormUtilsService {
 
   resetForm(formGroup: FormGroup) {
     formGroup.reset();
-    this.markFormGroupTouched(formGroup);
   }
 
   hasFormErrors(formGroup: FormGroup): boolean {

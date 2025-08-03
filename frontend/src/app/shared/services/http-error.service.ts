@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
-import { HttpErrorInfo } from '@shared/interfaces/http-error-info.interface';
-import { ErrorResponse } from '@shared/interfaces/error-response.interface';
+import { ErrorResponse, HttpErrorInfo } from '@shared/interfaces/error-response.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +9,7 @@ import { ErrorResponse } from '@shared/interfaces/error-response.interface';
 export class HttpErrorService {
 
   handleError(error: HttpErrorResponse, context: string): Observable<never> {
-    // Verificar si el error tiene la estructura ErrorResponse del backend
+
     if (error.error && this.isErrorResponse(error.error)) {
       const errorResponse: ErrorResponse = error.error;
       return this.createCustomError(
@@ -22,7 +21,6 @@ export class HttpErrorService {
       );
     }
 
-    // Fallback para errores que no tienen la estructura ErrorResponse
     if (error.error?.message) {
       return this.createCustomError(error.error.message, error.status, error, context);
     }
@@ -33,13 +31,13 @@ export class HttpErrorService {
 
   private isErrorResponse(error: any): error is ErrorResponse {
     return error &&
-           typeof error.timestamp === 'string' &&
-           typeof error.status === 'number' &&
-           typeof error.error === 'string' &&
-           typeof error.message === 'string' &&
-           typeof error.errorId === 'string' &&
-           typeof error.path === 'string' &&
-           typeof error.fieldErrors === 'object';
+      typeof error.timestamp === 'string' &&
+      typeof error.status === 'number' &&
+      typeof error.error === 'string' &&
+      typeof error.message === 'string' &&
+      typeof error.errorId === 'string' &&
+      typeof error.path === 'string' &&
+      typeof error.fieldErrors === 'object';
   }
 
   private createCustomError(
@@ -54,7 +52,7 @@ export class HttpErrorService {
       status,
       originalError,
       context,
-      errorResponse // Agregar la respuesta de error estructurada si está disponible
+      errorResponse
     };
 
     return throwError(() => customError);

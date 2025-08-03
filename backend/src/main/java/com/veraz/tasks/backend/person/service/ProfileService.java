@@ -103,8 +103,7 @@ public class ProfileService {
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
 
-        // Verify if the current user is the same as the person's user
-        if (!user.getId().equals(person.getUser().getId())) {
+        if (person.getUser() == null || !user.getId().equals(person.getUser().getId())) {
             throw new ResourceNotFoundException("Person not found for user: " + user.getUsername());
         }
 

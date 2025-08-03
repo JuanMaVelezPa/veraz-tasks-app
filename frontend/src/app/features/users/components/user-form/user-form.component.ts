@@ -1,4 +1,4 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, output, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { FormUtilsService } from '@shared/services/form-utils.service';
@@ -27,14 +27,15 @@ export class UserFormComponent {
 
   showPasswordSection = signal(false);
 
-  ngOnInit() {
-    if (!this.isEditMode()) {
-      this.showPasswordSection.set(true);
-    }
-    this.showPasswordSection.set(false);
-  }
+  private editModeEffect = effect(() => {
+    this.showPasswordSection.set(!this.isEditMode());
+  });
 
   onSubmit() {
+    if (this.userForm().invalid) {
+      this.userForm().markAllAsTouched();
+      return;
+    }
     this.formSubmitted.emit();
   }
 
@@ -43,20 +44,11 @@ export class UserFormComponent {
   }
 
   togglePasswordSection() {
-    const newState = !this.showPasswordSection();
-    this.showPasswordSection.set(newState);
+    this.showPasswordSection.update(current => !current);
   }
 
   isPasswordRequired(): boolean {
     return !this.isEditMode() || this.showPasswordSection();
-  }
-
-  hasPasswordValue(): boolean {
-    return !!this.userForm().get('password')?.value?.trim();
-  }
-
-  shouldValidatePassword(): boolean {
-    return this.isPasswordRequired() || this.hasPasswordValue();
   }
 
   onRoleSelected(roleName: string) {
@@ -64,6 +56,6 @@ export class UserFormComponent {
   }
 
   getSelectedRole(): string {
-    return this.userForm().get('selectedRole')?.value || '';
+    return this.userForm().get('selectedRole')?.value ?? '';
   }
 }

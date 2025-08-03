@@ -1,8 +1,8 @@
-import { Component, inject, input, output, signal } from '@angular/core';
+import { Component, inject, input, OnInit, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { RoleService } from '@users/services/role.service';
-import { RoleResponse } from '@users/interfaces/role-response.interface';
+import { RoleResponse } from '@users/interfaces/role.interface';
 
 @Component({
   selector: 'app-user-role-selector',
@@ -10,7 +10,7 @@ import { RoleResponse } from '@users/interfaces/role-response.interface';
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './user-role-selector.component.html'
 })
-export class UserRoleSelectorComponent {
+export class UserRoleSelectorComponent implements OnInit {
 
   selectedRole = input<string>('');
   roleSelected = output<string>();
@@ -26,12 +26,14 @@ export class UserRoleSelectorComponent {
 
   private loadAvailableRoles() {
     this.isLoadingRoles.set(true);
+
     this.roleService.getActiveRoles().subscribe({
       next: (roles: RoleResponse[]) => {
         this.availableRoles.set(roles);
         this.isLoadingRoles.set(false);
       },
       error: (error: any) => {
+        console.error('Error loading roles:', error);
         this.availableRoles.set([]);
         this.isLoadingRoles.set(false);
       }

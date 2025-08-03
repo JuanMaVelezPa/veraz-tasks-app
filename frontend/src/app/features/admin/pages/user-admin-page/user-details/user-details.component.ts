@@ -46,13 +46,15 @@ export class UserDetailsComponent implements OnDestroy {
       Validators.pattern(FormUtilsService.emailPattern),
     ]],
     password: ['', [
+      Validators.required,
       this.passwordUtils.passwordValidator
     ]],
     confirmPassword: ['', [
+      Validators.required,
       this.passwordUtils.passwordValidator
     ]],
     isActive: [true],
-    selectedRole: ['' as string],
+    selectedRole: ['' as string, [Validators.required]],
   }, {
     validators: [
       FormUtilsService.isFieldOneEqualFieldTwo('password', 'confirmPassword')
@@ -60,6 +62,7 @@ export class UserDetailsComponent implements OnDestroy {
   });
 
   ngOnInit() {
+    this.feedbackService.clearMessage();
     const user = this.user();
     this.currentUser.set(user);
     this.setFormValues(user);
@@ -115,15 +118,23 @@ export class UserDetailsComponent implements OnDestroy {
       roles: formValue.selectedRole ? [formValue.selectedRole] : []
     };
 
-    const createdUser = await firstValueFrom(
-      this.userService.createUser(userData)
-    );
+    try {
+      const createdUser = await firstValueFrom(
+        this.userService.createUser(userData)
+      );
 
-    if (createdUser?.id) {
-      this.currentUser.set(createdUser);
-      this.wasSaved.set(true);
-      this.feedbackService.showSuccess('User created successfully!');
-      this.router.navigate(['/admin/users']);
+      if (createdUser?.id) {
+        this.currentUser.set(createdUser);
+        this.wasSaved.set(true);
+        this.feedbackService.showSuccess('User created successfully!');
+        // Usar setTimeout para asegurar que el mensaje se muestre antes de navegar
+        setTimeout(() => {
+          this.router.navigate(['/admin/users']);
+        }, 500);
+      }
+    } catch (error) {
+      this.handleUserError(error);
+      throw error;
     }
   }
 
