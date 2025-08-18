@@ -71,6 +71,32 @@ public class PersonService {
     }
 
     @Transactional(readOnly = true)
+    public PaginatedResponseDTO<PersonResponseDTO> findBySearch(String query, Pageable pageable) {
+        Page<Person> personPage = personRepository.findByFirstNameOrLastNameOrEmailOrIdentNumberOrMobileContainingIgnoreCase(query, pageable);
+
+        List<PersonResponseDTO> personDtos = personPage.getContent().stream()
+                .map(PersonMapper::toDto)
+                .collect(Collectors.toList());
+
+        PaginationInfo paginationInfo = PaginationInfo
+                .builder()
+                .currentPage(personPage.getNumber())
+                .totalPages(personPage.getTotalPages())
+                .totalElements(personPage.getTotalElements())
+                .pageSize(personPage.getSize())
+                .hasNext(personPage.hasNext())
+                .hasPrevious(personPage.hasPrevious())
+                .isFirst(personPage.isFirst())
+                .isLast(personPage.isLast())
+                .build();
+
+        return PaginatedResponseDTO.<PersonResponseDTO>builder()
+                .data(personDtos)
+                .pagination(paginationInfo)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
     public PersonResponseDTO findByEmail(String email) {
         Person person = personRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));

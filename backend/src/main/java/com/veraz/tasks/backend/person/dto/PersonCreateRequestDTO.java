@@ -51,7 +51,6 @@ public class PersonCreateRequestDTO {
     private String mobile;
 
     @Email(message = "{validation.field.email}")
-    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String email;
 

@@ -98,6 +98,9 @@ public class Person {
         if (this.updatedAt == null) {
             this.updatedAt = LocalDateTime.now();
         }
+        if (this.gender == null) {
+            this.gender = "O";
+        }
         this.isActive = true;
     }
 

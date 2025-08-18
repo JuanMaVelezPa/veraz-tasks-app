@@ -90,10 +90,36 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
     public UserResponseDTO findByEmailOrUsername(String query) {
         User user = userRepository.findByUsernameOrEmailAllIgnoreCase(query, query)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
-        
+
         return UserMapper.toDto(user);
     }
 
+    @Transactional(readOnly = true)
+    public PaginatedResponseDTO<UserResponseDTO> findBySearch(String query, Pageable pageable) {
+        Page<User> userPage = userRepository.findByUsernameOrEmailOrRolesNameContainingIgnoreCase(query, pageable);
+
+        List<UserResponseDTO> userDtos = userPage.getContent().stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
+
+        PaginationInfo paginationInfo = PaginationInfo
+                .builder()
+                .currentPage(userPage.getNumber())
+                .totalPages(userPage.getTotalPages())
+                .totalElements(userPage.getTotalElements())
+                .pageSize(userPage.getSize())
+                .hasNext(userPage.hasNext())
+                .hasPrevious(userPage.hasPrevious())
+                .isFirst(userPage.isFirst())
+                .isLast(userPage.isLast())
+                .build();
+
+        return PaginatedResponseDTO.<UserResponseDTO>builder()
+                .data(userDtos)
+                .pagination(paginationInfo)
+                .build();
+    }
+    
     @Transactional
     public UserResponseDTO create(UserCreateRequestDTO userRequest) {
         // Check if user already exists

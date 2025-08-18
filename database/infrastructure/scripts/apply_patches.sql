@@ -56,8 +56,6 @@ END $$;
 -- Apply initial authentication data patch
 \i ../patches/v1.0.0/002_initial_auth_data.sql
 
--- Apply test data patch
-\i ../patches/v1.0.0/003_test_data_employees_clients.sql
 
 -- =====================================================
 -- FUTURE PATCHES WILL BE ADDED HERE

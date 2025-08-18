@@ -62,7 +62,13 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
         paginationRequest.validateAndNormalize();
         Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        PaginatedResponseDTO<UserResponseDTO> response = userService.findAll(pageable);
+        PaginatedResponseDTO<UserResponseDTO> response;
+
+        if (paginationRequest.hasSearch()) {
+            response = userService.findBySearch(paginationRequest.getSearch(), pageable);
+        } else {
+            response = userService.findAll(pageable);
+        }
 
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Users"),
                 response, null));

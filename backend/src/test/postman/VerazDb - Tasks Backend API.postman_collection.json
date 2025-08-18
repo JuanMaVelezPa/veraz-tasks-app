@@ -55,7 +55,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"usernameOrEmail\": \"jmvelez\",\n    \"password\": \"Abc123456*\"\n}",
+							"raw": "{\n    \"usernameOrEmail\": \"admin_user\",\n    \"password\": \"Abc123456*\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -208,7 +208,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/users?page=0&size=10&sort=username&direction=asc",
+							"raw": "http://localhost:3000/api/users?page=0&size=10&sortBy=username&sortDirection=desc&search=jmvelez",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -228,12 +228,16 @@
 									"value": "10"
 								},
 								{
-									"key": "sort",
+									"key": "sortBy",
 									"value": "username"
 								},
 								{
-									"key": "direction",
-									"value": "asc"
+									"key": "sortDirection",
+									"value": "desc"
+								},
+								{
+									"key": "search",
+									"value": "jmvelez"
 								}
 							]
 						}
@@ -262,13 +266,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/users/{{user_id}}",
+							"raw": "http://localhost:3000/api/users/{{user_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"users",
 								"{{user_id}}"
 							]
@@ -342,7 +347,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -353,7 +358,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"usuario_actualizado@email.com\",\n    \"isActive\": true\n}",
+							"raw": "{\n    \"username\": \"jmvelez\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -361,13 +366,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/users/{{user_id}}",
+							"raw": "http://localhost:3000/api/users/{{user_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"users",
 								"{{user_id}}"
 							]
@@ -438,7 +444,7 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc",
+							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc&search=amanda",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -464,6 +470,68 @@
 								{
 									"key": "direction",
 									"value": "asc"
+								},
+								{
+									"key": "search",
+									"value": "amanda"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Persons Availables",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc&search=amanda",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"persons"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "firstName"
+								},
+								{
+									"key": "direction",
+									"value": "asc"
+								},
+								{
+									"key": "search",
+									"value": "amanda"
 								}
 							]
 						}
@@ -1245,13 +1313,14 @@
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/roles/active",
+							"raw": "http://localhost:3000/api/roles/active",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"roles",
 								"active"
 							]

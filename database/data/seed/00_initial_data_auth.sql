@@ -56,7 +56,7 @@ INSERT INTO GE_TPERM (perm_name, perm_descr) VALUES
 -- Insert Example User into GE_TUSER
 -- Note: Replace 'password_hashed_here' with the actual hashed password
 INSERT INTO GE_TUSER (user_username, user_email, user_pwd) VALUES
-('admin_user', 'admin@empresa.com', '$2a$10$T9WY1lL.AGTy14qvfqfTMe45YjO6IiDyTLrAMhylgGWni3CP2t8Mi');
+('jmvelez', 'jmvelez@empresa.com', '$2a$10$T9WY1lL.AGTy14qvfqfTMe45YjO6IiDyTLrAMhylgGWni3CP2t8Mi');
 
 -- =====================================================
 -- STEP 4: ASSIGN ROLES TO USERS

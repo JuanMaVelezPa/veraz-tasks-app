@@ -1,0 +1,31 @@
+2025-08-18 16:46:55.458 INFO  19868 --- [  restartedMain] c.v.t.backend.TasksBackendApplication : Starting TasksBackendApplication using Java 21.0.4 with PID 19868 (D:\JuanMa\proyectos\tasks-app\backend\target\classes started by JUANMA in D:\JuanMa\proyectos\tasks-app)
+2025-08-18 16:46:55.461 INFO  19868 --- [  restartedMain] c.v.t.backend.TasksBackendApplication : No active profile set, falling back to 1 default profile: "default"
+2025-08-18 16:46:58.592 INFO  19868 --- [  restartedMain] o.apache.catalina.core.StandardService : Starting service [Tomcat]
+2025-08-18 16:46:58.593 INFO  19868 --- [  restartedMain] o.apache.catalina.core.StandardEngine : Starting Servlet engine: [Apache Tomcat/10.1.43]
+2025-08-18 16:46:58.736 INFO  19868 --- [  restartedMain] o.a.c.c.C.[Tomcat].[localhost].[/api] : Initializing Spring embedded WebApplicationContext
+2025-08-18 16:46:59.010 INFO  19868 --- [  restartedMain] o.hibernate.jpa.internal.util.LogHelper : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-18 16:46:59.090 INFO  19868 --- [  restartedMain] org.hibernate.Version : HHH000412: Hibernate ORM core version 6.6.22.Final
+2025-08-18 16:46:59.146 INFO  19868 --- [  restartedMain] o.h.c.internal.RegionFactoryInitiator : HHH000026: Second-level cache disabled
+2025-08-18 16:46:59.526 INFO  19868 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource : HikariPool-1 - Starting...
+2025-08-18 16:46:59.862 INFO  19868 --- [  restartedMain] com.zaxxer.hikari.pool.HikariPool : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@2df40721
+2025-08-18 16:46:59.864 INFO  19868 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource : HikariPool-1 - Start completed.
+2025-08-18 16:46:59.960 INFO  19868 --- [  restartedMain] org.hibernate.orm.connections.pooling : HHH10001005: Database info:
+	Database JDBC URL [Connecting through datasource 'HikariDataSource (HikariPool-1)']
+	Database driver: undefined/unknown
+	Database version: 17.5
+	Autocommit mode: undefined/unknown
+	Isolation level: undefined/unknown
+	Minimum pool size: undefined/unknown
+	Maximum pool size: undefined/unknown
+2025-08-18 16:47:01.215 INFO  19868 --- [  restartedMain] o.h.e.t.j.p.i.JtaPlatformInitiator : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-18 16:47:04.094 WARN  19868 --- [  restartedMain] o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-18 16:47:04.660 INFO  19868 --- [  restartedMain] o.s.s.c.a.a.c.InitializeUserDetailsBeanManagerConfigurer$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name userService
+2025-08-18 16:47:05.158 WARN  19868 --- [  restartedMain] o.s.b.d.a.OptionalLiveReloadServer : Unable to start LiveReload server
+2025-08-18 16:47:05.187 WARN  19868 --- [  restartedMain] o.s.b.w.s.c.AnnotationConfigServletWebServerApplicationContext : Exception encountered during context initialization - cancelling refresh attempt: org.springframework.context.ApplicationContextException: Failed to start bean 'webServerStartStop'
+2025-08-18 16:47:05.203 INFO  19868 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource : HikariPool-1 - Shutdown initiated...
+2025-08-18 16:47:05.209 INFO  19868 --- [  restartedMain] com.zaxxer.hikari.HikariDataSource : HikariPool-1 - Shutdown completed.
+2025-08-18 16:47:19.205 INFO  28304 --- [  restartedMain] c.v.t.backend.TasksBackendApplication : Starting TasksBackendApplication using Java 21.0.4 with PID 28304 (D:\JuanMa\proyectos\tasks-app\backend\target\classes started by JUANMA in D:\JuanMa\proyectos\tasks-app)
+2025-08-18 16:47:19.207 INFO  28304 --- [  restartedMain] c.v.t.backend.TasksBackendApplication : No active profile set, falling back to 1 default profile: "default"
+2025-08-18 16:47:22.573 INFO  28304 --- [  restartedMain] o.hibernate.jpa.internal.util.LogHelper : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-18 16:47:22.717 INFO  28304 --- [  restartedMain] org.hibernate.Version : HHH000412: Hibernate ORM core version 6.6.22.Final
+2025-08-18 16:47:22.865 INFO  28304 --- [  restartedMain] o.h.c.internal.RegionFactoryInitiator : HHH000026: Second-level cache disabled

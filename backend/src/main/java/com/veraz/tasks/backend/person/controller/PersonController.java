@@ -49,7 +49,7 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
     }
 
     @GetMapping
-    @Operation(summary = "Get all persons", description = "Get all persons with pagination")
+    @Operation(summary = "Get all persons", description = "Get all persons with pagination and search")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Persons retrieved successfully"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
@@ -62,7 +62,13 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
         paginationRequest.validateAndNormalize();
         Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        PaginatedResponseDTO<PersonResponseDTO> response = personService.findAll(pageable);
+        PaginatedResponseDTO<PersonResponseDTO> response;
+
+        if (paginationRequest.hasSearch()) {
+            response = personService.findBySearch(paginationRequest.getSearch(), pageable);
+        } else {
+            response = personService.findAll(pageable);
+        }
 
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Persons"),
                 response, null));

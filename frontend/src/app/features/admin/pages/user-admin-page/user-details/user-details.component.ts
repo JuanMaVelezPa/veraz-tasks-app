@@ -46,11 +46,11 @@ export class UserDetailsComponent implements OnDestroy {
       Validators.pattern(FormUtilsService.emailPattern),
     ]],
     password: ['', [
-      Validators.required,
+      // Validators.required,
       this.passwordUtils.passwordValidator
     ]],
     confirmPassword: ['', [
-      Validators.required,
+      // Validators.required,
       this.passwordUtils.passwordValidator
     ]],
     isActive: [true],
@@ -127,7 +127,7 @@ export class UserDetailsComponent implements OnDestroy {
         this.currentUser.set(createdUser);
         this.wasSaved.set(true);
         this.feedbackService.showSuccess('User created successfully!');
-        // Usar setTimeout para asegurar que el mensaje se muestre antes de navegar
+        // Use setTimeout to ensure the message is shown before navigation
         setTimeout(() => {
           this.router.navigate(['/admin/users']);
         }, 500);
@@ -141,6 +141,11 @@ export class UserDetailsComponent implements OnDestroy {
   private async updateUser() {
     const originalUser = this.currentUser();
     if (!originalUser) { return; }
+
+    // Validate password fields
+    if (!this.validatePasswordFields()) {
+      return;
+    }
 
     const formValue = this.userForm.value;
     const changes = this.detectChanges(formValue, originalUser);
@@ -164,6 +169,29 @@ export class UserDetailsComponent implements OnDestroy {
     } catch (error) {
       this.handleUserError(error);
     }
+  }
+
+  private validatePasswordFields(): boolean {
+    const passwordValue = this.userForm.get('password')?.value?.trim();
+    const confirmPasswordValue = this.userForm.get('confirmPassword')?.value?.trim();
+
+    // If either password field has a value, both must have values
+    if (passwordValue || confirmPasswordValue) {
+      if (!passwordValue) {
+        this.feedbackService.showError('If you enter password confirmation, you must also enter the new password');
+        return false;
+      }
+      if (!confirmPasswordValue) {
+        this.feedbackService.showError('If you enter a new password, you must also confirm it');
+        return false;
+      }
+      if (passwordValue !== confirmPasswordValue) {
+        this.feedbackService.showError('Passwords do not match');
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async deleteUser() {
