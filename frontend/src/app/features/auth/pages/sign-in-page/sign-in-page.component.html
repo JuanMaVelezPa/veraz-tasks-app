@@ -3,9 +3,9 @@
 }
 
 <div class="divider divider-primary">
-  <span class="text-primary font-bold">
+  <h1 class="text-primary font-bold text-xl lg:text-2xl font-custom-one text-center">
     Sign in
-  </span>
+  </h1>
 </div>
 
 <div class="relative w-full">
@@ -58,7 +58,7 @@
       </label>
       @if(!isLoading() && formUtils.isValidField(signInForm, 'usernameOrEmail')) {
       <div class="label">
-        <span class="label-text-alt text-error break-words mt-1 ml-1">{{ formUtils.getFieldError(signInForm,
+        <span class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ formUtils.getFieldError(signInForm,
           'usernameOrEmail')
           }}</span>
       </div>
@@ -104,7 +104,7 @@
       <div class="label">
         <div class="space-y-1">
           @for (error of passwordUtils.getFieldError(signInForm, 'password'); track $index) {
-          <div class="label-text-alt text-error break-words mt-1 ml-1">{{ error }}</div>
+          <div class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ error }}</div>
           }
         </div>
       </div>

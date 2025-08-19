@@ -4,15 +4,15 @@
   class="space-y-6"
 >
 
-  <!-- Personal Information -->
-  <div class="card bg-base-200 shadow-sm">
+  <!-- Required Information -->
+  <div class="card bg-base-200 shadow-sm border-l-4 border-l-primary">
     <div class="card-body p-4">
       <h3 class="card-title text-lg font-semibold mb-4">
-        <i class="fa-solid fa-user mr-2"></i>
-        Personal Information
+        <i class="fa-solid fa-id-card mr-2 text-primary"></i>
+        Required Information
       </h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <!-- Identification Type -->
         <div class="form-control">
           <label class="label">
@@ -91,7 +91,19 @@
           </label>
           }
         </div>
+      </div>
+    </div>
+  </div>
 
+  <!-- Personal Details -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <i class="fa-solid fa-user mr-2"></i>
+        Personal Details
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
         <!-- Birth Date -->
         <div class="form-control">
           <label class="label">
@@ -147,7 +159,7 @@
         Contact Information
       </h3>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Email -->
         <div class="form-control">
           <label class="label">
@@ -179,57 +191,63 @@
             class="input input-bordered w-full"
           />
         </div>
-
-        <!-- Country -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-medium">Country</span>
-          </label>
-          <input
-            type="text"
-            formControlName="country"
-            placeholder="Enter country"
-            class="input input-bordered w-full"
-          />
-        </div>
-
-        <!-- City -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-medium">City</span>
-          </label>
-          <input
-            type="text"
-            formControlName="city"
-            placeholder="Enter city"
-            class="input input-bordered w-full"
-          />
-        </div>
-
-        <!-- Postal Code -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-medium">Postal Code</span>
-          </label>
-          <input
-            type="text"
-            formControlName="postalCode"
-            placeholder="Enter postal code"
-            class="input input-bordered w-full"
-          />
-        </div>
       </div>
 
-      <!-- Address -->
-      <div class="form-control mt-4">
-        <label class="label">
-          <span class="label-text font-medium">Address</span>
-        </label>
-        <textarea
-          formControlName="address"
-          placeholder="Enter complete address"
-          class="textarea textarea-bordered w-full h-16"
-        ></textarea>
+      <!-- Address Section -->
+      <div class="mt-4">
+        <h4 class="text-md font-medium mb-3 text-base-content/80">Address Details</h4>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Country -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Country</span>
+            </label>
+            <input
+              type="text"
+              formControlName="country"
+              placeholder="Enter country"
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <!-- City -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">City</span>
+            </label>
+            <input
+              type="text"
+              formControlName="city"
+              placeholder="Enter city"
+              class="input input-bordered w-full"
+            />
+          </div>
+
+          <!-- Postal Code -->
+          <div class="form-control">
+            <label class="label">
+              <span class="label-text font-medium">Postal Code</span>
+            </label>
+            <input
+              type="text"
+              formControlName="postalCode"
+              placeholder="Enter postal code"
+              class="input input-bordered w-full"
+            />
+          </div>
+        </div>
+
+        <!-- Full Address -->
+        <div class="form-control mt-4">
+          <label class="label">
+            <span class="label-text font-medium">Full Address</span>
+          </label>
+          <textarea
+            formControlName="address"
+            placeholder="Enter complete address (street, number, neighborhood, etc.)"
+            class="textarea textarea-bordered w-full h-16"
+          ></textarea>
+        </div>
       </div>
     </div>
   </div>

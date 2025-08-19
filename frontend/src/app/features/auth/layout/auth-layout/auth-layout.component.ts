@@ -9,5 +9,4 @@ import { MobileAppInfoComponent } from '../../components/mobile-app-info/mobile-
   templateUrl: './auth-layout.component.html',
 })
 export class AuthLayoutComponent {
-  titleAuth = 'Authentication';
 }

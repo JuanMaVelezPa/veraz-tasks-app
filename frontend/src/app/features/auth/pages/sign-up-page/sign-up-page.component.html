@@ -1,7 +1,7 @@
 <div class="divider divider-primary">
-  <span class="text-primary font-bold">
+  <h1 class="text-primary font-bold text-xl lg:text-2xl font-custom-one text-center">
     Sign up
-  </span>
+  </h1>
 </div>
 
 <form
@@ -46,7 +46,7 @@
     role="alert"
     class="alert alert-soft text-xs"
   >
-    <span>* {{ formUtils.getFieldError(signUpForm, 'username') }}</span>
+    <span class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ formUtils.getFieldError(signUpForm, 'username') }}</span>
   </div>
   }
 
@@ -87,7 +87,7 @@
     role="alert"
     class="alert alert-soft text-xs"
   >
-    <span>* {{ formUtils.getFieldError(signUpForm, 'email') }}</span>
+    <span class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ formUtils.getFieldError(signUpForm, 'email') }}</span>
   </div>
   }
 
@@ -131,7 +131,7 @@
   >
     <div>
       @for (error of passwordUtils.getFieldError(signUpForm, 'password'); track $index) {
-      <p class="mb-1">* {{ error }}</p>
+      <p class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ error }}</p>
       }
     </div>
   </div>
@@ -177,7 +177,7 @@
   >
     <div>
       @for (error of passwordUtils.getFieldError(signUpForm, 'confirmPassword'); track $index) {
-      <p class="mb-1">* {{ error }}</p>
+      <p class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ error }}</p>
       }
     </div>
   </div>
@@ -189,7 +189,7 @@
     role="alert"
     class="alert alert-soft text-xs"
   >
-    <span>* Passwords do not match</span>
+    <span class="text-sm label-text-alt text-error break-words mt-1 ml-1">Passwords do not match</span>
   </div>
   }
 

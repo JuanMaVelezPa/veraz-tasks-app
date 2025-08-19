@@ -276,10 +276,6 @@ export class PersonDetailsComponent implements OnDestroy {
     this.router.navigate(['/admin/persons']);
   }
 
-  onReset(): void {
-    this.resetForm();
-  }
-
   ngOnDestroy(): void {
     this.feedbackService.clearMessage();
   }

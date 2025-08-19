@@ -2,50 +2,34 @@
   <label class="label">
     <span class="label-text font-semibold text-sm">Roles</span>
   </label>
-  <div class="space-y-2">
-    @if (isLoadingRoles()) {
+
+  @if (isLoadingRoles()) {
     <div class="text-center py-2">
       <div class="loading loading-spinner loading-xs"></div>
       <span class="text-xs text-gray-500">Loading roles...</span>
     </div>
-    } @else if (availableRoles().length > 0) {
-    <div class="grid grid-cols-1 gap-2">
+  } @else if (availableRoles().length > 0) {
+    <select
+      class="select select-bordered w-full"
+      [value]="selectedRole()"
+      (change)="onRoleChange($event)"
+    >
+      <option value="" disabled>Select a role</option>
       @for (role of availableRoles(); track role.name) {
-      <label
-        class="flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-colors"
-        [class.border-primary]="isRoleSelected(role.name)"
-        [class.bg-base-100]="isRoleSelected(role.name)"
-        [class.border-2]="isRoleSelected(role.name)"
-        [class.hover:bg-base-200]="!isRoleSelected(role.name)"
-        [class.hover:border-base-300]="!isRoleSelected(role.name)"
-        (click)="selectRole(role.name)"
-      >
-        <input
-          type="radio"
-          name="selectedRole"
-          class="radio radio-primary radio-xs"
-          [value]="role.name"
-          [checked]="isRoleSelected(role.name)"
-          (change)="selectRole(role.name)"
-        />
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
-            <span class="font-medium text-xs capitalize">{{ role.name }}</span>
-            @if (isRoleSelected(role.name)) {
-            <div class="badge badge-primary badge-xs text-primary-content">Selected</div>
-            }
-          </div>
-          @if (role.description) {
-          <div class="text-xs text-base-content/70 mt-0.5">{{ role.description }}</div>
-          }
-        </div>
-      </label>
+        <option [value]="role.name" [title]="role.description || ''">
+          {{ role.name | titlecase }}
+        </option>
       }
-    </div>
-    } @else {
+    </select>
+
+    @if (selectedRole() && getSelectedRoleDescription()) {
+      <div class="text-xs text-base-content/70 mt-1">
+        {{ getSelectedRoleDescription() }}
+      </div>
+    }
+  } @else {
     <div class="text-center py-2">
       <span class="text-xs text-gray-500">No available roles</span>
     </div>
-    }
-  </div>
+  }
 </div>

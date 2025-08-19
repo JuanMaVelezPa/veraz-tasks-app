@@ -44,7 +44,18 @@ export class UserRoleSelectorComponent implements OnInit {
     this.roleSelected.emit(roleName);
   }
 
+  onRoleChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const roleName = select.value;
+    this.selectRole(roleName);
+  }
+
   isRoleSelected(roleName: string): boolean {
     return this.selectedRole() === roleName;
+  }
+
+  getSelectedRoleDescription(): string | null {
+    const selectedRole = this.availableRoles().find(role => role.name === this.selectedRole());
+    return selectedRole?.description || null;
   }
 }

@@ -296,10 +296,6 @@ export class UserDetailsComponent implements OnDestroy {
     control?.setValue(roleName);
   }
 
-  onReset() {
-    this.resetForm();
-  }
-
   ngOnDestroy() {
     this.feedbackService.clearMessage();
   }
