@@ -7,19 +7,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.UUID;
 
 /**
  * DTO for updating existing persons
- * Contains optional fields with format validations but no mandatory constraints
+ * Contains optional fields with format validations
+ * Note: User association is never updated through this DTO
  */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class PersonUpdateRequestDTO {
-
-    private UUID userId;
 
     @Size(max = 20, message = "{validation.field.max.length}")
     private String identType;
@@ -63,4 +61,4 @@ public class PersonUpdateRequestDTO {
     private String notes;
 
     private Boolean isActive;
-} 
+}

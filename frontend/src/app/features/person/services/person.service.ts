@@ -5,6 +5,7 @@ import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interf
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
+import { CacheService } from '@shared/services/cache.service';
 
 const emptyPerson: Person = {
   id: 'new',
@@ -36,33 +37,38 @@ const emptyPagination: PaginatedResponseDTO<Person> = {
 })
 export class PersonService {
   private personApiService = inject(PersonApiService);
-
-  private personsCache = new Map<string, PaginatedResponseDTO<Person>>();
-  private personCache = new Map<string, Person>();
+  private cacheService = inject(CacheService);
 
   getPersons(options: SearchOptions): Observable<PaginatedResponseDTO<Person>> {
     const cacheKey = this.generateCacheKey(options);
+    const cached = this.cacheService.get<PaginatedResponseDTO<Person>>(cacheKey);
 
-    if (this.personsCache.has(cacheKey)) {
-      return of(this.personsCache.get(cacheKey)!);
+    if (cached) {
+      return of(cached);
     }
 
     return this.personApiService.getPersons(options)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'persons')),
-        tap(response => this.personsCache.set(cacheKey, response)),
+        tap(response => this.cacheService.set(cacheKey, response)),
         catchError(() => of(emptyPagination))
       );
   }
 
   getPersonById(id: string): Observable<Person> {
     if (id === 'new') return of(emptyPerson);
-    if (this.personCache.has(id)) return of(this.personCache.get(id)!);
+
+    const cacheKey = `person:${id}`;
+    const cached = this.cacheService.get<Person>(cacheKey);
+
+    if (cached) {
+      return of(cached);
+    }
 
     return this.personApiService.getPersonById(id)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person) => this.personCache.set(id, person)),
+        tap((person) => this.cacheService.set(cacheKey, person)),
         catchError(() => of(emptyPerson))
       );
   }
@@ -71,7 +77,7 @@ export class PersonService {
     return this.personApiService.createPerson(personData)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap(() => this.clearPersonsCache()),
+        tap((person: Person) => this.cacheService.clearPattern('persons:')),
         catchError((error) => this.handleError(error, 'creating person'))
       );
   }
@@ -81,8 +87,8 @@ export class PersonService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
         tap((person: Person) => {
-          this.personCache.set(person.id, person);
-          this.clearPersonsCache();
+          this.cacheService.set(`person:${person.id}`, person);
+          this.cacheService.clearPattern('persons:');
         }),
         catchError((error) => this.handleError(error, 'updating person'))
       );
@@ -91,75 +97,53 @@ export class PersonService {
   deletePerson(id: string): Observable<boolean> {
     return this.personApiService.deletePerson(id)
       .pipe(
-        map(() => true),
+        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
         tap(() => {
-          this.personCache.delete(id);
-          this.clearPersonsCache();
+          this.cacheService.delete(`person:${id}`);
+          this.cacheService.clearPattern('persons:');
         }),
-        catchError(() => of(false))
+        catchError((error) => this.handleError(error, 'deleting person'))
+      );
+  }
+
+  removeUserAssociation(personId: string): Observable<boolean> {
+    return this.personApiService.removeUserAssociation(personId)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
+        tap(() => {
+          this.cacheService.delete(`person:${personId}`);
+          this.cacheService.clearPattern('persons:');
+        }),
+        catchError((error) => this.handleError(error, 'removing user association'))
+      );
+  }
+
+  associateUser(personId: string, userId: string): Observable<Person> {
+    return this.personApiService.associateUser(personId, userId)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        tap((person: Person) => {
+          this.cacheService.set(`person:${person.id}`, person);
+          this.cacheService.clearPattern('persons:');
+        }),
+        catchError((error) => this.handleError(error, 'associating user'))
       );
   }
 
   private generateCacheKey(options: SearchOptions): string {
-    const { page, size, sort, order, search } = options;
-    return `persons-page-${page}-size-${size}-sort-${sort}-order-${order}-search-${search}`;
-  }
-
-  private clearPersonsCache(): void {
-    this.personsCache.clear();
+    const { page, size, search, sort, order } = options;
+    return `persons:${page}:${size}:${search || ''}:${sort || ''}:${order || ''}`;
   }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
-
-    if (type === 'persons') {
-      return this.mapPaginatedPersons(apiResponse.data);
-    } else if (type === 'person') {
-      return this.mapBackendPersonToFrontendPerson(apiResponse.data);
-    }
-
     return apiResponse.data;
   }
 
   private handleError(error: any, operation: string): Observable<never> {
     const errorMessage = error?.errorResponse?.message || error?.message || `Error ${operation}`;
     throw new Error(errorMessage);
-  }
-
-  private mapPaginatedPersons(backendData: any): PaginatedResponseDTO<Person> {
-    const mappedPersons = backendData.data.map((person: any) =>
-      this.mapBackendPersonToFrontendPerson(person)
-    );
-
-    return {
-      data: mappedPersons,
-      pagination: backendData.pagination
-    };
-  }
-
-  private mapBackendPersonToFrontendPerson(backendPerson: any): Person {
-    return {
-      id: String(backendPerson.id),
-      userId: backendPerson.userId,
-      identType: backendPerson.identType,
-      identNumber: backendPerson.identNumber,
-      firstName: backendPerson.firstName,
-      lastName: backendPerson.lastName,
-      birthDate: backendPerson.birthDate,
-      gender: backendPerson.gender,
-      nationality: backendPerson.nationality,
-      mobile: backendPerson.mobile,
-      email: backendPerson.email,
-      address: backendPerson.address,
-      city: backendPerson.city,
-      country: backendPerson.country,
-      postalCode: backendPerson.postalCode,
-      notes: backendPerson.notes,
-      isActive: backendPerson.isActive,
-      createdAt: backendPerson.createdAt,
-      updatedAt: backendPerson.updatedAt
-    };
   }
 }

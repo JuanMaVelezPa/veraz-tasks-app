@@ -18,10 +18,10 @@ export class PersonInfoCardComponent {
 
   @Output() actionClicked = new EventEmitter<void>();
 
-  protected readonly associatedPerson = signal<Person | null>(null);
+  protected readonly personalProfile = signal<Person | null>(null);
 
   ngOnChanges(): void {
-    this.associatedPerson.set(this.person);
+    this.personalProfile.set(this.person);
   }
 
   onActionClick(): void {

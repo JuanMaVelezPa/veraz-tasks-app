@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
       <div class="w-full sm:w-auto text-center sm:text-left">
         <h1 class="text-xl sm:text-2xl font-bold">Person Management</h1>
-        <p class="text-sm text-gray-500">Manage person associated with user: {{ currentUser()?.username }}</p>
+        <p class="text-sm text-gray-500">Manage personal profile for user: {{ currentUser()?.username }}</p>
       </div>
 
       <!-- Action Buttons -->
@@ -41,21 +41,21 @@
         </div>
       </div>
     </div>
-    } @else if (associatedPerson()) {
+    } @else if (personalProfile()) {
     <!-- Person Details Card -->
     <div class="card bg-base-100 shadow-lg mb-6">
       <div class="card-body p-6">
         <div class="flex items-center justify-between mb-6">
           <h3 class="card-title text-lg font-semibold">
             <shared-icon type="user" />
-            Associated Person Details
+            Personal Profile Details
           </h3>
           <div
             class="badge badge-lg"
-            [class.badge-success]="associatedPerson()?.isActive"
-            [class.badge-error]="!associatedPerson()?.isActive"
+            [class.badge-success]="personalProfile()?.isActive"
+            [class.badge-error]="!personalProfile()?.isActive"
           >
-            {{ associatedPerson()?.isActive ? 'Active' : 'Inactive' }}
+            {{ personalProfile()?.isActive ? 'Active' : 'Inactive' }}
           </div>
         </div>
 
@@ -68,23 +68,23 @@
             <div class="space-y-3">
               <div>
                 <span class="text-xs font-medium text-base-content/70">Full Name</span>
-                <p class="text-sm font-semibold">{{ associatedPerson()?.firstName }} {{ associatedPerson()?.lastName }}
+                <p class="text-sm font-semibold">{{ personalProfile()?.firstName }} {{ personalProfile()?.lastName }}
                 </p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">ID Type</span>
-                <p class="text-sm">{{ associatedPerson()?.identType || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.identType || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">ID Number</span>
-                <p class="text-sm font-mono">{{ associatedPerson()?.identNumber || 'N/A' }}</p>
+                <p class="text-sm font-mono">{{ personalProfile()?.identNumber || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">Birth Date</span>
-                <p class="text-sm">{{ associatedPerson()?.birthDate || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.birthDate || 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -96,17 +96,17 @@
             <div class="space-y-3">
               <div>
                 <span class="text-xs font-medium text-base-content/70">Email</span>
-                <p class="text-sm">{{ associatedPerson()?.email || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.email || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">Mobile</span>
-                <p class="text-sm">{{ associatedPerson()?.mobile || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.mobile || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">Address</span>
-                <p class="text-sm">{{ associatedPerson()?.address || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.address || 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -118,22 +118,22 @@
             <div class="space-y-3">
               <div>
                 <span class="text-xs font-medium text-base-content/70">Gender</span>
-                <p class="text-sm">{{ associatedPerson()?.gender || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.gender || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">Nationality</span>
-                <p class="text-sm">{{ associatedPerson()?.nationality || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.nationality || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">City</span>
-                <p class="text-sm">{{ associatedPerson()?.city || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.city || 'N/A' }}</p>
               </div>
 
               <div>
                 <span class="text-xs font-medium text-base-content/70">Country</span>
-                <p class="text-sm">{{ associatedPerson()?.country || 'N/A' }}</p>
+                <p class="text-sm">{{ personalProfile()?.country || 'N/A' }}</p>
               </div>
             </div>
           </div>
@@ -146,27 +146,27 @@
             (click)="editPerson()"
           >
             <shared-icon type="edit" />
-            Edit Person Details
+            Edit Profile
           </button>
           <button
             class="btn btn-warning btn-sm"
             (click)="changePerson()"
           >
             <shared-icon type="sync" />
-            Change Association
+            Change Profile
           </button>
           <button
             class="btn btn-error btn-sm"
-            (click)="disassociatePerson()"
+            (click)="removePersonalProfile()"
           >
             <shared-icon type="close" />
-            Disassociate Person
+            Remove Profile
           </button>
         </div>
       </div>
     </div>
     } @else {
-    <!-- No Person Associated -->
+    <!-- No Personal Profile -->
     <div class="card bg-base-100 shadow-lg">
       <div class="card-body p-8">
         <div class="text-center">
@@ -176,24 +176,24 @@
               size="xl"
             />
           </div>
-          <h3 class="text-xl font-semibold mb-2">No Person Associated</h3>
-          <p class="text-base-content/70 mb-6">This user doesn't have an associated person record. You can associate an
+          <h3 class="text-xl font-semibold mb-2">No Personal Profile</h3>
+          <p class="text-base-content/70 mb-6">This user doesn't have a personal profile. You can link an
             existing person or create a new one.</p>
 
           <div class="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               class="btn btn-primary"
-              (click)="associateExistingPerson()"
+              (click)="linkExistingPerson()"
             >
               <shared-icon type="user-plus" />
-              Associate Existing Person
+              Link Existing Person
             </button>
             <button
               class="btn btn-outline"
               (click)="createNewPerson()"
             >
               <shared-icon type="user-plus" />
-              Create New Person
+              Create New Profile
             </button>
           </div>
         </div>

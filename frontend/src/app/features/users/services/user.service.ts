@@ -5,6 +5,7 @@ import { SearchOptions } from '@shared/interfaces/search.interface';
 import { UserApiService } from './user-api.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
+import { CacheService } from '@shared/services/cache.service';
 
 const emptyUser: User = {
   id: 'new',
@@ -35,35 +36,39 @@ const emptyPagination: PaginatedResponseDTO<User> = {
   providedIn: 'root'
 })
 export class UserService {
-
   private userApi = inject(UserApiService);
-
-  private usersCache = new Map<string, PaginatedResponseDTO<User>>();
-  private userCache = new Map<string, User>();
+  private cacheService = inject(CacheService);
 
   getUsers(options: SearchOptions): Observable<PaginatedResponseDTO<User>> {
     const cacheKey = this.generateCacheKey(options);
+    const cached = this.cacheService.get<PaginatedResponseDTO<User>>(cacheKey);
 
-    if (this.usersCache.has(cacheKey)) {
-      return of(this.usersCache.get(cacheKey)!);
+    if (cached) {
+      return of(cached);
     }
 
     return this.userApi.getUsers(options)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'users')),
-        tap(response => this.usersCache.set(cacheKey, response)),
+        tap(response => this.cacheService.set(cacheKey, response)),
         catchError(() => of(emptyPagination))
       );
   }
 
   getUserById(id: string): Observable<User> {
     if (id === 'new') return of(emptyUser);
-    if (this.userCache.has(id)) return of(this.userCache.get(id)!);
+
+    const cacheKey = `user:${id}`;
+    const cached = this.cacheService.get<User>(cacheKey);
+
+    if (cached) {
+      return of(cached);
+    }
 
     return this.userApi.getUserById(id)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
-        tap((user) => this.userCache.set(id, user)),
+        tap((user) => this.cacheService.set(cacheKey, user)),
         catchError(() => of(emptyUser))
       );
   }
@@ -72,7 +77,7 @@ export class UserService {
     return this.userApi.createUser(userData)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
-        tap(() => this.clearUsersCache()),
+        tap((user: User) => this.cacheService.clearPattern('users:')),
         catchError((error) => this.handleError(error, 'creating user'))
       );
   }
@@ -82,8 +87,8 @@ export class UserService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
         tap((user: User) => {
-          this.userCache.set(user.id, user);
-          this.clearUsersCache();
+          this.cacheService.set(`user:${user.id}`, user);
+          this.cacheService.clearPattern('users:');
         }),
         catchError((error) => this.handleError(error, 'updating user'))
       );
@@ -92,64 +97,29 @@ export class UserService {
   deleteUser(id: string): Observable<boolean> {
     return this.userApi.deleteUser(id)
       .pipe(
-        map(() => true),
+        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
         tap(() => {
-          this.userCache.delete(id);
-          this.clearUsersCache();
+          this.cacheService.delete(`user:${id}`);
+          this.cacheService.clearPattern('users:');
         }),
-        catchError(() => of(false))
+        catchError((error) => this.handleError(error, 'deleting user'))
       );
   }
 
   private generateCacheKey(options: SearchOptions): string {
-    const { page, size, sort, order, search } = options;
-    return `users-page-${page}-size-${size}-sort-${sort}-order-${order}-search-${search}`;
-  }
-
-  private clearUsersCache(): void {
-    this.usersCache.clear();
+    const { page, size, search, sort, order } = options;
+    return `users:${page}:${size}:${search || ''}:${sort || ''}:${order || ''}`;
   }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
     if (!apiResponse.success || !apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
-
-    if (type === 'users') {
-      return this.mapPaginatedUsers(apiResponse.data);
-    } else if (type === 'user') {
-      return this.mapBackendUserToFrontendUser(apiResponse.data);
-    }
-
     return apiResponse.data;
   }
 
   private handleError(error: any, operation: string): Observable<never> {
     const errorMessage = error?.errorResponse?.message || error?.message || `Error ${operation}`;
     throw new Error(errorMessage);
-  }
-
-  private mapPaginatedUsers(backendData: any): PaginatedResponseDTO<User> {
-    const mappedUsers = backendData.data.map((user: any) =>
-      this.mapBackendUserToFrontendUser(user)
-    );
-
-    return {
-      data: mappedUsers,
-      pagination: backendData.pagination
-    };
-  }
-
-  private mapBackendUserToFrontendUser(backendUser: any): User {
-    return {
-      id: String(backendUser.id),
-      username: backendUser.username,
-      email: backendUser.email,
-      isActive: backendUser.isActive,
-      createdAt: backendUser.createdAt,
-      updatedAt: backendUser.updatedAt,
-      roles: Array.isArray(backendUser.roles) ? backendUser.roles : Array.from(backendUser.roles || []),
-      perms: Array.isArray(backendUser.perms) ? backendUser.perms : Array.from(backendUser.perms || [])
-    };
   }
 }

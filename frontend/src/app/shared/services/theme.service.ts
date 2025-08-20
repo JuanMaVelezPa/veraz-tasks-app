@@ -1,5 +1,6 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable, signal, computed, inject } from '@angular/core';
 import { ThemeOption } from '@shared/interfaces/theme.interface';
+import { CacheService } from './cache.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +9,7 @@ export class ThemeService {
   private readonly THEME_KEY = 'theme';
   private readonly VALID_THEMES = ['forest', 'corporate', 'garden', 'lofi', 'winter'];
   private readonly DEFAULT_THEME = 'lofi';
+  private cacheService = inject(CacheService);
 
   private _currentTheme = signal<string>(this.getInitialTheme());
 
@@ -57,8 +59,14 @@ export class ThemeService {
 
   private getInitialTheme(): string {
     try {
+      const cached = this.cacheService.get<string>(this.THEME_KEY);
+      if (cached && this.VALID_THEMES.includes(cached)) {
+        return cached;
+      }
+
       const savedTheme = localStorage.getItem(this.THEME_KEY);
       if (savedTheme && this.VALID_THEMES.includes(savedTheme)) {
+        this.cacheService.setPreferences(this.THEME_KEY, savedTheme);
         return savedTheme;
       }
       return this.DEFAULT_THEME;
@@ -85,6 +93,7 @@ export class ThemeService {
   }
 
   private saveTheme(theme: string): void {
+    this.cacheService.setPreferences(this.THEME_KEY, theme);
     localStorage.setItem(this.THEME_KEY, theme);
   }
 

@@ -11,10 +11,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/**
- * DTO for updating existing employees
- * Contains optional fields with format validations but no mandatory constraints
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -63,18 +59,18 @@ public class EmployeeUpdateRequestDTO {
 
     @Size(max = 500, message = "{validation.field.max.length}")
     private String skills;
-    
+
     @Size(max = 500, message = "{validation.field.max.length}")
     private String certifications;
-    
+
     @Size(max = 500, message = "{validation.field.max.length}")
     private String education;
-    
+
     @Size(max = 500, message = "{validation.field.max.length}")
     private String benefits;
-    
+
     @Size(max = 500, message = "{validation.field.max.length}")
     private String notes;
 
     private Boolean isActive;
-} 
+}

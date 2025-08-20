@@ -1,43 +1,95 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, of, tap, map, catchError } from 'rxjs';
 import { environment } from '@env/environment';
 import { User } from '@users/interfaces/user.interface';
 import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interfaces/person.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
+import { CacheService } from '@shared/services/cache.service';
+import { AuthService } from '@auth/services/auth.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
   private http = inject(HttpClient);
+  private cacheService = inject(CacheService);
+  private authService = inject(AuthService);
   private apiUrl = environment.apiUrl;
 
-  getMyProfile(): Observable<ApiResponse<Person>> {
-    return this.http.get<ApiResponse<Person>>(`${this.apiUrl}/profile`);
+  getMyProfile(): Observable<Person> {
+    return this.http.get<ApiResponse<Person>>(`${this.apiUrl}/profile`)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        catchError((error) => this.handleError(error, 'getting profile'))
+      );
   }
 
-  checkProfileExists(): Observable<ApiResponse<boolean>> {
-    return this.http.get<ApiResponse<boolean>>(`${this.apiUrl}/profile/exists`);
+  checkProfileExists(): Observable<boolean> {
+    return this.http.get<ApiResponse<boolean>>(`${this.apiUrl}/profile/exists`)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
+        catchError(() => of(false))
+      );
   }
 
-  createMyProfile(personData: PersonCreateRequest): Observable<ApiResponse<Person>> {
-    return this.http.post<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData);
+  createMyProfile(personData: PersonCreateRequest): Observable<Person> {
+    return this.http.post<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        tap((person) => this.cacheService.clearPattern('persons:')),
+        catchError((error) => this.handleError(error, 'creating profile'))
+      );
   }
 
-  updateMyProfile(personData: PersonUpdateRequest): Observable<ApiResponse<Person>> {
-    return this.http.patch<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData);
+  updateMyProfile(personData: PersonUpdateRequest): Observable<Person> {
+    return this.http.patch<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        tap((person) => this.cacheService.clearPattern('persons:')),
+        catchError((error) => this.handleError(error, 'updating profile'))
+      );
   }
 
-  deleteMyProfile(): Observable<ApiResponse<void>> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/profile`);
+  deleteMyProfile(): Observable<void> {
+    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/profile`)
+      .pipe(
+        map(() => undefined),
+        tap(() => this.cacheService.clearPattern('persons:')),
+        catchError((error) => this.handleError(error, 'deleting profile'))
+      );
   }
 
-  getMyUserAccount(): Observable<ApiResponse<User>> {
-    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/profile/account`);
+  getMyUserAccount(): Observable<User> {
+    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/profile/account`)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
+        catchError((error) => this.handleError(error, 'getting user account'))
+      );
   }
 
-  updateMyUserAccount(userData: any): Observable<ApiResponse<User>> {
-    return this.http.patch<ApiResponse<User>>(`${this.apiUrl}/profile/account`, userData);
+  updateMyUserAccount(userData: any): Observable<User> {
+    return this.http.patch<ApiResponse<User>>(`${this.apiUrl}/profile/account`, userData)
+      .pipe(
+        map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
+        tap((user) => {
+          this.cacheService.delete(`user:${user.id}`);
+          this.cacheService.clearPattern('users:');
+          this.authService.updateCurrentUser(user);
+        }),
+        catchError((error) => this.handleError(error, 'updating user account'))
+      );
+  }
+
+  private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
+    if (!apiResponse.success || !apiResponse.data) {
+      throw new Error(apiResponse.message || `Error ${type}`);
+    }
+    return apiResponse.data;
+  }
+
+  private handleError(error: any, operation: string): Observable<never> {
+    const errorMessage = error?.errorResponse?.message || error?.message || `Error ${operation}`;
+    throw new Error(errorMessage);
   }
 }

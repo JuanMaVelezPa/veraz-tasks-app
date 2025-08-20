@@ -1,7 +1,6 @@
 import { Timestamped } from '@shared/interfaces/timestamped.interface';
 
 export interface PersonFields {
-  userId?: string | null;
   identType: string;
   identNumber: string;
   firstName: string;
@@ -19,14 +18,23 @@ export interface PersonFields {
   isActive: boolean;
 }
 
-export interface Person extends PersonFields, Timestamped {
+export interface PersonWithUser extends PersonFields {
+  userId?: string | null;
+}
+
+export interface Person extends PersonWithUser, Timestamped {
   id: string;
 }
 
 // Derived types using TypeScript utilities
-export type PersonCreateRequest = PersonFields;
+export type PersonCreateRequest = PersonWithUser;
 export type PersonUpdateRequest = Partial<PersonFields>;
 export type PersonFormData = PersonFields;
+
+// User association interface
+export interface PersonUserAssociation {
+  userId: string;
+}
 
 // Options for management service
 export interface PersonManagementOptions {

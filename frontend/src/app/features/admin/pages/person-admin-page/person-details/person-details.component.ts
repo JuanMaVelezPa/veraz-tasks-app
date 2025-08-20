@@ -1,4 +1,4 @@
-import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Person } from '@person/interfaces/person.interface';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PersonService } from '@person/services/person.service';
@@ -20,7 +20,7 @@ import { FormUtilsService } from '@shared/services/form-utils.service';
   imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent, TimestampInfoComponent, IconComponent],
   templateUrl: './person-details.component.html',
 })
-export class PersonDetailsComponent implements OnDestroy {
+export class PersonDetailsComponent implements OnInit, OnDestroy {
   person = input.required<Person>();
 
   private fb = inject(FormBuilder);
@@ -228,10 +228,6 @@ export class PersonDetailsComponent implements OnDestroy {
   cancelDelete(): void {
     this.showDeleteModal.set(false);
   }
-
-
-
-
 
   goBack(): void {
     this.feedbackService.clearMessage();

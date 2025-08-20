@@ -192,13 +192,13 @@ export class PersonTableComponent implements OnInit {
     return this.searchState.getSearchTerm();
   }
 
-  async associatePersonWithUser(person: any) {
+  async linkPersonWithUser(person: any) {
     if (!this.currentSelectedUserId()) {
-      this.feedbackService.showError('No user ID provided for association');
+      this.feedbackService.showError('No user ID provided for linking');
       return;
     }
 
-    await this.personAssociationService.associatePersonWithUser(
+    await this.personAssociationService.linkPersonWithUser(
       person.id,
       this.currentSelectedUserId(),
       this.getFullName(person)

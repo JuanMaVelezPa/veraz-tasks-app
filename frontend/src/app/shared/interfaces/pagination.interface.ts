@@ -21,7 +21,7 @@ export interface PaginationInfo {
   isLast: boolean;
 }
 
-// Interfaz para la respuesta paginada del backend
+// Interface for backend paginated response
 export interface PaginatedResponseDTO<T> {
   data: T[];
   pagination: PaginationInfo;

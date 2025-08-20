@@ -35,7 +35,7 @@
     >
       <shared-icon type="user" />
       Personal Information
-      @if (!associatedPerson()) {
+      @if (!personalProfile()) {
       <div class="badge badge-warning badge-xs ml-1">Required</div>
       } @else {
       <div class="badge badge-success badge-xs ml-1">
@@ -74,8 +74,7 @@
             [user]="currentUser()!"
             [isEditMode]="true"
             [isLoading]="isLoadingUser()"
-            [isReadOnly]="false"
-            [isRoleReadOnly]="true"
+            [isReadOnly]="true"
             (formSubmitted)="onUserFormSubmitted()"
             (roleSelected)="onRoleSelected($event)"
           />
@@ -86,7 +85,7 @@
     <!-- Personal Information Sidebar -->
     <div class="lg:col-span-1">
       <app-person-info-card
-        [person]="associatedPerson()"
+        [person]="personalProfile()"
         [isLoading]="isLoadingPerson()"
         title="Personal Information"
         buttonText="Edit Personal Info"
@@ -118,8 +117,8 @@
       } @else {
       <app-person-form
         [personForm]="personForm"
-        [person]="associatedPerson() || null"
-        [isEditMode]="!!associatedPerson()"
+        [person]="personalProfile() || null"
+        [isEditMode]="!!personalProfile()"
         [isLoading]="isLoadingPerson()"
         (formSubmitted)="onPersonFormSubmitted()"
         (personUpdated)="onPersonUpdated($event)"

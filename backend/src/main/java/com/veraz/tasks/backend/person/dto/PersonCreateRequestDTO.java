@@ -10,10 +10,6 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDate;
 import java.util.UUID;
 
-/**
- * DTO for creating new persons
- * Contains all required fields with mandatory validations
- */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

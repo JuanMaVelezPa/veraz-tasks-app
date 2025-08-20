@@ -9,9 +9,9 @@ import { switchMap, filter } from 'rxjs/operators';
 export class TokenRefreshService {
 
   private refreshSubscription?: Subscription;
-  private readonly REFRESH_INTERVAL = 60 * 60 * 1000; // 30 minutos
+  private readonly REFRESH_INTERVAL = 60 * 60 * 1000; // 30 minutes
 
-  // Lazy injection para evitar dependencia circular
+  // Lazy injection to avoid circular dependency
   private get authService(): AuthService {
     return inject(AuthService);
   }
@@ -34,7 +34,7 @@ export class TokenRefreshService {
       .subscribe({
         next: (success) => {
           if (!success) {
-            console.warn('TokenRefreshService: Error refrescando token');
+            console.warn('TokenRefreshService: Error refreshing token');
           }
         },
         error: (error) => {

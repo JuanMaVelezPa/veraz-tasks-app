@@ -52,16 +52,18 @@
     </div>
 
     <!-- Sidebar Information -->
-    <div class="lg:col-span-1 space-y-4">
-      <!-- Associated Person Info -->
+    <div class="lg:col-span-1 space-y-6">
+      <!-- Personal Profile Info -->
       @if (isEditMode()) {
-      <app-person-info-card
-        [person]="associatedPerson()"
-        [isLoading]="isLoadingPerson()"
-        title="Associated Person"
-        buttonText="Manage Person"
-        (actionClicked)="goToPersonManagement()"
-      />
+      <div class="mb-2">
+        <app-person-info-card
+          [person]="personalProfile()"
+          [isLoading]="isLoadingPerson()"
+          title="Personal Profile"
+          buttonText="Manage Profile"
+          (actionClicked)="goToPersonManagement()"
+        />
+      </div>
       }
 
       <!-- Account Information -->

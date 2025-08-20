@@ -14,36 +14,36 @@
       <div class="loading loading-spinner loading-xs"></div>
       <span class="text-sm text-base-content/70">Loading...</span>
     </div>
-    } @else if (associatedPerson()) {
+    } @else if (personalProfile()) {
     <div class="space-y-3 text-center">
       <div class="flex flex-col items-center gap-2">
-        <span class="text-sm font-medium">{{ associatedPerson()?.firstName }} {{ associatedPerson()?.lastName }}</span>
+        <span class="text-sm font-medium">{{ personalProfile()?.firstName }} {{ personalProfile()?.lastName }}</span>
         <div
           class="badge badge-xs"
-          [class.badge-success]="associatedPerson()?.isActive"
-          [class.badge-error]="!associatedPerson()?.isActive"
+          [class.badge-success]="personalProfile()?.isActive"
+          [class.badge-error]="!personalProfile()?.isActive"
         >
-          {{ associatedPerson()?.isActive ? 'Active' : 'Inactive' }}
+          {{ personalProfile()?.isActive ? 'Active' : 'Inactive' }}
         </div>
       </div>
 
-      @if (associatedPerson()?.email) {
+      @if (personalProfile()?.email) {
       <div class="flex items-center justify-center gap-2 text-xs text-base-content/70">
         <shared-icon
           type="email"
           size="xs"
         />
-        {{ associatedPerson()?.email }}
+        {{ personalProfile()?.email }}
       </div>
       }
 
-      @if (associatedPerson()?.mobile) {
+      @if (personalProfile()?.mobile) {
       <div class="flex items-center justify-center gap-2 text-xs text-base-content/70">
         <shared-icon
           type="phone"
           size="xs"
         />
-        {{ associatedPerson()?.mobile }}
+        {{ personalProfile()?.mobile }}
       </div>
       }
 

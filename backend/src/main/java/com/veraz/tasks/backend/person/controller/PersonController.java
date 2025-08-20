@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
+import com.veraz.tasks.backend.person.dto.PersonUserAssociationDTO;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
@@ -36,10 +37,15 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 
+/**
+ * REST controller for Person entity management
+ * Provides CRUD operations and user association management
+ * Implements role-based access control for all operations
+ */
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/persons")
-@Tag(name = "Person", description = "Person endpoints")
+@Tag(name = "Person", description = "Person management endpoints")
 public class PersonController implements ControllerInterface<UUID, PersonCreateRequestDTO, PersonUpdateRequestDTO, PersonResponseDTO> {
 
     private final PersonService personService;
@@ -148,6 +154,44 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
         try {
             personService.deleteById(id);
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Person"), null, null));
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
+        }
+    }
+
+    @PatchMapping("/remove-user/{id}")
+    @Operation(summary = "Remove user association", description = "Remove user association from person")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User association removed successfully"),
+            @ApiResponse(responseCode = "404", description = "Person not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> removeUserAssociation(@PathVariable UUID id) {
+        try {
+            PersonResponseDTO response = personService.removeUserAssociation(id);
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "User association removed successfully", response, null));
+        } catch (Exception e) {
+            // GlobalExceptionHandler will handle specific exceptions
+            throw e;
+        }
+    }
+
+    @PatchMapping("/associate-user/{id}")
+    @Operation(summary = "Associate user with person", description = "Associate a user with a person")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "User associated successfully"),
+            @ApiResponse(responseCode = "404", description = "Person not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+    })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> associateUser(@PathVariable UUID id, @Valid @RequestBody PersonUserAssociationDTO associationDTO) {
+        try {
+            PersonResponseDTO response = personService.associateUser(id, associationDTO.getUserId());
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "User associated successfully", response, null));
         } catch (Exception e) {
             // GlobalExceptionHandler will handle specific exceptions
             throw e;

@@ -7,6 +7,17 @@
   <!-- Status Section - Always first, right-aligned -->
   <div class="form-control">
     <div class="flex justify-end">
+      @if (isReadOnly()) {
+      <div class="flex items-center gap-3">
+        <span class="text-sm font-medium">User Status</span>
+        <span
+          class="badge badge-sm"
+          [class]="userForm().get('isActive')?.value ? 'badge-success' : 'badge-error'"
+        >
+          {{ userForm().get('isActive')?.value ? 'Active' : 'Inactive' }}
+        </span>
+      </div>
+      } @else {
       <label class="label cursor-pointer gap-3">
         <span class="label-text font-medium">User Status</span>
         <input
@@ -21,69 +32,62 @@
           {{ userForm().get('isActive')?.value ? 'Active' : 'Inactive' }}
         </span>
       </label>
+      }
     </div>
   </div>
 
   <!-- Main Content Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- Left Column - User Info -->
-    <div class="lg:col-span-3 space-y-6">
-      <!-- Username and Email Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <!-- Username -->
-        <div class="form-control">
-          <div class="mb-2">
-            <span class="text-sm font-semibold">Username</span>
-            <span class="text-error">*</span>
-          </div>
-          <input
-            type="text"
-            placeholder="usuario123"
-            class="input input-bordered"
-            formControlName="username"
-            autocomplete="username"
-            [class.input-error]="formUtils.isValidField(userForm(), 'username')"
-          />
-          @if (formUtils.isValidField(userForm(), 'username')) {
-          <div class="mt-1">
-            <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'username') }}</span>
-          </div>
-          }
-        </div>
-
-        <!-- Email -->
-        <div class="form-control">
-          <div class="mb-2">
-            <span class="text-sm font-semibold">Email</span>
-            <span class="text-error">*</span>
-          </div>
-          <input
-            type="email"
-            placeholder="usuario@ejemplo.com"
-            class="input input-bordered"
-            formControlName="email"
-            autocomplete="email"
-            [class.input-error]="formUtils.isValidField(userForm(), 'email')"
-          />
-          @if (formUtils.isValidField(userForm(), 'email')) {
-          <div class="mt-1">
-            <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'email') }}</span>
-          </div>
-          }
-        </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Username -->
+    <div class="form-control">
+      <div class="mb-2">
+        <span class="text-sm font-semibold">Username</span>
+        <span class="text-error">*</span>
       </div>
+      <input
+        type="text"
+        placeholder="usuario123"
+        class="input input-bordered"
+        formControlName="username"
+        autocomplete="username"
+        [class.input-error]="formUtils.isValidField(userForm(), 'username')"
+      />
+      @if (formUtils.isValidField(userForm(), 'username')) {
+      <div class="mt-1">
+        <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'username') }}</span>
+      </div>
+      }
     </div>
 
-    <!-- Right Column - Roles -->
-    <div class="lg:col-span-1">
-      @if (isRoleReadOnly()) {
-      <div class="form-control">
-        <label class="label">
-          <span class="label-text font-semibold text-sm">Role</span>
-        </label>
-        <div class="input input-bordered w-full bg-base-200 text-base-content/70">
-          {{ getSelectedRole() | titlecase }}
-        </div>
+    <!-- Email -->
+    <div class="form-control">
+      <div class="mb-2">
+        <span class="text-sm font-semibold">Email</span>
+        <span class="text-error">*</span>
+      </div>
+      <input
+        type="email"
+        placeholder="usuario@ejemplo.com"
+        class="input input-bordered"
+        formControlName="email"
+        autocomplete="email"
+        [class.input-error]="formUtils.isValidField(userForm(), 'email')"
+      />
+      @if (formUtils.isValidField(userForm(), 'email')) {
+      <div class="mt-1">
+        <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'email') }}</span>
+      </div>
+      }
+    </div>
+
+    <!-- Role -->
+    <div class="form-control">
+      @if (isReadOnly()) {
+      <div class="mb-2">
+        <span class="text-sm font-semibold">Role</span>
+      </div>
+      <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+        {{ getSelectedRole() | titlecase }}
       </div>
       } @else {
       <app-user-role-selector

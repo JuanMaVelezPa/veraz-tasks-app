@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
+import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.person.mapper.PersonMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
@@ -25,6 +26,11 @@ import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
+/**
+ * Service class for managing Person entities
+ * Provides CRUD operations and business logic for person management
+ * Includes specific methods for user association management
+ */
 @Service
 public class PersonService {
 
@@ -112,14 +118,21 @@ public class PersonService {
         return PersonMapper.toDto(person);
     }
 
+    /**
+     * Creates a new person with validation for unique constraints
+     * 
+     * @param personRequest The person creation request
+     * @return PersonResponseDTO of the created person
+     * @throws DataConflictException if person with same identification or email already exists
+     */
     @Transactional
     public PersonResponseDTO create(PersonCreateRequestDTO personRequest) {
-        // Check if person already exists with same identification
+        // Validate identification uniqueness
         if (personRepository.existsByIdentNumberAndIdentType(personRequest.getIdentNumber(), personRequest.getIdentType())) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
         }
 
-        // Check if email already exists (if provided)
+        // Validate email uniqueness if provided
         if (personRequest.getEmail() != null && personRepository.existsByEmail(personRequest.getEmail())) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
         }
@@ -127,49 +140,54 @@ public class PersonService {
         Person newPerson = PersonMapper.toEntity(personRequest);
         personRepository.save(newPerson);
 
-        logger.info("Person created successfully: {} {} with createdAt: {} and updatedAt: {}",
-                newPerson.getFirstName(), newPerson.getLastName(), newPerson.getCreatedAt(), newPerson.getUpdatedAt());
+        logger.info("Person created successfully: {} {}", newPerson.getFirstName(), newPerson.getLastName());
 
         return PersonMapper.toDto(newPerson);
     }
 
+    /**
+     * Updates an existing person with validation for unique constraints
+     * Note: User association is never updated through this method
+     * 
+     * @param id The person ID to update
+     * @param personRequestDTO The update request data
+     * @return PersonResponseDTO of the updated person
+     * @throws ResourceNotFoundException if person not found
+     * @throws DataConflictException if new identification or email conflicts with existing data
+     */
     @Transactional
     public PersonResponseDTO update(UUID id, PersonUpdateRequestDTO personRequestDTO) {
         Person personToUpdate = personRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
 
-        // Update identification if provided and not empty
+        // Validate identification uniqueness if provided
         if (personRequestDTO.getIdentNumber() != null && !personRequestDTO.getIdentNumber().trim().isEmpty() &&
             personRequestDTO.getIdentType() != null && !personRequestDTO.getIdentType().trim().isEmpty()) {
             
             String newIdentNumber = personRequestDTO.getIdentNumber().trim();
             String newIdentType = personRequestDTO.getIdentType().trim();
             
-            // Check if identification is different from current
             if (!newIdentNumber.equals(personToUpdate.getIdentNumber()) || 
                 !newIdentType.equals(personToUpdate.getIdentType())) {
                 
-                // Check if new identification already exists
                 if (personRepository.existsByIdentNumberAndIdentType(newIdentNumber, newIdentType)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
                 }
             }
         }
 
-        // Update email if provided and not empty
+        // Validate email uniqueness if provided
         if (personRequestDTO.getEmail() != null && !personRequestDTO.getEmail().trim().isEmpty()) {
             String newEmail = personRequestDTO.getEmail().trim();
             
-            // Check if email is different from current
             if (!newEmail.equalsIgnoreCase(personToUpdate.getEmail())) {
-                // Check if new email already exists
                 if (personRepository.existsByEmail(newEmail)) {
                     throw new DataConflictException(MessageUtils.getEntityAlreadyExists("Person"));
                 }
             }
         }
 
-        // Update person using mapper
+        // Update person entity using mapper
         PersonMapper.updateEntity(personToUpdate, personRequestDTO);
         personToUpdate.setUpdatedAt(LocalDateTime.now());
         personRepository.save(personToUpdate);
@@ -188,7 +206,7 @@ public class PersonService {
         logger.info("Person deleted successfully with ID: {}", id);
     }
 
-    // Additional useful methods
+    // Query methods
     @Transactional(readOnly = true)
     public List<PersonResponseDTO> findByIsActive(Boolean isActive) {
         return personRepository.findByIsActive(isActive).stream()
@@ -222,5 +240,48 @@ public class PersonService {
         return personRepository.findByCountry(country).stream()
                 .map(PersonMapper::toDto)
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Removes user association from a person
+     * This is the only method that can modify user association
+     * 
+     * @param personId The person ID to remove user association from
+     * @return PersonResponseDTO of the updated person
+     * @throws ResourceNotFoundException if person not found
+     */
+    @Transactional
+    public PersonResponseDTO removeUserAssociation(UUID personId) {
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
+        
+        person.setUser(null);
+        person.setUpdatedAt(LocalDateTime.now());
+        personRepository.save(person);
+        
+        logger.info("User association removed from person with ID: {}", personId);
+        return PersonMapper.toDto(person);
+    }
+
+    /**
+     * Associates a user with a person
+     * This is the only method that can create user association
+     * 
+     * @param personId The person ID to associate with
+     * @param userId The user ID to associate
+     * @return PersonResponseDTO of the updated person
+     * @throws ResourceNotFoundException if person not found
+     */
+    @Transactional
+    public PersonResponseDTO associateUser(UUID personId, UUID userId) {
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
+        
+        person.setUser(User.builder().id(userId).build());
+        person.setUpdatedAt(LocalDateTime.now());
+        personRepository.save(person);
+        
+        logger.info("User {} associated with person with ID: {}", userId, personId);
+        return PersonMapper.toDto(person);
     }
 }

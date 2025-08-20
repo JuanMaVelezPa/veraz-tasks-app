@@ -180,6 +180,11 @@ export class FormUtilsService {
     return of(true).pipe(delay(500));
   }
 
+  static toTitleCase(str: string): string {
+    if (!str) return str;
+    return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
   static getTextError(errors: ValidationErrors): string | null {
     for (const key of Object.keys(errors)) {
       switch (key) {

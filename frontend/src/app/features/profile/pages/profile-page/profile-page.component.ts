@@ -47,7 +47,7 @@ export class ProfilePageComponent implements OnInit {
 
   // Signals
   currentUser = signal<User | null>(null);
-  associatedPerson = signal<Person | null>(null);
+  personalProfile = signal<Person | null>(null);
   isLoadingUser = signal(false);
   isLoadingPerson = signal(false);
   activeTab = signal<'user' | 'person'>('user');
@@ -109,14 +109,14 @@ export class ProfilePageComponent implements OnInit {
 
     this.isLoadingUser.set(true);
     try {
-      const response = await firstValueFrom(
+      const user = await firstValueFrom(
         this.profileService.getMyUserAccount().pipe(
           catchError(error => this.httpErrorService.handleError(error, 'loading user profile'))
         )
       );
-      this.currentUser.set(response.data);
-      this.setUserFormValues(response.data);
-      this.loadAssociatedPerson();
+      this.currentUser.set(user);
+      this.setUserFormValues(user);
+      this.loadPersonalProfile();
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'Failed to load user profile');
     } finally {
@@ -124,23 +124,23 @@ export class ProfilePageComponent implements OnInit {
     }
   }
 
-  private async loadAssociatedPerson() {
+  private async loadPersonalProfile() {
     const user = this.currentUser();
     if (!user) return;
 
     this.isLoadingPerson.set(true);
     try {
-      const response = await firstValueFrom(
+      const person = await firstValueFrom(
         this.profileService.getMyProfile().pipe(
           catchError(error => this.httpErrorService.handleError(error, 'loading person profile'))
         )
       );
-      this.associatedPerson.set(response.data);
-      if (response.data) {
-        this.setPersonFormValues(response.data);
+      this.personalProfile.set(person);
+      if (person) {
+        this.setPersonFormValues(person);
       }
     } catch (error: any) {
-      this.associatedPerson.set(null);
+      this.personalProfile.set(null);
       // Don't show error for profile not found, it's expected for new users
       if (error.status !== 404) {
         this.feedbackService.showError(error.message || 'Failed to load personal information.');
@@ -212,16 +212,20 @@ export class ProfilePageComponent implements OnInit {
       return;
     }
 
-    const response = await firstValueFrom(
+    // Check if username or email changed
+    const hasLoginChanges = changes.username || changes.email;
+
+    const updatedUser = await firstValueFrom(
       this.profileService.updateMyUserAccount(changes).pipe(
         catchError(error => this.httpErrorService.handleError(error, 'updating user profile'))
       )
     );
 
-    if (response.data?.id) {
-      this.currentUser.set(response.data);
-      this.authService.updateCurrentUser(response.data);
-      this.setUserFormValues(response.data);
+    if (updatedUser?.id) {
+      this.currentUser.set(updatedUser);
+      await firstValueFrom(this.authService.updateCurrentUserAndRefreshIfNeeded(updatedUser));
+      this.setUserFormValues(updatedUser);
+      await this.loadPersonalProfile();
       this.feedbackService.showSuccess('User profile updated successfully!');
     }
   }
@@ -239,20 +243,20 @@ export class ProfilePageComponent implements OnInit {
       const formValue = this.personForm.value;
       const formData = this.personManagementService.prepareFormData(formValue);
 
-      if (this.associatedPerson()) {
+      if (this.personalProfile()) {
         // Update existing person
         await this.personManagementService.updatePerson(
-          this.associatedPerson()!,
+          this.personalProfile()!,
           formData,
           {
             context: 'profile',
             onSuccess: (person) => {
-              this.associatedPerson.set(person);
+              this.personalProfile.set(person);
               this.setPersonFormValues(person);
             },
             onError: () => {
               // Reset form to original values after error
-              this.setPersonFormValues(this.associatedPerson()!);
+              this.setPersonFormValues(this.personalProfile()!);
             }
           }
         );
@@ -267,7 +271,7 @@ export class ProfilePageComponent implements OnInit {
           {
             context: 'profile',
             onSuccess: (person) => {
-              this.associatedPerson.set(person);
+              this.personalProfile.set(person);
               this.setPersonFormValues(person);
             }
           }
@@ -275,8 +279,8 @@ export class ProfilePageComponent implements OnInit {
       }
     } catch (error: any) {
       // Error handling is done in the service
-      if (this.associatedPerson()) {
-        this.setPersonFormValues(this.associatedPerson()!);
+      if (this.personalProfile()) {
+        this.setPersonFormValues(this.personalProfile()!);
       }
     } finally {
       this.isLoadingPerson.set(false);
@@ -289,13 +293,13 @@ export class ProfilePageComponent implements OnInit {
   }
 
   onPersonUpdated(updatedPerson: Person) {
-    this.associatedPerson.set(updatedPerson);
+    this.personalProfile.set(updatedPerson);
     this.setPersonFormValues(updatedPerson);
     this.feedbackService.showSuccess('Personal information updated successfully!');
   }
 
   onPersonCreated(newPerson: Person) {
-    this.associatedPerson.set(newPerson);
+    this.personalProfile.set(newPerson);
     this.setPersonFormValues(newPerson);
     this.feedbackService.showSuccess('Personal information created successfully!');
   }
@@ -303,8 +307,8 @@ export class ProfilePageComponent implements OnInit {
   setActiveTab(tab: 'user' | 'person') {
     this.activeTab.set(tab);
 
-    // Clear person form when switching to person tab and no associated person exists
-    if (tab === 'person' && !this.associatedPerson()) {
+    // Clear person form when switching to person tab and no personal profile exists
+    if (tab === 'person' && !this.personalProfile()) {
       this.personForm.reset({
         firstName: '',
         lastName: '',

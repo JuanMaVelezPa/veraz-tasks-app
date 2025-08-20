@@ -51,7 +51,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   currentUser = signal<User | null>(null);
 
   // Person related signals
-  associatedPerson = signal<Person | null>(null);
+  personalProfile = signal<Person | null>(null);
   isLoadingPerson = signal(false);
 
   userForm = this.fb.nonNullable.group({
@@ -86,9 +86,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.setFormValues(user);
     this.isEditMode.set(user.id !== 'new');
 
-    // Load associated person if user exists
+    // Load personal profile if user exists
     if (user.id !== 'new') {
-      this.loadAssociatedPerson();
+      this.loadPersonalProfile();
     }
   }
 
@@ -184,6 +184,10 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Check if username or email changed
+    const hasLoginChanges = changes.username || changes.email;
+    const isCurrentUser = this.authService.user()?.id === originalUser.id;
+
     try {
       const updatedUser: User = await firstValueFrom(
         this.userService.updateUser(originalUser.id, changes).pipe(
@@ -195,10 +199,15 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         this.currentUser.set(updatedUser);
 
         // Update auth state if it's the current user
-        const currentAuthUser = this.authService.user();
-        if (currentAuthUser?.id === updatedUser.id) {
-          this.authService.updateCurrentUser(updatedUser);
+        if (isCurrentUser) {
+          await firstValueFrom(this.authService.updateCurrentUserAndRefreshIfNeeded(updatedUser));
+          this.feedbackService.showSuccess('User updated successfully!');
+        } else {
+          this.feedbackService.showSuccess('User updated successfully!');
         }
+
+        // Reload personal profile if user data changed (username/email might affect profile)
+        await this.loadPersonalProfile();
 
         // Clear password fields
         this.userForm.patchValue({
@@ -206,7 +215,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
           confirmPassword: ''
         });
 
-        this.feedbackService.showSuccess('User updated successfully!');
         this.wasSaved.set(true);
       }
     } catch (error: any) {
@@ -275,8 +283,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.showDeleteModal.set(false);
   }
 
-
-
   private detectChanges(formValue: any, originalUser: User): any {
     const changes: any = {};
 
@@ -317,21 +323,17 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     return changes;
   }
 
-
-
   goBack() {
     this.feedbackService.clearMessage();
     this.navigationHistory.goBack('/admin/users');
   }
-
-
 
   onRoleSelected(roleName: string) {
     const control = this.userForm.get('selectedRole');
     control?.setValue(roleName);
   }
 
-  private async loadAssociatedPerson() {
+  private async loadPersonalProfile() {
     const user = this.currentUser();
     if (!user || user.id === 'new') {
       return;
@@ -345,41 +347,37 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         this.personService.getPersons(searchOptions)
       );
 
-      const associatedPerson = personsResponse.data.find(person => person.userId === user.id);
-      this.associatedPerson.set(associatedPerson || null);
+      const personalProfile = personsResponse.data.find(person => person.userId === user.id);
+      this.personalProfile.set(personalProfile || null);
     } catch (error) {
-      this.associatedPerson.set(null);
+      this.personalProfile.set(null);
     } finally {
       this.isLoadingPerson.set(false);
     }
   }
 
-
-
-
-
-  disassociatePerson() {
-    const person = this.associatedPerson();
+  removePersonalProfile() {
+    const person = this.personalProfile();
     const user = this.currentUser();
     if (!person || !user) return;
 
-    this.performDisassociation();
+    this.performRemoval();
   }
 
-  private async performDisassociation() {
-    const person = this.associatedPerson();
+  private async performRemoval() {
+    const person = this.personalProfile();
     if (!person) return;
 
     this.isLoadingPerson.set(true);
     try {
-      await this.personAssociationService.disassociatePerson(person.id, `${person.firstName} ${person.lastName}`);
-      this.associatedPerson.set(null);
+      await this.personAssociationService.removePersonalProfile(person.id, `${person.firstName} ${person.lastName}`);
+      this.personalProfile.set(null);
     } finally {
       this.isLoadingPerson.set(false);
     }
   }
 
-  associateExistingPerson() {
+  linkExistingPerson() {
     this.router.navigate(['/admin/persons'], {
       queryParams: {
         mode: 'select',

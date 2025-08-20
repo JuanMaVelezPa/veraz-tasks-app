@@ -1,23 +1,25 @@
-import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { AuthResponse } from '@auth/interfaces/auth-response.interface';
+import { Injectable, inject } from '@angular/core';
+import { Observable, of, map, catchError } from 'rxjs';
+import { AuthApiService } from './auth-api.service';
 import { AuthStateService } from './auth-state.service';
 import { TokenService } from './token.service';
-import { CacheService } from './cache.service';
-import { AuthApiService } from './auth-api.service';
-import { SignInResponse } from '@auth/interfaces/sign-in.interface';
+import { CacheService as AuthCacheService } from './cache.service';
+import { CacheService } from '@shared/services/cache.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
+import { AuthResponse } from '@auth/interfaces/auth-response.interface';
+import { SignInResponse } from '@auth/interfaces/sign-in.interface';
 import { User } from '@users/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
+  private authCacheService = inject(AuthCacheService);
+  private mainCacheService = inject(CacheService);
+
   constructor(
     private authState: AuthStateService,
     private tokenService: TokenService,
-    private cacheService: CacheService,
     private authApi: AuthApiService
   ) {
     this.initializeAuthState();
@@ -31,18 +33,22 @@ export class AuthService {
   updateCurrentUser(updatedUser: User): void {
     this.authState.setUser(updatedUser);
 
-    // Update cache if authenticated
     const currentToken = this.authState.token();
     const currentStatus = this.authState.authStatus();
     if (currentToken && currentStatus === 'authenticated') {
-      const cacheValue = this.cacheService.createCache(currentStatus, updatedUser, currentToken);
-      this.cacheService.saveCache(cacheValue);
+      const cacheValue = this.authCacheService.createCache(currentStatus, updatedUser, currentToken);
+      this.authCacheService.saveCache(cacheValue);
     }
+  }
+
+  updateCurrentUserAndRefreshIfNeeded(updatedUser: User): Observable<boolean> {
+    this.updateCurrentUser(updatedUser);
+    return of(true);
   }
 
   private initializeAuthState(): void {
     try {
-      const cache = this.cacheService.getValidCache();
+      const cache = this.authCacheService.getValidCache();
       if (cache && cache.token) {
         this.authState.setAuthState(cache.user ?? null, cache.token, cache.authStatus);
         return;
@@ -90,7 +96,7 @@ export class AuthService {
       return of(false);
     }
 
-    const cacheValue = this.cacheService.getCache();
+    const cacheValue = this.authCacheService.getCache();
     if (cacheValue && cacheValue.authStatus === 'authenticated' && cacheValue.user && cacheValue.token) {
       this.authState.setAuthStatus('authenticated');
       return of(true);
@@ -123,12 +129,12 @@ export class AuthService {
   }
 
   private clearAllStorage(): void {
-    this.cacheService.clearCache();
+    this.authCacheService.clearCache();
+    this.mainCacheService.clearOnLogout();
     this.tokenService.removeToken();
   }
 
   private handleSignInSuccess(apiResponse: ApiResponse<AuthResponse>): SignInResponse {
-    // Verificar si la respuesta de la API fue exitosa
     if (!apiResponse.success || !apiResponse.data) {
       return {
         authStatus: 'not-authenticated',
@@ -145,8 +151,8 @@ export class AuthService {
       };
     }
 
-    const cacheValue = this.cacheService.createCache('authenticated', response.user, response.token);
-    this.cacheService.saveCache(cacheValue);
+    const cacheValue = this.authCacheService.createCache('authenticated', response.user, response.token);
+    this.authCacheService.saveCache(cacheValue);
     this.tokenService.saveToken(response.token);
     this.authState.setAuthState(response.user, response.token, 'authenticated');
 
@@ -176,9 +182,8 @@ export class AuthService {
   }
 
   private handleCheckStatusSuccess(apiResponse: ApiResponse<AuthResponse>): boolean {
-    // Verificar si la respuesta de la API fue exitosa
     if (!apiResponse.success || !apiResponse.data) {
-      this.authState.clearState();
+      this.authState.setAuthStatus('not-authenticated');
       this.clearAllStorage();
       return false;
     }
@@ -186,13 +191,13 @@ export class AuthService {
     const response = apiResponse.data;
 
     if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
-      this.authState.clearState();
+      this.authState.setAuthStatus('not-authenticated');
       this.clearAllStorage();
       return false;
     }
 
-    const cacheValue = this.cacheService.createCache('authenticated', response.user, response.token);
-    this.cacheService.saveCache(cacheValue);
+    const cacheValue = this.authCacheService.createCache('authenticated', response.user, response.token);
+    this.authCacheService.saveCache(cacheValue);
     this.tokenService.saveToken(response.token);
     this.authState.setAuthState(response.user, response.token, 'authenticated');
 
@@ -200,15 +205,14 @@ export class AuthService {
   }
 
   private handleCheckStatusError(error: any): Observable<boolean> {
-    this.authState.clearState();
+    this.authState.setAuthStatus('not-authenticated');
     this.clearAllStorage();
     return of(false);
   }
 
   private handleRefreshTokenSuccess(apiResponse: ApiResponse<AuthResponse>): boolean {
-    // Verificar si la respuesta de la API fue exitosa
     if (!apiResponse.success || !apiResponse.data) {
-      this.authState.clearState();
+      this.authState.setAuthStatus('not-authenticated');
       this.clearAllStorage();
       return false;
     }
@@ -216,13 +220,13 @@ export class AuthService {
     const response = apiResponse.data;
 
     if (!response || !response.token || !response.user || !this.tokenService.isValidToken(response.token)) {
-      this.authState.clearState();
+      this.authState.setAuthStatus('not-authenticated');
       this.clearAllStorage();
       return false;
     }
 
-    const cacheValue = this.cacheService.createCache('authenticated', response.user, response.token);
-    this.cacheService.saveCache(cacheValue);
+    const cacheValue = this.authCacheService.createCache('authenticated', response.user, response.token);
+    this.authCacheService.saveCache(cacheValue);
     this.tokenService.saveToken(response.token);
     this.authState.setAuthState(response.user, response.token, 'authenticated');
 
@@ -230,7 +234,7 @@ export class AuthService {
   }
 
   private handleRefreshTokenError(error: any): Observable<boolean> {
-    this.authState.clearState();
+    this.authState.setAuthStatus('not-authenticated');
     this.clearAllStorage();
     return of(false);
   }

@@ -1,10 +1,14 @@
 import { Injectable, inject } from '@angular/core';
 import { PersonService } from '@person/services/person.service';
-import { PersonUpdateRequest } from '@person/interfaces/person.interface';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { NavigationHistoryService } from '@shared/services/navigation-history.service';
 import { firstValueFrom } from 'rxjs';
 
+/**
+ * Service for managing user-person associations
+ * Provides methods for linking and unlinking users with persons
+ * Uses dedicated endpoints to ensure clear separation of concerns
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -13,10 +17,16 @@ export class PersonAssociationService {
   private feedbackService = inject(FeedbackMessageService);
   private navigationHistory = inject(NavigationHistoryService);
 
-  async associatePersonWithUser(personId: string, userId: string, personName: string): Promise<void> {
+  /**
+   * Links a person with a user using the dedicated association endpoint
+   *
+   * @param personId The person ID to link
+   * @param userId The user ID to link with
+   * @param personName The person name for success message
+   */
+  async linkPersonWithUser(personId: string, userId: string, personName: string): Promise<void> {
     try {
-      const updateData: PersonUpdateRequest = { userId };
-      await firstValueFrom(this.personService.updatePerson(personId, updateData));
+      await firstValueFrom(this.personService.associateUser(personId, userId));
       this.feedbackService.showSuccess(`Person ${personName} linked successfully`);
       this.navigationHistory.goBackToUser(userId);
     } catch (error) {
@@ -24,23 +34,34 @@ export class PersonAssociationService {
     }
   }
 
-  async disassociatePerson(personId: string, personName: string): Promise<void> {
+  /**
+   * Removes user association from a person using the dedicated endpoint
+   *
+   * @param personId The person ID to remove association from
+   * @param personName The person name for success message
+   */
+  async removePersonalProfile(personId: string, personName: string): Promise<void> {
     try {
-      const updateData: PersonUpdateRequest = { userId: null };
-      await firstValueFrom(this.personService.updatePerson(personId, updateData));
-      this.feedbackService.showSuccess('Person disassociated successfully');
+      await firstValueFrom(this.personService.removeUserAssociation(personId));
+      this.feedbackService.showSuccess('Personal profile removed successfully');
     } catch (error) {
-      this.feedbackService.showError('Failed to disassociate person');
+      this.feedbackService.showError('Failed to remove personal profile');
     }
   }
 
+  /**
+   * Changes person association by removing current association
+   * This allows linking to a different person
+   *
+   * @param personId The person ID to remove association from
+   * @param userId The user ID (unused, kept for interface consistency)
+   */
   async changePersonAssociation(personId: string, userId: string): Promise<void> {
     try {
-      const updateData: PersonUpdateRequest = { userId: null };
-      await firstValueFrom(this.personService.updatePerson(personId, updateData));
-      this.feedbackService.showSuccess('Person disassociated. You can now associate a different person.');
+      await firstValueFrom(this.personService.removeUserAssociation(personId));
+      this.feedbackService.showSuccess('Personal profile removed. You can now link a different person.');
     } catch (error) {
-      this.feedbackService.showError('Failed to change person association');
+      this.feedbackService.showError('Failed to change personal profile');
     }
   }
 }

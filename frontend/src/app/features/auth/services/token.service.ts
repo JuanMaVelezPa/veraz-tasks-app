@@ -14,7 +14,7 @@ export interface TokenPayload {
 })
 export class TokenService {
   private readonly TOKEN_KEY = 'authToken';
-  private readonly REFRESH_THRESHOLD = 7200; // 2 horas
+  private readonly REFRESH_THRESHOLD = 7200; // 2 hours
 
   isValidToken(token: string): boolean {
     if (!token || token.length === 0) return false;

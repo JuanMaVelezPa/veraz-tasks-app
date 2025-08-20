@@ -31,7 +31,7 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
 
   // Signals
   currentUser = signal<User | null>(null);
-  associatedPerson = signal<Person | null>(null);
+  personalProfile = signal<Person | null>(null);
   isLoadingPerson = signal(false);
   isLoadingUser = signal(false);
 
@@ -39,12 +39,12 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
     this.loadUserFromRoute();
 
-    // Listen for route parameter changes to reload associated person when returning to this component
+    // Listen for route parameter changes to reload personal profile when returning to this component
     this.routerSubscription = this.route.params.subscribe((params) => {
       const userId = params['id'];
       if (userId && userId !== 'new' && this.currentUser()?.id === userId) {
-        // Reload associated person when returning to this component
-        this.loadAssociatedPerson();
+        // Reload personal profile when returning to this component
+        this.loadPersonalProfile();
       }
     });
   }
@@ -60,7 +60,7 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
     try {
       const user = await firstValueFrom(this.userService.getUserById(userId));
       this.currentUser.set(user);
-      this.loadAssociatedPerson();
+      this.loadPersonalProfile();
     } catch (error) {
       this.feedbackService.showError('User not found');
       this.router.navigate(['/admin/users']);
@@ -69,7 +69,7 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
     }
   }
 
-  private async loadAssociatedPerson() {
+  private async loadPersonalProfile() {
     const user = this.currentUser();
     if (!user || user.id === 'new') {
       return;
@@ -83,54 +83,50 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
         this.personService.getPersons(searchOptions)
       );
 
-      const associatedPerson = personsResponse.data.find(person => person.userId === user.id);
-      this.associatedPerson.set(associatedPerson || null);
+      const personalProfile = personsResponse.data.find(person => person.userId === user.id);
+      this.personalProfile.set(personalProfile || null);
     } catch (error) {
-      console.error('Error loading associated person:', error);
-      this.associatedPerson.set(null);
+      console.error('Error loading personal profile:', error);
+      this.personalProfile.set(null);
     } finally {
       this.isLoadingPerson.set(false);
     }
   }
-
-
 
   goBack() {
     this.feedbackService.clearMessage();
     this.navigationHistory.goBackToUser(this.currentUser()?.id || '');
   }
 
-
-
   editPerson() {
-    const person = this.associatedPerson();
+    const person = this.personalProfile();
     if (person) {
       this.router.navigate(['/admin/persons', person.id]);
     }
   }
 
-  disassociatePerson() {
-    const person = this.associatedPerson();
+  removePersonalProfile() {
+    const person = this.personalProfile();
     const user = this.currentUser();
     if (!person || !user) return;
 
-    this.performDisassociation();
+    this.performRemoval();
   }
 
-  private async performDisassociation() {
-    const person = this.associatedPerson();
+  private async performRemoval() {
+    const person = this.personalProfile();
     if (!person) return;
 
     this.isLoadingPerson.set(true);
     try {
-      await this.personAssociationService.disassociatePerson(person.id, `${person.firstName} ${person.lastName}`);
-      this.associatedPerson.set(null);
+      await this.personAssociationService.removePersonalProfile(person.id, `${person.firstName} ${person.lastName}`);
+      this.personalProfile.set(null);
     } finally {
       this.isLoadingPerson.set(false);
     }
   }
 
-  associateExistingPerson() {
+  linkExistingPerson() {
     this.router.navigate(['/admin/persons'], {
       queryParams: {
         mode: 'select',
@@ -148,7 +144,7 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
   }
 
   async changePerson() {
-    const person = this.associatedPerson();
+    const person = this.personalProfile();
     const user = this.currentUser();
     if (!person || !user) return;
 
@@ -156,14 +152,14 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
   }
 
   private async performChangeAssociation() {
-    const person = this.associatedPerson();
+    const person = this.personalProfile();
     const user = this.currentUser();
     if (!person || !user) return;
 
     this.isLoadingPerson.set(true);
     try {
       await this.personAssociationService.changePersonAssociation(person.id, user.id);
-      this.associatedPerson.set(null);
+      this.personalProfile.set(null);
 
       // Navigate to person selection
       this.router.navigate(['/admin/persons'], {

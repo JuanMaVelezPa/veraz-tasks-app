@@ -6,7 +6,7 @@ import { CacheAuthResponse } from '@auth/interfaces/auth-response.interface';
 })
 export class CacheService {
   private readonly CACHE_KEY = 'authResponseCache';
-  private readonly CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 horas
+  private readonly CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 
   saveCache(data: CacheAuthResponse): void {
     try {

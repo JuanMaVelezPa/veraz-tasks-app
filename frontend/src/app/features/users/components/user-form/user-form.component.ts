@@ -19,7 +19,6 @@ export class UserFormComponent {
   isLoading = input<boolean>(false);
   user = input.required<any>();
   isReadOnly = input<boolean>(false);
-  isRoleReadOnly = input<boolean>(false);
 
   formSubmitted = output<void>();
   roleSelected = output<string>();

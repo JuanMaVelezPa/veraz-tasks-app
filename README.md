@@ -94,6 +94,7 @@ tasks-app/
 - **[Backend Documentation](backend/README.md)** - Complete REST API guide
 - **[Frontend Documentation](frontend/README.md)** - Angular application guide
 - **[Database Documentation](database/README.md)** - Database configuration guide
+- **[Person Management Architecture](PERSON_MANAGEMENT_ARCHITECTURE.md)** - Optimized person management system
 
 ## 🔧 Technologies
 
