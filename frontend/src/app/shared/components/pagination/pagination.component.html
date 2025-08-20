@@ -5,13 +5,25 @@
         class="join-item btn btn-outline btn-sm"
         [disabled]="currentPage() === 1"
         (click)="goToPage(1)"
-      > «« </button>
+        title="First Page"
+      >
+        <shared-icon
+          type="angles-left"
+          size="xs"
+        />
+      </button>
 
       <button
         class="join-item btn btn-outline btn-sm"
         [disabled]="currentPage() === 1"
         (click)="goToPrev()"
-      > « </button>
+        title="Previous Page"
+      >
+        <shared-icon
+          type="angle-left"
+          size="xs"
+        />
+      </button>
 
       <button
         class="join-item btn btn-outline btn-sm"
@@ -23,13 +35,25 @@
         class="join-item btn btn-outline btn-sm"
         [disabled]="currentPage() === totalPages()"
         (click)="goToNext()"
-      > » </button>
+        title="Next Page"
+      >
+        <shared-icon
+          type="angle-right"
+          size="xs"
+        />
+      </button>
 
       <button
         class="join-item btn btn-outline btn-sm"
         [disabled]="currentPage() === totalPages()"
         (click)="goToPage(totalPages())"
-      > »» </button>
+        title="Last Page"
+      >
+        <shared-icon
+          type="angles-right"
+          size="xs"
+        />
+      </button>
     </div>
 
     <div class="text-xs text-base-content/60">

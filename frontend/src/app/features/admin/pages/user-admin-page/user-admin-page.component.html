@@ -1,12 +1,12 @@
 @if(userResource.isLoading()) {
 <div class="flex justify-center items-center h-32">
-  <app-loading></app-loading>
+  <shared-loading></shared-loading>
 </div>
 }
 
 @if(userResource.error()) {
 <div class="alert alert-error mt-4">
-  <i class="fa-solid fa-exclamation-triangle"></i>
+  <shared-icon type="error" />
   <span>Error: {{ userResource.error()?.message }}</span>
 </div>
 }

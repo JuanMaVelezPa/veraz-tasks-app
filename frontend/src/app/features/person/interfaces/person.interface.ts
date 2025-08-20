@@ -1,4 +1,6 @@
-export interface Person {
+import { Timestamped } from '@shared/interfaces/timestamped.interface';
+
+export interface Person extends Timestamped {
   id: string;
   userId?: string;
   identType: string;
@@ -16,8 +18,6 @@ export interface Person {
   postalCode?: string;
   notes?: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PersonCreateRequest {
@@ -39,6 +39,7 @@ export interface PersonCreateRequest {
 }
 
 export interface PersonUpdateRequest {
+  userId?: string | null;
   identType?: string;
   identNumber?: string;
   firstName?: string;

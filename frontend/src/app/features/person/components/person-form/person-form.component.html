@@ -8,7 +8,7 @@
   <div class="card bg-base-200 shadow-sm border-l-4 border-l-primary">
     <div class="card-body p-4">
       <h3 class="card-title text-lg font-semibold mb-4">
-        <i class="fa-solid fa-id-card mr-2 text-primary"></i>
+        <shared-icon type="user" />
         Required Information
       </h3>
 
@@ -99,7 +99,7 @@
   <div class="card bg-base-200 shadow-sm">
     <div class="card-body p-4">
       <h3 class="card-title text-lg font-semibold mb-4">
-        <i class="fa-solid fa-user mr-2"></i>
+        <shared-icon type="user" />
         Personal Details
       </h3>
 
@@ -155,7 +155,7 @@
   <div class="card bg-base-200 shadow-sm">
     <div class="card-body p-4">
       <h3 class="card-title text-lg font-semibold mb-4">
-        <i class="fa-solid fa-address-book mr-2"></i>
+        <shared-icon type="phone" />
         Contact Information
       </h3>
 
@@ -256,7 +256,7 @@
   <div class="card bg-base-200 shadow-sm">
     <div class="card-body p-4">
       <h3 class="card-title text-lg font-semibold mb-4">
-        <i class="fa-solid fa-info-circle mr-2"></i>
+        <shared-icon type="info" />
         Additional Information
       </h3>
 
@@ -286,6 +286,22 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Action Buttons Section -->
+  <div class="flex justify-end pt-6 border-t">
+    <button
+      type="submit"
+      class="btn btn-primary btn-sm"
+      [disabled]="isLoading() || personForm().invalid"
+    >
+      @if (isLoading()) {
+      <shared-loading />
+      } @else {
+      <shared-icon type="check" />
+      }
+      {{ isEditMode() ? 'Update' : 'Create' }}
+    </button>
   </div>
 
 </form>

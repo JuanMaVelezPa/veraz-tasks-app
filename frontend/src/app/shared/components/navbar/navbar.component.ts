@@ -1,17 +1,17 @@
 import { Component, inject } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AppInitService } from '@core/services/app-init.service';
 import { AuthService } from '@auth/services/auth.service';
 import { LayoutService } from '@shared/services/layout.service';
 import { ThemeSelectorComponent } from '@shared/components/theme-selector/theme-selector.component';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
-  selector: 'app-navbar',
-  imports: [ThemeSelectorComponent],
+  selector: 'shared-navbar',
+  imports: [ThemeSelectorComponent, RouterLink, IconComponent],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {
-
   layoutService = inject(LayoutService);
   authService = inject(AuthService);
   router = inject(Router);

@@ -1,0 +1,43 @@
+@if (hasData && entity) {
+<div class="card bg-base-100 shadow-lg">
+  <div class="card-body p-4">
+    <h3 class="font-semibold mb-3">{{ title }}</h3>
+    <div class="space-y-3">
+      @if (entity.createdAt) {
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-base-content/70">Created</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium">{{ entity.createdAt | date:'dd/MM/yyyy' }}</span>
+          <span class="text-xs text-base-content/50">{{ entity.createdAt | date:'hh:mm a' }}</span>
+          @if (showIcon) {
+          <div class="w-6 h-6 bg-info/10 rounded-full flex items-center justify-center">
+            <shared-icon
+              type="info"
+              size="xs"
+            />
+          </div>
+          }
+        </div>
+      </div>
+      }
+      @if (entity.updatedAt) {
+      <div class="flex items-center justify-between">
+        <span class="text-sm text-base-content/70">Updated</span>
+        <div class="flex items-center gap-2">
+          <span class="text-sm font-medium">{{ entity.updatedAt | date:'dd/MM/yyyy' }}</span>
+          <span class="text-xs text-base-content/50">{{ entity.updatedAt | date:'hh:mm a' }}</span>
+          @if (showIcon) {
+          <div class="w-6 h-6 bg-info/10 rounded-full flex items-center justify-center">
+            <shared-icon
+              type="sync"
+              size="xs"
+            />
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+  </div>
+</div>
+}

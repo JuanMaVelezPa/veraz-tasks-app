@@ -1,0 +1,204 @@
+<div class="bg-base-200 w-full">
+  <div class="max-w-6xl mx-auto w-full">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
+      <div class="w-full sm:w-auto text-center sm:text-left">
+        <h1 class="text-xl sm:text-2xl font-bold">Person Management</h1>
+        <p class="text-sm text-gray-500">Manage person associated with user: {{ currentUser()?.username }}</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
+        <button
+          class="btn btn-outline btn-xs sm:btn-sm"
+          (click)="goBack()"
+          title="Back to User"
+        >
+          <shared-icon type="back" />
+        </button>
+      </div>
+    </div>
+
+    <!-- Feedback Messages -->
+    <shared-feedback-message />
+
+    <!-- Person Information -->
+    @if (isLoadingUser()) {
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-8">
+        <div class="text-center">
+          <div class="loading loading-spinner loading-lg"></div>
+          <p class="mt-4 text-base-content/70">Loading user information...</p>
+        </div>
+      </div>
+    </div>
+    } @else if (isLoadingPerson()) {
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-8">
+        <div class="text-center">
+          <div class="loading loading-spinner loading-lg"></div>
+          <p class="mt-4 text-base-content/70">Loading person information...</p>
+        </div>
+      </div>
+    </div>
+    } @else if (associatedPerson()) {
+    <!-- Person Details Card -->
+    <div class="card bg-base-100 shadow-lg mb-6">
+      <div class="card-body p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="card-title text-lg font-semibold">
+            <shared-icon type="user" />
+            Associated Person Details
+          </h3>
+          <div
+            class="badge badge-lg"
+            [class.badge-success]="associatedPerson()?.isActive"
+            [class.badge-error]="!associatedPerson()?.isActive"
+          >
+            {{ associatedPerson()?.isActive ? 'Active' : 'Inactive' }}
+          </div>
+        </div>
+
+        <!-- Person Information Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Basic Information -->
+          <div class="space-y-4">
+            <h4 class="font-semibold text-base-content/80 border-b pb-2">Basic Information</h4>
+
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Full Name</span>
+                <p class="text-sm font-semibold">{{ associatedPerson()?.firstName }} {{ associatedPerson()?.lastName }}
+                </p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">ID Type</span>
+                <p class="text-sm">{{ associatedPerson()?.identType || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">ID Number</span>
+                <p class="text-sm font-mono">{{ associatedPerson()?.identNumber || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Birth Date</span>
+                <p class="text-sm">{{ associatedPerson()?.birthDate || 'N/A' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contact Information -->
+          <div class="space-y-4">
+            <h4 class="font-semibold text-base-content/80 border-b pb-2">Contact Information</h4>
+
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Email</span>
+                <p class="text-sm">{{ associatedPerson()?.email || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Mobile</span>
+                <p class="text-sm">{{ associatedPerson()?.mobile || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Address</span>
+                <p class="text-sm">{{ associatedPerson()?.address || 'N/A' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Additional Information -->
+          <div class="space-y-4">
+            <h4 class="font-semibold text-base-content/80 border-b pb-2">Additional Information</h4>
+
+            <div class="space-y-3">
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Gender</span>
+                <p class="text-sm">{{ associatedPerson()?.gender || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Nationality</span>
+                <p class="text-sm">{{ associatedPerson()?.nationality || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">City</span>
+                <p class="text-sm">{{ associatedPerson()?.city || 'N/A' }}</p>
+              </div>
+
+              <div>
+                <span class="text-xs font-medium text-base-content/70">Country</span>
+                <p class="text-sm">{{ associatedPerson()?.country || 'N/A' }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+          <button
+            class="btn btn-outline btn-sm"
+            (click)="editPerson()"
+          >
+            <shared-icon type="edit" />
+            Edit Person Details
+          </button>
+          <button
+            class="btn btn-warning btn-sm"
+            (click)="changePerson()"
+          >
+            <shared-icon type="sync" />
+            Change Association
+          </button>
+          <button
+            class="btn btn-error btn-sm"
+            (click)="disassociatePerson()"
+          >
+            <shared-icon type="close" />
+            Disassociate Person
+          </button>
+        </div>
+      </div>
+    </div>
+    } @else {
+    <!-- No Person Associated -->
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-8">
+        <div class="text-center">
+          <div class="text-base-content/50 mb-6">
+            <shared-icon
+              type="user"
+              size="xl"
+            />
+          </div>
+          <h3 class="text-xl font-semibold mb-2">No Person Associated</h3>
+          <p class="text-base-content/70 mb-6">This user doesn't have an associated person record. You can associate an
+            existing person or create a new one.</p>
+
+          <div class="flex flex-col sm:flex-row gap-3 justify-center">
+            <button
+              class="btn btn-primary"
+              (click)="associateExistingPerson()"
+            >
+              <shared-icon type="user-plus" />
+              Associate Existing Person
+            </button>
+            <button
+              class="btn btn-outline"
+              (click)="createNewPerson()"
+            >
+              <shared-icon type="user-plus" />
+              Create New Person
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+  </div>
+</div>

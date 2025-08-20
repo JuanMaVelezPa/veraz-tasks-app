@@ -1,0 +1,140 @@
+<div class="max-w-7xl mx-auto p-4">
+  <shared-feedback-message></shared-feedback-message>
+
+  @if (isLoadingUser()) {
+  <shared-loading />
+  } @else if (currentUser()) {
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-2xl font-bold">My Profile</h1>
+    <p class="text-sm text-base-content/70">Manage your account and personal information</p>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs tabs-bordered mb-0">
+    <button
+      class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+      [class.tab-active]="activeTab() === 'user'"
+      [class.bg-primary]="activeTab() === 'user'"
+      [class.text-primary-content]="activeTab() === 'user'"
+      [class.border-primary]="activeTab() === 'user'"
+      [class.border-base-300]="activeTab() !== 'user'"
+      (click)="setActiveTab('user')"
+    >
+      <shared-icon type="user" />
+      Account & Security
+    </button>
+    <button
+      class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+      [class.tab-active]="activeTab() === 'person'"
+      [class.bg-primary]="activeTab() === 'person'"
+      [class.text-primary-content]="activeTab() === 'person'"
+      [class.border-primary]="activeTab() === 'person'"
+      [class.border-base-300]="activeTab() !== 'person'"
+      (click)="setActiveTab('person')"
+    >
+      <shared-icon type="user" />
+      Personal Information
+      @if (!associatedPerson()) {
+      <div class="badge badge-warning badge-xs ml-1">Required</div>
+      } @else {
+      <div class="badge badge-success badge-xs ml-1">
+        <shared-icon
+          type="check"
+          size="xs"
+        />
+      </div>
+      }
+    </button>
+  </div>
+
+  <!-- Main Content -->
+  @if (activeTab() === 'user') {
+  <!-- Account & Security with 2-column layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 border-t-0">
+    <!-- User Form Section -->
+    <div class="lg:col-span-3">
+      <div class="card bg-base-100 shadow-lg rounded-tl-none">
+        <div class="card-body p-6">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+              <shared-icon
+                type="user"
+                size="1x"
+              />
+            </div>
+            <div>
+              <h2 class="text-xl font-bold">Account & Security</h2>
+              <p class="text-base-content/70 text-sm">Update your system access information</p>
+            </div>
+          </div>
+
+          <app-user-form
+            [userForm]="userForm"
+            [user]="currentUser()!"
+            [isEditMode]="true"
+            [isLoading]="isLoadingUser()"
+            [isReadOnly]="true"
+            (formSubmitted)="onUserFormSubmitted()"
+            (roleSelected)="onRoleSelected($event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Information Sidebar -->
+    <div class="lg:col-span-1">
+      <app-person-info-card
+        [person]="associatedPerson()"
+        [isLoading]="isLoadingPerson()"
+        title="Personal Information"
+        buttonText="Edit Personal Info"
+        (actionClicked)="setActiveTab('person')"
+      />
+    </div>
+  </div>
+  }
+
+  @if (activeTab() === 'person') {
+  <!-- Personal Information - Full Width -->
+  <div class="card bg-base-100 shadow-lg rounded-tl-none">
+    <div class="card-body p-6">
+      <div class="flex items-center gap-3 mb-6">
+        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+          <shared-icon
+            type="user"
+            size="1x"
+          />
+        </div>
+        <div>
+          <h2 class="text-xl font-bold">Personal Information</h2>
+          <p class="text-base-content/70 text-sm">Complete your personal data and contact information</p>
+        </div>
+      </div>
+
+      @if (isLoadingPerson()) {
+      <shared-loading></shared-loading>
+      } @else {
+      <app-person-form
+        [personForm]="personForm"
+        [person]="associatedPerson() || null"
+        [isEditMode]="!!associatedPerson()"
+        [isLoading]="isLoadingPerson()"
+        (formSubmitted)="onPersonFormSubmitted()"
+        (personUpdated)="onPersonUpdated($event)"
+        (personCreated)="onPersonCreated($event)"
+      />
+      }
+    </div>
+  </div>
+  }
+  } @else {
+  <div class="alert alert-error shadow-lg">
+    <shared-icon type="error" />
+    <div>
+      <h3 class="font-bold text-sm">Error!</h3>
+      <div class="text-xs">Failed to load your profile. Please try again.</div>
+    </div>
+  </div>
+  }
+</div>

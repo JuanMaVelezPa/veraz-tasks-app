@@ -1,7 +1,7 @@
 import { Component, input } from '@angular/core';
 
 @Component({
-  selector: 'app-loading',
+  selector: 'shared-loading',
   templateUrl: './loading.component.html',
 })
 export class LoadingComponent {

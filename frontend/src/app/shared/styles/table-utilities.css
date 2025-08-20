@@ -1,0 +1,126 @@
+/* Table Utilities - Shared styles for consistent table design */
+
+/* Table Container */
+.table-container {
+  @apply bg-base-100 rounded-lg shadow-lg p-3 w-full;
+}
+
+/* Search Bar Layout */
+.search-layout {
+  @apply flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-4;
+}
+
+.search-bar-container {
+  @apply w-full lg:w-2/3;
+}
+
+/* Table Wrapper */
+.table-wrapper {
+  @apply mt-4 w-full;
+}
+
+.table-scroll {
+  @apply overflow-x-auto rounded-lg border border-base-300;
+}
+
+/* Table Headers */
+.table-header-row {
+  @apply bg-base-200;
+}
+
+.table-header-cell {
+  @apply transition-colors duration-200 py-4 px-4;
+}
+
+.table-header-cell-sortable {
+  @apply cursor-pointer hover:bg-base-300;
+}
+
+.table-header-text {
+  @apply font-semibold;
+}
+
+/* Table Body */
+.table-body-row {
+  @apply hover:bg-base-100 transition-colors duration-200;
+}
+
+.table-cell {
+  @apply py-3 px-4;
+}
+
+/* Status Badges */
+.status-badge {
+  @apply badge badge-sm;
+}
+
+.status-badge-icon {
+  @apply w-3 h-3 mr-1;
+}
+
+.status-badge-success {
+  @apply badge-success;
+}
+
+.status-badge-error {
+  @apply badge-error;
+}
+
+.status-badge-info {
+  @apply badge-info;
+}
+
+.status-badge-ghost {
+  @apply badge-ghost;
+}
+
+/* Action Buttons */
+.action-button {
+  @apply btn btn-sm;
+}
+
+.action-button-icon {
+  @apply w-4 h-4 mr-1;
+}
+
+.action-button-info {
+  @apply btn-info;
+}
+
+.action-button-primary {
+  @apply btn-primary;
+}
+
+.action-button-warning {
+  @apply btn-warning;
+}
+
+/* Links */
+.table-link {
+  @apply font-bold hover:text-accent transition-colors duration-300;
+}
+
+/* Role Badges */
+.role-badge {
+  @apply badge badge-primary badge-sm mr-1;
+}
+
+/* Loading and Error States */
+.loading-container {
+  @apply flex justify-center items-center h-32;
+}
+
+.error-container {
+  @apply alert alert-error mt-4;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .search-layout {
+    @apply flex-col;
+  }
+
+  .search-bar-container {
+    @apply w-full;
+  }
+}

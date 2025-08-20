@@ -11,10 +11,12 @@ import { SearchService, SearchState } from '@shared/services/search.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { SearchBarComponent } from '@shared/components/search-bar/search-bar.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
+import { IconType } from '@shared/constants/icons.constant';
 
 @Component({
   selector: 'app-user-table',
-  imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent, LoadingComponent],
+  imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent, LoadingComponent, IconComponent],
   templateUrl: './user-table.component.html',
 })
 export class UserTableComponent {
@@ -81,7 +83,7 @@ export class UserTableComponent {
   };
 
   isSortable = (field: string): boolean => this.sortState.isSortable(field, this.columns);
-  getSortIcon = (field: string): string => this.sortState.getSortIcon(field, this.columns);
+  getSortIcon = (field: string): IconType => this.sortState.getSortIcon(field, this.columns);
   getSortClass = (field: string): string => this.sortState.getSortClass(field, this.columns);
   getSortLabel = (field: string): string => this.sortState.getSortLabel(field, this.columns);
 

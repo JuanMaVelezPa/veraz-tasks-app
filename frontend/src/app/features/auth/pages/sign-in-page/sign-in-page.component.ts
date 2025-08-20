@@ -8,11 +8,12 @@ import { AppInitService } from '@core/services/app-init.service';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
+import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-sign-in-page',
-  imports: [ReactiveFormsModule, LoadingComponent, FeedbackMessageComponent],
+  imports: [ReactiveFormsModule, LoadingComponent, FeedbackMessageComponent, IconComponent],
   templateUrl: './sign-in-page.component.html',
 })
 export class SignInPageComponent {

@@ -1,10 +1,10 @@
-export interface User {
+import { Timestamped } from '@shared/interfaces/timestamped.interface';
+
+export interface User extends Timestamped {
   id: string;
   username: string;
   email: string;
   isActive: boolean;
-  createdAt: string;
-  updatedAt: string | null;
   roles: string[];
   perms: string[];
 }

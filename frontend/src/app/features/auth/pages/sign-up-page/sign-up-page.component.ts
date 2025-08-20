@@ -4,10 +4,11 @@ import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth/services/auth.service';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-sign-up-page',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, IconComponent],
   templateUrl: './sign-up-page.component.html',
 })
 export class SignUpPageComponent {

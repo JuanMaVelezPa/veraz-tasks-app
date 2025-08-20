@@ -5,10 +5,11 @@ import { map } from 'rxjs';
 import { PersonService } from '@person/services/person.service';
 import { PersonDetailsComponent } from "./person-details/person-details.component";
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-person-admin-page',
-  imports: [PersonDetailsComponent, LoadingComponent],
+  imports: [PersonDetailsComponent, LoadingComponent, IconComponent],
   templateUrl: './person-admin-page.component.html',
 })
 export class PersonAdminPageComponent {

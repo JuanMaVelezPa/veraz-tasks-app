@@ -1,11 +1,63 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
 import { PersonTableComponent } from '@person/components/person-table/person-table.component';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { FeedbackMessageService } from '@shared/services/feedback-message.service';
+import { NavigationHistoryService } from '@shared/services/navigation-history.service';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-persons-admin-page',
-  imports: [PersonTableComponent, RouterLink],
+  imports: [PersonTableComponent, IconComponent],
   templateUrl: './persons-admin-page.component.html',
 })
-export class PersonsAdminPageComponent {
+export class PersonsAdminPageComponent implements OnInit, OnDestroy {
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private feedbackService = inject(FeedbackMessageService);
+  private navigationHistory = inject(NavigationHistoryService);
+
+  isSelectionMode = signal(false);
+  selectedUserId = signal<string | null>(null);
+
+  ngOnInit() {
+    this.feedbackService.clearMessage();
+    this.checkSelectionMode();
+  }
+
+  ngOnDestroy() {
+    this.feedbackService.clearMessage();
+  }
+
+  private checkSelectionMode() {
+    const mode = this.route.snapshot.queryParamMap.get('mode');
+    const userId = this.route.snapshot.queryParamMap.get('userId');
+
+    if (mode === 'select' && userId) {
+      this.isSelectionMode.set(true);
+      this.selectedUserId.set(userId);
+    } else {
+      this.isSelectionMode.set(false);
+      this.selectedUserId.set(null);
+    }
+  }
+
+  goBack() {
+    const userId = this.selectedUserId();
+    if (userId) {
+      this.navigationHistory.navigateTo(`/admin/users/${userId}/person`);
+    } else {
+      this.navigationHistory.goBack('/admin/users');
+    }
+  }
+
+  createNewPerson() {
+    const userId = this.selectedUserId();
+    if (userId) {
+      this.router.navigate(['/admin/persons/new'], {
+        queryParams: { userId }
+      });
+    } else {
+      this.router.navigate(['/admin/persons/new']);
+    }
+  }
 }

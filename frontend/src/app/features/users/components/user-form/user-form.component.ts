@@ -4,11 +4,12 @@ import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { UserRoleSelectorComponent } from '../user-role-selector/user-role-selector.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserRoleSelectorComponent],
+  imports: [CommonModule, ReactiveFormsModule, UserRoleSelectorComponent, IconComponent],
   templateUrl: './user-form.component.html'
 })
 export class UserFormComponent {
@@ -17,10 +18,10 @@ export class UserFormComponent {
   isEditMode = input<boolean>(false);
   isLoading = input<boolean>(false);
   user = input.required<any>();
+  isReadOnly = input<boolean>(false);
 
   formSubmitted = output<void>();
   roleSelected = output<string>();
-  formReset = output<void>();
 
   formUtils = inject(FormUtilsService);
   passwordUtils = inject(PasswordUtilsService);
@@ -37,10 +38,6 @@ export class UserFormComponent {
       return;
     }
     this.formSubmitted.emit();
-  }
-
-  onReset() {
-    this.formReset.emit();
   }
 
   togglePasswordSection() {

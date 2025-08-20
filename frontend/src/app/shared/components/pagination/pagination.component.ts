@@ -1,9 +1,11 @@
 import { Component, input, computed, inject } from '@angular/core';
 import { PaginationService } from '@shared/services/pagination.service';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
-  selector: 'app-pagination',
+  selector: 'shared-pagination',
   standalone: true,
+  imports: [IconComponent],
   templateUrl: './pagination.component.html'
 })
 export class PaginationComponent {

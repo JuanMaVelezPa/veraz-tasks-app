@@ -2,26 +2,30 @@ import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef } from '
 import { Person } from '@person/interfaces/person.interface';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PersonService } from '@person/services/person.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
+import { NavigationHistoryService } from '@shared/services/navigation-history.service';
 import { PersonFormComponent } from '@person/components/person-form/person-form.component';
+import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom } from 'rxjs';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 
 @Component({
   selector: 'person-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent, TimestampInfoComponent, IconComponent],
   templateUrl: './person-details.component.html',
 })
 export class PersonDetailsComponent implements OnDestroy {
   person = input.required<Person>();
 
   private fb = inject(FormBuilder);
-  private router = inject(Router);
+  private route = inject(ActivatedRoute);
   private personService = inject(PersonService);
   private feedbackService = inject(FeedbackMessageService);
+  private navigationHistory = inject(NavigationHistoryService);
   private cdr = inject(ChangeDetectorRef);
 
   wasSaved = signal(false);
@@ -134,8 +138,15 @@ export class PersonDetailsComponent implements OnDestroy {
         this.currentPerson.set(createdPerson);
         this.wasSaved.set(true);
         this.feedbackService.showSuccess('Person created successfully');
+
+        // Check if we came from a user context
+        const userId = this.route.snapshot.queryParamMap.get('userId');
         setTimeout(() => {
-          this.router.navigate(['/admin/persons']);
+          if (userId) {
+            this.navigationHistory.goBackToUser(userId);
+          } else {
+            this.navigationHistory.goBackToPersons();
+          }
         }, 500);
       }
     } catch (error) {
@@ -180,7 +191,14 @@ export class PersonDetailsComponent implements OnDestroy {
       const response = await firstValueFrom(this.personService.deletePerson(person.id));
       if (response) {
         this.feedbackService.showSuccess('Person deleted successfully');
-        this.router.navigate(['/admin/persons']);
+
+        // Check if we came from a user context
+        const userId = this.route.snapshot.queryParamMap.get('userId');
+        if (userId) {
+          this.navigationHistory.goBackToUser(userId);
+        } else {
+          this.navigationHistory.goBackToPersons();
+        }
       } else {
         this.feedbackService.showError('Error deleting person');
       }
@@ -265,15 +283,9 @@ export class PersonDetailsComponent implements OnDestroy {
     return changes;
   }
 
-  resetForm(): void {
-    this.feedbackService.clearMessage();
-    const person = this.currentPerson() || this.person();
-    this.setFormValues(person);
-  }
-
   goBack(): void {
     this.feedbackService.clearMessage();
-    this.router.navigate(['/admin/persons']);
+    this.navigationHistory.goBack('/admin/persons');
   }
 
   ngOnDestroy(): void {

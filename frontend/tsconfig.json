@@ -11,6 +11,9 @@
       "@admin/*": [
         "./src/app/features/admin/*"
       ],
+      "@profile/*": [
+        "./src/app/features/profile/*"
+      ],
       "@users/*": [
         "./src/app/features/users/*"
       ],

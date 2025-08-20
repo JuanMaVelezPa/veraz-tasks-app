@@ -1,12 +1,14 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { PersonParamsService } from '@person/services/person-params.service';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
   selector: 'app-person-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoadingComponent, IconComponent],
   templateUrl: './person-form.component.html',
 })
 export class PersonFormComponent {
@@ -16,7 +18,8 @@ export class PersonFormComponent {
   person = input.required<any>();
 
   formSubmitted = output<void>();
-  formReset = output<void>();
+  personUpdated = output<any>();
+  personCreated = output<any>();
 
   private personParamsService = inject(PersonParamsService);
 
@@ -32,7 +35,4 @@ export class PersonFormComponent {
     this.formSubmitted.emit();
   }
 
-  onReset(): void {
-    this.formReset.emit();
-  }
 }

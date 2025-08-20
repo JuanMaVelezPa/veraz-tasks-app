@@ -1,22 +1,30 @@
-import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, input, signal, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { User } from '@users/interfaces/user.interface';
+import { Person } from '@person/interfaces/person.interface';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { UserService } from '@users/services/user.service';
+import { PersonService } from '@person/services/person.service';
 import { Router } from '@angular/router';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
+import { NavigationHistoryService } from '@shared/services/navigation-history.service';
+import { PersonAssociationService } from '@person/services/person-association.service';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
+import { PersonInfoCardComponent } from '@person/components/person-info-card/person-info-card.component';
+import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
+import { AuthService } from '@auth/services/auth.service';
+import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'user-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent, PersonInfoCardComponent, TimestampInfoComponent, IconComponent],
   templateUrl: './user-details.component.html',
 })
-export class UserDetailsComponent implements OnDestroy {
+export class UserDetailsComponent implements OnInit, OnDestroy {
 
   user = input.required<User>();
 
@@ -24,10 +32,14 @@ export class UserDetailsComponent implements OnDestroy {
   router = inject(Router);
 
   userService = inject(UserService);
+  personService = inject(PersonService);
 
   formUtils = inject(FormUtilsService);
   passwordUtils = inject(PasswordUtilsService);
   feedbackService = inject(FeedbackMessageService);
+  navigationHistory = inject(NavigationHistoryService);
+  personAssociationService = inject(PersonAssociationService);
+  authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
 
   wasSaved = signal(false);
@@ -35,6 +47,10 @@ export class UserDetailsComponent implements OnDestroy {
   isEditMode = signal(false);
   showDeleteModal = signal(false);
   currentUser = signal<User | null>(null);
+
+  // Person related signals
+  associatedPerson = signal<Person | null>(null);
+  isLoadingPerson = signal(false);
 
   userForm = this.fb.nonNullable.group({
     username: ['', [
@@ -67,6 +83,11 @@ export class UserDetailsComponent implements OnDestroy {
     this.currentUser.set(user);
     this.setFormValues(user);
     this.isEditMode.set(user.id !== 'new');
+
+    // Load associated person if user exists
+    if (user.id !== 'new') {
+      this.loadAssociatedPerson();
+    }
   }
 
   private setFormValues(user: Partial<User>) {
@@ -162,7 +183,19 @@ export class UserDetailsComponent implements OnDestroy {
 
       if (updatedUser?.id) {
         this.currentUser.set(updatedUser);
-        this.setFormValues(updatedUser);
+
+        // Update auth state if it's the current user
+        const currentAuthUser = this.authService.user();
+        if (currentAuthUser?.id === updatedUser.id) {
+          this.authService.updateCurrentUser(updatedUser);
+        }
+
+        // Clear password fields
+        this.userForm.patchValue({
+          password: '',
+          confirmPassword: ''
+        });
+
         this.feedbackService.showSuccess('User updated successfully!');
         this.wasSaved.set(true);
       }
@@ -229,8 +262,6 @@ export class UserDetailsComponent implements OnDestroy {
   }
 
   private handleUserError(error: any): void {
-    this.setFormValues(this.currentUser() || this.user());
-
     // Extract error message from ErrorResponse if available
     let errorMessage = 'An error occurred while saving the user. Please try again.';
 
@@ -250,25 +281,29 @@ export class UserDetailsComponent implements OnDestroy {
       return (original?.trim() || '') !== (newValue?.trim() || '');
     };
 
+    // Check username changes
     if (compareStrings(originalUser.username, formValue.username)) {
-      changes.username = formValue.username?.trim();
+      changes.username = formValue.username?.trim().toLowerCase();
     }
 
+    // Check email changes
     if (compareStrings(originalUser.email, formValue.email)) {
-      changes.email = formValue.email?.trim();
+      changes.email = formValue.email?.trim().toLowerCase();
     }
 
+    // Check isActive changes
     if (formValue.isActive !== originalUser.isActive) {
       changes.isActive = formValue.isActive;
     }
 
+    // Check role changes
     const currentRole = originalUser.roles?.[0] || '';
     const newRole = formValue.selectedRole || '';
-
     if (newRole !== currentRole) {
       changes.roles = newRole ? [newRole] : [];
     }
 
+    // Check password changes (only if provided)
     if (formValue.password?.trim()) {
       changes.password = formValue.password.trim();
     }
@@ -276,24 +311,96 @@ export class UserDetailsComponent implements OnDestroy {
     return changes;
   }
 
-  resetForm() {
-    this.feedbackService.clearMessage();
-    const user = this.currentUser() || this.user();
-    this.setFormValues(user);
-  }
+
 
   goBack() {
     this.feedbackService.clearMessage();
-    this.router.navigate(['/admin/users']);
+    this.navigationHistory.goBack('/admin/users');
   }
 
-  goToPersonData() {
-    this.router.navigate(['/admin/users/person', this.user().id]);
-  }
+
 
   onRoleSelected(roleName: string) {
     const control = this.userForm.get('selectedRole');
     control?.setValue(roleName);
+  }
+
+  private async loadAssociatedPerson() {
+    const user = this.currentUser();
+    if (!user || user.id === 'new') {
+      return;
+    }
+
+    this.isLoadingPerson.set(true);
+
+    try {
+      const searchOptions = { page: 0, size: 1000, sort: 'id', order: 'asc' as const, search: '' };
+      const personsResponse = await firstValueFrom(
+        this.personService.getPersons(searchOptions)
+      );
+
+      const associatedPerson = personsResponse.data.find(person => person.userId === user.id);
+      this.associatedPerson.set(associatedPerson || null);
+    } catch (error) {
+      this.associatedPerson.set(null);
+    } finally {
+      this.isLoadingPerson.set(false);
+    }
+  }
+
+
+
+
+
+  disassociatePerson() {
+    const person = this.associatedPerson();
+    const user = this.currentUser();
+    if (!person || !user) return;
+
+    this.performDisassociation();
+  }
+
+  private async performDisassociation() {
+    const person = this.associatedPerson();
+    if (!person) return;
+
+    this.isLoadingPerson.set(true);
+    try {
+      await this.personAssociationService.disassociatePerson(person.id, `${person.firstName} ${person.lastName}`);
+      this.associatedPerson.set(null);
+    } finally {
+      this.isLoadingPerson.set(false);
+    }
+  }
+
+  associateExistingPerson() {
+    this.router.navigate(['/admin/persons'], {
+      queryParams: {
+        mode: 'select',
+        userId: this.currentUser()?.id
+      }
+    });
+  }
+
+  createNewPerson() {
+    this.router.navigate(['/admin/persons/new'], {
+      queryParams: {
+        userId: this.currentUser()?.id
+      }
+    });
+  }
+
+  goToPersonManagement() {
+    this.router.navigate(['/admin/users', this.currentUser()?.id, 'person']);
+  }
+
+  toggleUserStatus(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const isActive = target.checked;
+
+    this.userForm.patchValue({
+      isActive: isActive
+    });
   }
 
   ngOnDestroy() {

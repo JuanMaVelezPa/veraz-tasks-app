@@ -8,6 +8,7 @@ import { CacheService } from './cache.service';
 import { AuthApiService } from './auth-api.service';
 import { SignInResponse } from '@auth/interfaces/sign-in.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
+import { User } from '@users/interfaces/user.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -26,6 +27,18 @@ export class AuthService {
   get token() { return this.authState.token; }
   get authStatus() { return this.authState.authStatus; }
   get isAdmin() { return this.authState.isAdmin; }
+
+  updateCurrentUser(updatedUser: User): void {
+    this.authState.setUser(updatedUser);
+
+    // Update cache if authenticated
+    const currentToken = this.authState.token();
+    const currentStatus = this.authState.authStatus();
+    if (currentToken && currentStatus === 'authenticated') {
+      const cacheValue = this.cacheService.createCache(currentStatus, updatedUser, currentToken);
+      this.cacheService.saveCache(cacheValue);
+    }
+  }
 
   private initializeAuthState(): void {
     try {

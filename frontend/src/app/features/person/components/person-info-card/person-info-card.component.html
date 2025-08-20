@@ -1,0 +1,77 @@
+<div class="card bg-base-100 shadow-lg">
+  <div class="card-body p-4">
+    <div class="flex items-center gap-3 mb-3">
+      @if (showIcon) {
+      <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+        <shared-icon type="user" />
+      </div>
+      }
+      <h3 class="font-semibold">{{ title }}</h3>
+    </div>
+
+    @if (isLoading) {
+    <div class="flex items-center justify-center gap-2">
+      <div class="loading loading-spinner loading-xs"></div>
+      <span class="text-sm text-base-content/70">Loading...</span>
+    </div>
+    } @else if (associatedPerson()) {
+    <div class="space-y-3 text-center">
+      <div class="flex flex-col items-center gap-2">
+        <span class="text-sm font-medium">{{ associatedPerson()?.firstName }} {{ associatedPerson()?.lastName }}</span>
+        <div
+          class="badge badge-xs"
+          [class.badge-success]="associatedPerson()?.isActive"
+          [class.badge-error]="!associatedPerson()?.isActive"
+        >
+          {{ associatedPerson()?.isActive ? 'Active' : 'Inactive' }}
+        </div>
+      </div>
+
+      @if (associatedPerson()?.email) {
+      <div class="flex items-center justify-center gap-2 text-xs text-base-content/70">
+        <shared-icon
+          type="email"
+          size="xs"
+        />
+        {{ associatedPerson()?.email }}
+      </div>
+      }
+
+      @if (associatedPerson()?.mobile) {
+      <div class="flex items-center justify-center gap-2 text-xs text-base-content/70">
+        <shared-icon
+          type="phone"
+          size="xs"
+        />
+        {{ associatedPerson()?.mobile }}
+      </div>
+      }
+
+      <button
+        class="btn btn-primary btn-sm w-full"
+        (click)="onActionClick()"
+      >
+        <shared-icon type="edit" />
+        {{ buttonText }}
+      </button>
+    </div>
+    } @else {
+    <div class="text-center py-4">
+      <div class="w-12 h-12 bg-base-300 rounded-full flex items-center justify-center mx-auto mb-2">
+        <shared-icon
+          type="user"
+          size="xl"
+        />
+      </div>
+      <p class="text-sm text-base-content/70 mb-3">No information available</p>
+      <button
+        class="btn btn-primary btn-sm w-full"
+        (click)="onActionClick()"
+      >
+        <shared-icon type="add" />
+        Add Information
+      </button>
+    </div>
+    }
+  </div>
+</div>

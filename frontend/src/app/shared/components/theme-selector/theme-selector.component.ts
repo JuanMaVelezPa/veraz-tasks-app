@@ -1,11 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ThemeService } from '@shared/services/theme.service';
+import { IconComponent } from '../icon/icon.component';
+import { IconType } from '../../constants/icons.constant';
 
 @Component({
-  selector: 'app-theme-selector',
+  selector: 'shared-theme-selector',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, IconComponent],
   templateUrl: './theme-selector.component.html',
   styles: [`
     .theme-controller {
@@ -30,5 +32,16 @@ export class ThemeSelectorComponent {
 
   isCurrentTheme(themeValue: string): boolean {
     return this.themeService.isCurrentTheme(themeValue);
+  }
+
+  getThemeIcon(themeValue: string): IconType {
+    const iconMap: Record<string, IconType> = {
+      'forest': 'tree',
+      'corporate': 'building',
+      'garden': 'seedling',
+      'lofi': 'music',
+      'winter': 'snowflake'
+    };
+    return iconMap[themeValue] || 'palette';
   }
 }

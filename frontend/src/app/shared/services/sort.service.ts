@@ -1,5 +1,11 @@
 import { Injectable, signal } from '@angular/core';
-import { SortableColumn, SortOptions } from '@shared/interfaces/sort.interface';
+import { SortableColumn } from '../interfaces/sort.interface';
+import { IconType } from '../constants/icons.constant';
+
+export interface SortOptions {
+  sort: string;
+  order: 'asc' | 'desc';
+}
 
 export class SortState {
   private sortField = signal<string>('');
@@ -40,20 +46,20 @@ export class SortState {
     return column?.sortable ?? false;
   }
 
-  getSortIcon(field: string, columns: SortableColumn[]): string {
-    if (!this.isSortable(field, columns)) return '';
+  getSortIcon(field: string, columns: SortableColumn[]): IconType {
+    if (!this.isSortable(field, columns)) return 'sort';
 
     const currentField = this.sortField();
     const currentOrder = this.sortOrder();
 
     if (currentField !== field) {
-      return 'fa-sort text-gray-400 hover:text-gray-600';
+      return 'sort';
     }
 
     if (currentOrder === 'asc') {
-      return 'fa-sort-up text-primary text-center font-bold text-lg';
+      return 'chevron-up';
     } else {
-      return 'fa-sort-down text-primary text-center font-bold text-lg';
+      return 'chevron-down';
     }
   }
 

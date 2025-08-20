@@ -1,10 +1,41 @@
 <div class="space-y-4">
   <div class="flex flex-wrap gap-4 items-center justify-between bg-base-200 rounded-lg p-3">
-    <h1 class="text-3xl font-bold text-base-content">People</h1>
-    <button
-      class="btn btn-primary btn-sm"
-      [routerLink]="['/admin/persons/', 'new']"
-    > New Person </button>
+    <div class="flex items-center gap-3">
+      <h1 class="text-3xl font-bold text-base-content">People</h1>
+      @if (isSelectionMode()) {
+      <div class="badge badge-info badge-sm">
+        <shared-icon
+          type="users"
+          size="xs"
+        />
+        Selection Mode
+      </div>
+      }
+    </div>
+
+    <div class="flex gap-2">
+      @if (isSelectionMode()) {
+      <button
+        class="btn btn-outline btn-sm"
+        (click)="goBack()"
+        title="Back to User"
+      >
+        <shared-icon type="back" />
+      </button>
+      }
+
+      <button
+        class="btn btn-primary btn-sm"
+        (click)="createNewPerson()"
+      >
+        <shared-icon type="add" />
+        @if (isSelectionMode()) {
+        New Person & Associate
+        } @else {
+        New Person
+        }
+      </button>
+    </div>
   </div>
 
   <app-person-table />

@@ -1,30 +1,36 @@
-<div class="bg-base-100 rounded-lg shadow-lg p-3 w-full">
-  <app-search-bar
-    placeholder="Search..."
-    (searchChange)="handleSearch($event)"
-  />
+<div class="table-container">
+  <div class="search-layout">
+    <div class="search-bar-container">
+      <shared-search-bar
+        placeholder="Search users by username, email..."
+        (searchChange)="handleSearch($event)"
+      />
+    </div>
+  </div>
 
-  <div class="mt-3 w-full">
-    <div class="overflow-x-auto">
+  <div class="table-wrapper">
+    <div class="table-scroll">
       <table class="table table-zebra w-full">
         <thead>
-          <tr>
+          <tr class="table-header-row">
             @for (column of columns; track column.key) {
             <th
-              [class.cursor-pointer]="column.sortable"
-              [class.hover:bg-base-200]="column.sortable"
+              [class.table-header-cell-sortable]="column.sortable"
               (click)="handleSort(column.key)"
-              class="transition-colors duration-200"
+              class="table-header-cell"
             >
               <div class="flex items-center gap-2">
-                <span [class]="getSortClass(column.key)">
-                  {{ column.label }}{{ getSortLabel(column.key) }}
+                <span
+                  [class]="getSortClass(column.key)"
+                  class="table-header-text"
+                >
+                  {{ column.label }}
                 </span>
                 @if (column.sortable) {
-                <i
-                  class="fa-solid"
-                  [class]="getSortIcon(column.key)"
-                ></i>
+                <shared-icon
+                  [type]="getSortIcon(column.key)"
+                  size="xs"
+                />
                 }
               </div>
             </th>
@@ -33,40 +39,41 @@
         </thead>
         <tbody>
           @for (user of usersResource.value()?.data ?? []; track user.id; let i = $index) {
-          <tr class="hover:bg-base-100">
-            <td>
+          <tr class="table-body-row">
+            <td class="table-cell">
               <div class="flex items-center gap-3">
                 <div>
                   <a
                     [routerLink]="['/admin/users', user.id]"
-                    class="font-bold hover:text-accent transition-colors duration-300"
+                    class="table-link"
                   >
                     {{ user.username }}
                   </a>
                 </div>
               </div>
             </td>
-            <td>{{ user.email }}</td>
-            <td>
+            <td class="table-cell">{{ user.email }}</td>
+            <td class="table-cell">
               @for (role of user.roles; track role) {
-              <span class="badge badge-primary badge-sm mr-1">{{ role }}</span>
+              <span class="role-badge">{{ role }}</span>
               }
             </td>
-            <td>{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
-            <td>
+            <td class="table-cell">{{ user.createdAt | date:'dd/MM/yyyy' }}</td>
+            <td class="table-cell">
               <span
-                class="badge badge-sm mr-1"
-                [class]="user.isActive ? 'badge-success' : 'badge-error'"
+                class="status-badge"
+                [class]="user.isActive ? 'status-badge-success' : 'status-badge-error'"
               >
+                <shared-icon type="check" />
                 {{ user.isActive ? 'Active' : 'Inactive' }}
               </span>
             </td>
-            <td>
+            <td class="table-cell">
               <a
                 [routerLink]="['/admin/users', user.id]"
-                class="btn btn-info btn-sm"
+                class="action-button action-button-info"
               >
-                Details
+                <shared-icon type="ellipsis-vertical" />
               </a>
             </td>
           </tr>
@@ -77,19 +84,19 @@
   </div>
 
   @if(usersResource.isLoading()) {
-  <div class="flex justify-center items-center h-32">
-    <app-loading></app-loading>
+  <div class="loading-container">
+    <shared-loading></shared-loading>
   </div>
   }
 
   @if(usersResource.error()) {
-  <div class="alert alert-error mt-4">
-    <i class="fa-solid fa-exclamation-triangle"></i>
+  <div class="error-container">
+    <shared-icon type="error" />
     <span>Error: {{ usersResource.error()?.message }}</span>
   </div>
   }
 
-  <app-pagination
+  <shared-pagination
     [totalPages]="usersResource.value()?.pagination?.totalPages ?? 0"
     [totalItems]="usersResource.value()?.pagination?.totalElements ?? 0"
     [itemsPerPage]="usersPerPage()"
