@@ -74,7 +74,8 @@
             [user]="currentUser()!"
             [isEditMode]="true"
             [isLoading]="isLoadingUser()"
-            [isReadOnly]="true"
+            [isReadOnly]="false"
+            [isRoleReadOnly]="true"
             (formSubmitted)="onUserFormSubmitted()"
             (roleSelected)="onRoleSelected($event)"
           />

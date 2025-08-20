@@ -39,6 +39,7 @@
   </div>
 
   <div>
+    @if (authService.isAdmin()) {
     <ul class="menu menu-lg w-full">
       <li class="menu-title">
         <span
@@ -96,5 +97,6 @@
         </a>
       </li>
     </ul>
+    }
   </div>
 </div>

@@ -160,7 +160,7 @@ export class AuthService {
     this.authState.clearState();
     this.clearAllStorage();
 
-    // Extraer el mensaje de error de la estructura ErrorResponse si está disponible
+    // Extract error message from ErrorResponse structure if available
     let errorMessage = 'Unexpected error authenticating. Please try again.';
 
     if (error?.errorResponse?.message) {

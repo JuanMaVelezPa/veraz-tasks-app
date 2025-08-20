@@ -13,7 +13,11 @@ export const mainRoutes: Routes = [
         loadChildren: () => import('@admin/admin.routes').then(m => m.adminRoutes),
         canMatch: [authGuard]
       },
-
+      {
+        path: 'profile',
+        loadChildren: () => import('@profile/profile.routes').then(m => m.profileRoutes),
+        canMatch: [authGuard]
+      },
       {
         path: '**',
         component: NotFoundComponent

@@ -139,11 +139,11 @@ export class FormUtilsService {
   }
 
   static async validateCredentials(control: AbstractControl): Promise<ValidationErrors | null> {
-    console.log('Validating credentials against server...');
+
     await sleep(1);
 
     const formValue = control.value;
-    // Simulación de validación - aquí iría la llamada real al servidor
+    // Validation simulation - here would go the real server call
     if (formValue === 'test@test.com') {
       return { invalidCredentials: true };
     }

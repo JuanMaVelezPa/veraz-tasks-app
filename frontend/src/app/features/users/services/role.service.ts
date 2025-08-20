@@ -3,7 +3,6 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '@env/environment';
 import { Observable, of, map, catchError } from 'rxjs';
 import { RoleResponse } from '../interfaces/role.interface';
-import { HttpErrorService } from '@shared/services/http-error.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 
 @Injectable({
@@ -12,7 +11,6 @@ import { ApiResponse } from '@shared/interfaces/api-response.interface';
 export class RoleService {
 
   private http = inject(HttpClient);
-  private httpErrorService = inject(HttpErrorService);
 
   private activeRolesCache: RoleResponse[] | null = null;
 

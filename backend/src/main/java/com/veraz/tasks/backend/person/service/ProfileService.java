@@ -2,12 +2,13 @@ package com.veraz.tasks.backend.person.service;
 
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.veraz.tasks.backend.auth.model.User;
+import com.veraz.tasks.backend.auth.dto.UserUpdateRequestDTO;
+import com.veraz.tasks.backend.auth.dto.UserResponseDTO;
+import com.veraz.tasks.backend.auth.service.UserService;
 import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
@@ -20,69 +21,76 @@ import com.veraz.tasks.backend.person.repository.PersonRepository;
 @Service
 public class ProfileService {
 
-    private static final Logger logger = LoggerFactory.getLogger(ProfileService.class);
     private final PersonRepository personRepository;
+    private final UserService userService;
 
-    public ProfileService(PersonRepository personRepository) {
+    public ProfileService(PersonRepository personRepository, UserService userService) {
         this.personRepository = personRepository;
+        this.userService = userService;
     }
 
     @Transactional(readOnly = true)
     public PersonResponseDTO getPersonByUser(User user) {
-        logger.info("Getting person for user: {}", user.getUsername());
-        
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
-        
+
         return PersonMapper.toDto(person);
     }
 
     @Transactional
     public PersonResponseDTO createPersonForUser(User user, PersonCreateRequestDTO personRequestDto) {
-        logger.info("Creating person for user: {}", user.getUsername());
-        
-        // Check if person already exists with same email or identification
-        if (personRepository.existsByEmail(personRequestDto.getEmail())) {
-            throw new DataConflictException("Person already exists with email: " + personRequestDto.getEmail());
+        if (personRepository.findByUser(user).isPresent()) {
+            throw new DataConflictException("User already has a person profile associated");
         }
 
-        if (personRepository.existsByIdentNumberAndIdentType(personRequestDto.getIdentNumber(), personRequestDto.getIdentType())) {
-            throw new DataConflictException("Person already exists with identification: " + personRequestDto.getIdentType() + " " + personRequestDto.getIdentNumber());
+        if (personRequestDto.getEmail() != null && !personRequestDto.getEmail().trim().isEmpty()) {
+            String email = personRequestDto.getEmail().trim();
+            if (personRepository.existsByEmail(email)) {
+                throw new DataConflictException("Person already exists with email: " + email);
+            }
         }
 
-        // Create new person
+        if (personRepository.existsByIdentNumberAndIdentType(personRequestDto.getIdentNumber(),
+                personRequestDto.getIdentType())) {
+            throw new DataConflictException("Person already exists with identification: "
+                    + personRequestDto.getIdentType() + " " + personRequestDto.getIdentNumber());
+        }
+
+        personRequestDto.setUserId(user.getId());
         Person person = PersonMapper.toEntity(personRequestDto);
         personRepository.save(person);
-
-        logger.info("Person created successfully for user: {} with id: {}", user.getUsername(), person.getId());
 
         return PersonMapper.toDto(person);
     }
 
     @Transactional
     public PersonResponseDTO updatePersonForUser(User user, PersonUpdateRequestDTO personRequestDto) {
-        logger.info("Updating person for user: {}", user.getUsername());
-
-        // Get existing person for user
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
 
-        // Check if identification already exists in another person (only if provided and different)
         if (personRequestDto.getIdentNumber() != null && personRequestDto.getIdentType() != null &&
-            (!person.getIdentNumber().equals(personRequestDto.getIdentNumber()) || 
-             !person.getIdentType().equals(personRequestDto.getIdentType()))) {
-            
-            if (personRepository.existsByIdentNumberAndIdentType(personRequestDto.getIdentNumber(), personRequestDto.getIdentType())) {
-                throw new DataConflictException("Person already exists with identification: " + personRequestDto.getIdentType() + " " + personRequestDto.getIdentNumber());
+                (!person.getIdentNumber().equals(personRequestDto.getIdentNumber()) ||
+                        !person.getIdentType().equals(personRequestDto.getIdentType()))) {
+
+            if (personRepository.existsByIdentNumberAndIdentType(personRequestDto.getIdentNumber(),
+                    personRequestDto.getIdentType())) {
+                throw new DataConflictException("Person already exists with identification: "
+                        + personRequestDto.getIdentType() + " " + personRequestDto.getIdentNumber());
             }
         }
 
-        // Update person using mapper
+        if (personRequestDto.getEmail() != null && !personRequestDto.getEmail().trim().isEmpty() &&
+                !personRequestDto.getEmail().trim().equalsIgnoreCase(person.getEmail())) {
+
+            String email = personRequestDto.getEmail().trim();
+            if (personRepository.existsByEmail(email)) {
+                throw new DataConflictException("Person already exists with email: " + email);
+            }
+        }
+
         PersonMapper.updateEntity(person, personRequestDto);
         person = personRepository.save(person);
-        
-        logger.info("Person updated successfully for user: {} with id: {}", user.getUsername(), person.getId());
-        
+
         return PersonMapper.toDto(person);
     }
 
@@ -98,8 +106,6 @@ public class ProfileService {
 
     @Transactional
     public void deletePersonForUser(User user) {
-        logger.info("Deleting person for user: {}", user.getUsername());
-        
         Person person = personRepository.findByUser(user)
                 .orElseThrow(() -> new ResourceNotFoundException("Person not found for user: " + user.getUsername()));
 
@@ -108,6 +114,20 @@ public class ProfileService {
         }
 
         personRepository.delete(person);
-        logger.info("Person deleted successfully for user: {}", user.getUsername());
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserAccount(User user) {
+        UserResponseDTO response = userService.findById(user.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        return response;
+    }
+
+    @Transactional
+    public UserResponseDTO updateUserAccount(User user, UserUpdateRequestDTO userRequest) {
+        UserResponseDTO response = userService.update(user.getId(), userRequest);
+
+        return response;
     }
 }

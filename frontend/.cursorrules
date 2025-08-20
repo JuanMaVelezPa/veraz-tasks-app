@@ -1,0 +1,110 @@
+# Cursor Rules for Tasks App Frontend
+
+## Core Rules
+- **Angular 20+**: Use standalone components, signals, modern syntax
+- **KISS**: Keep It Simple, Stupid
+- **Clean Architecture**: Separation of concerns
+
+## File Organization
+- **NEVER** create `index.ts` files
+- **ALWAYS** use separate HTML files (`.component.html`)
+- **NEVER** use inline templates or separate CSS files
+- Import directly: `import { UserService } from '@users/services/user.service'`
+
+## Documentation
+- **English only** for all code
+- **JSDoc only for public APIs** (services, interfaces)
+- **No inline comments** for obvious code
+- **Document complex business logic** only
+
+## Component Structure
+```typescript
+@Component({
+  selector: 'app-component-name',
+  templateUrl: './component-name.component.html',
+  standalone: true,
+  imports: [CommonModule],
+  styles: [`.component-class { /* styles */ }`]
+})
+export class ComponentNameComponent {
+  data = input.required<DataType>();
+  optional = input<boolean>(false);
+  dataChanged = output<DataType>();
+
+  isLoading = signal(false);
+  items = signal<Item[]>([]);
+  filteredItems = computed(() => this.items().filter(item => /* logic */));
+}
+```
+
+## Service Structure
+```typescript
+@Injectable({ providedIn: 'root' })
+export class ServiceName {
+  private readonly apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  getData(): Observable<DataType> {
+    return this.http.get<DataType>(`${this.apiUrl}/endpoint`).pipe(
+      catchError(error => this.httpErrorService.handleError(error, 'context'))
+    );
+  }
+}
+```
+
+## Naming Conventions
+- Files: kebab-case (`user-profile.component.ts`)
+- Classes: PascalCase (`UserProfileComponent`)
+- Services: camelCase (`UserService`)
+- Variables: camelCase (`userData`)
+
+## Error Handling
+- Always use `HttpErrorService`
+- Include context: `'loading users'`, `'creating user'`
+- Reset forms after errors
+
+## State Management
+- Use signals for component state
+- Use services for global state
+- Avoid complex state libraries
+
+## Performance
+- Use OnPush change detection
+- Implement lazy loading
+- Use trackBy in *ngFor
+- Unsubscribe from observables
+
+## Security
+- Validate all inputs
+- Use reactive forms with validators
+- Implement proper guards
+
+## Testing
+- Unit tests for services
+- Component logic tests
+- Mock external dependencies
+
+## Accessibility
+- Semantic HTML
+- ARIA labels
+- Keyboard navigation
+- Color contrast
+
+## Prohibited
+❌ No `index.ts` files
+❌ No inline templates
+❌ No separate CSS files
+❌ No Spanish documentation
+❌ No over-engineering
+
+## Required
+✅ Standalone components
+✅ Separate HTML files
+✅ Component styles
+✅ English documentation
+✅ KISS principle
+✅ Business logic in services
+✅ Signals for state
+✅ Error handling
+✅ Unit tests

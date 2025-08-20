@@ -26,13 +26,17 @@ import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "ge_tuser")
 @Data
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class User implements UserDetails {
 
     @Id
@@ -51,6 +55,7 @@ public class User implements UserDetails {
     private String password;
 
     @Column(name = "user_is_active", nullable = false)
+    @Builder.Default
     private Boolean isActive = true;
 
     @Column(name = "user_created_at")
@@ -61,6 +66,7 @@ public class User implements UserDetails {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(name = "ge_tusro", joinColumns = @JoinColumn(name = "usro_user"), inverseJoinColumns = @JoinColumn(name = "usro_role"))
+    @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
@@ -70,6 +76,7 @@ public class User implements UserDetails {
         this.username = username;
         this.email = email;
         this.password = password;
+        this.roles = new HashSet<>();
         this.roles.add(role);
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
@@ -109,18 +116,17 @@ public class User implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Set<GrantedAuthority> authorities = new HashSet<>();
-        for (Role role : roles) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
-        }
-
+        
         if (this.roles != null) {
-            this.roles.forEach(role -> {
+            for (Role role : roles) {
+                authorities.add(new SimpleGrantedAuthority("ROLE_" + role.getName()));
+                
                 if (role.getPerms() != null) {
                     role.getPerms().forEach(perm -> {
                         authorities.add(new SimpleGrantedAuthority("PERM_" + perm.getName()));
                     });
                 }
-            });
+            }
         }
 
         return authorities;

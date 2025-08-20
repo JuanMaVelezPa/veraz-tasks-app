@@ -76,7 +76,7 @@
 
     <!-- Right Column - Roles -->
     <div class="lg:col-span-1">
-      @if (isReadOnly()) {
+      @if (isRoleReadOnly()) {
       <div class="form-control">
         <label class="label">
           <span class="label-text font-semibold text-sm">Role</span>
@@ -87,7 +87,7 @@
       </div>
       } @else {
       <app-user-role-selector
-        [selectedRole]="getSelectedRole()"
+        [selectedRole]="userForm().get('selectedRole')?.value || ''"
         (roleSelected)="onRoleSelected($event)"
       />
       }

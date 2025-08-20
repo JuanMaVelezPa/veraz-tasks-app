@@ -26,4 +26,4 @@ export interface PersonParams {
   identificationTypes: IdentificationType[];
   genders: Gender[];
   nationalities: Nationality[];
-} 
+}

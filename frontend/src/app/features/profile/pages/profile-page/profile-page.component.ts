@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '@auth/services/auth.service';
-import { UserService } from '@users/services/user.service';
-import { PersonService } from '@person/services/person.service';
+import { ProfileService } from '@profile/services/profile.service';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
+import { HttpErrorService } from '@shared/services/http-error.service';
+import { PersonManagementService } from '@person/services/person-management.service';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
@@ -16,7 +17,7 @@ import { PersonInfoCardComponent } from '@person/components/person-info-card/per
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, catchError, tap } from 'rxjs';
 
 @Component({
   selector: 'app-profile-page',
@@ -35,11 +36,12 @@ import { firstValueFrom } from 'rxjs';
 })
 export class ProfilePageComponent implements OnInit {
   private authService = inject(AuthService);
-  private userService = inject(UserService);
-  private personService = inject(PersonService);
+  private profileService = inject(ProfileService);
   private feedbackService = inject(FeedbackMessageService);
   private formUtils = inject(FormUtilsService);
   private passwordUtils = inject(PasswordUtilsService);
+  private httpErrorService = inject(HttpErrorService);
+  private personManagementService = inject(PersonManagementService);
   private fb = inject(FormBuilder);
   private router = inject(Router);
 
@@ -107,12 +109,16 @@ export class ProfilePageComponent implements OnInit {
 
     this.isLoadingUser.set(true);
     try {
-      const user = await firstValueFrom(this.userService.getUserById(authUser.id));
-      this.currentUser.set(user);
-      this.setUserFormValues(user);
+      const response = await firstValueFrom(
+        this.profileService.getMyUserAccount().pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'loading user profile'))
+        )
+      );
+      this.currentUser.set(response.data);
+      this.setUserFormValues(response.data);
       this.loadAssociatedPerson();
-    } catch (error) {
-      this.feedbackService.showError('Failed to load user profile');
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'Failed to load user profile');
     } finally {
       this.isLoadingUser.set(false);
     }
@@ -124,15 +130,21 @@ export class ProfilePageComponent implements OnInit {
 
     this.isLoadingPerson.set(true);
     try {
-      const searchOptions = { page: 0, size: 1000, sort: 'id', order: 'asc' as const, search: '' };
-      const personsResponse = await firstValueFrom(this.personService.getPersons(searchOptions));
-      const associatedPerson = personsResponse.data.find(person => person.userId === user.id);
-      this.associatedPerson.set(associatedPerson || null);
-      if (associatedPerson) {
-        this.setPersonFormValues(associatedPerson);
+      const response = await firstValueFrom(
+        this.profileService.getMyProfile().pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'loading person profile'))
+        )
+      );
+      this.associatedPerson.set(response.data);
+      if (response.data) {
+        this.setPersonFormValues(response.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       this.associatedPerson.set(null);
+      // Don't show error for profile not found, it's expected for new users
+      if (error.status !== 404) {
+        this.feedbackService.showError(error.message || 'Failed to load personal information.');
+      }
     } finally {
       this.isLoadingPerson.set(false);
     }
@@ -181,28 +193,36 @@ export class ProfilePageComponent implements OnInit {
     this.isLoadingUser.set(true);
 
     try {
-      const formValue = this.userForm.value;
-      const changes = this.detectUserChanges(formValue, this.currentUser()!);
-
-      if (Object.keys(changes).length === 0) {
-        this.feedbackService.showWarning('No changes detected. Nothing to save.');
-        return;
-      }
-
-      const updatedUser: User = await firstValueFrom(
-        this.userService.updateUser(this.currentUser()!.id, changes)
-      );
-
-      if (updatedUser?.id) {
-        this.currentUser.set(updatedUser);
-        this.authService.updateCurrentUser(updatedUser);
-        this.setUserFormValues(updatedUser);
-        this.feedbackService.showSuccess('User profile updated successfully!');
-      }
-    } catch (error) {
-      this.handleUserError(error);
+      await this.updateUser();
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while updating the user profile.');
+      // Reset form to original values after error
+      this.setUserFormValues(this.currentUser()!);
     } finally {
       this.isLoadingUser.set(false);
+    }
+  }
+
+  private async updateUser(): Promise<void> {
+    const formValue = this.userForm.value;
+    const changes = this.detectUserChanges(formValue, this.currentUser()!);
+
+    if (Object.keys(changes).length === 0) {
+      this.feedbackService.showWarning('No changes detected. Nothing to save.');
+      return;
+    }
+
+    const response = await firstValueFrom(
+      this.profileService.updateMyUserAccount(changes).pipe(
+        catchError(error => this.httpErrorService.handleError(error, 'updating user profile'))
+      )
+    );
+
+    if (response.data?.id) {
+      this.currentUser.set(response.data);
+      this.authService.updateCurrentUser(response.data);
+      this.setUserFormValues(response.data);
+      this.feedbackService.showSuccess('User profile updated successfully!');
     }
   }
 
@@ -217,50 +237,47 @@ export class ProfilePageComponent implements OnInit {
 
     try {
       const formValue = this.personForm.value;
+      const formData = this.personManagementService.prepareFormData(formValue);
 
       if (this.associatedPerson()) {
         // Update existing person
-        const updateData = {
-          ...formValue,
-          userId: this.currentUser()!.id,
-          birthDate: formValue.birthDate ? new Date(formValue.birthDate).toISOString() : undefined
-        };
-
-        const updatedPerson = await firstValueFrom(
-          this.personService.updatePerson(this.associatedPerson()!.id, updateData)
+        await this.personManagementService.updatePerson(
+          this.associatedPerson()!,
+          formData,
+          {
+            context: 'profile',
+            onSuccess: (person) => {
+              this.associatedPerson.set(person);
+              this.setPersonFormValues(person);
+            },
+            onError: () => {
+              // Reset form to original values after error
+              this.setPersonFormValues(this.associatedPerson()!);
+            }
+          }
         );
-        this.associatedPerson.set(updatedPerson);
-        this.setPersonFormValues(updatedPerson);
-        this.feedbackService.showSuccess('Personal information updated successfully!');
       } else {
         // Create new person
-        const createData = {
-          identType: formValue.identType!,
-          identNumber: formValue.identNumber!,
-          firstName: formValue.firstName!,
-          lastName: formValue.lastName!,
-          email: formValue.email!,
-          mobile: formValue.mobile!,
-          address: formValue.address!,
-          city: formValue.city!,
-          country: formValue.country!,
-          postalCode: formValue.postalCode!,
-          birthDate: formValue.birthDate ? new Date(formValue.birthDate).toISOString() : undefined,
-          gender: formValue.gender!,
-          nationality: formValue.nationality!,
-          notes: formValue.notes || '',
-          isActive: formValue.isActive!
-        };
+        if (!this.personManagementService.validateRequiredFields(formData)) {
+          return;
+        }
 
-        const newPerson = await firstValueFrom(
-          this.personService.createPerson(createData)
+        await this.personManagementService.createPerson(
+          formData,
+          {
+            context: 'profile',
+            onSuccess: (person) => {
+              this.associatedPerson.set(person);
+              this.setPersonFormValues(person);
+            }
+          }
         );
-        this.associatedPerson.set(newPerson);
-        this.setPersonFormValues(newPerson);
-        this.feedbackService.showSuccess('Personal information created successfully!');
       }
-    } catch (error) {
-      this.handlePersonError(error);
+    } catch (error: any) {
+      // Error handling is done in the service
+      if (this.associatedPerson()) {
+        this.setPersonFormValues(this.associatedPerson()!);
+      }
     } finally {
       this.isLoadingPerson.set(false);
     }
@@ -330,12 +347,8 @@ export class ProfilePageComponent implements OnInit {
       changes.isActive = formValue.isActive;
     }
 
-    // Check role changes
-    const currentRole = originalUser.roles?.[0] || '';
-    const newRole = formValue.selectedRole || '';
-    if (newRole !== currentRole) {
-      changes.roles = newRole ? [newRole] : [];
-    }
+    // Note: Role changes are not allowed in profile mode
+    // Only admins can change roles through the admin interface
 
     // Check password changes (only if provided)
     if (formValue.password?.trim()) {
@@ -345,27 +358,7 @@ export class ProfilePageComponent implements OnInit {
     return changes;
   }
 
-  private handleUserError(error: any): void {
-    let errorMessage = 'An error occurred while saving the user. Please try again.';
 
-    if (error?.errorResponse?.message) {
-      errorMessage = error.errorResponse.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
 
-    this.feedbackService.showError(errorMessage);
-  }
 
-  private handlePersonError(error: any): void {
-    let errorMessage = 'An error occurred while saving the person. Please try again.';
-
-    if (error?.errorResponse?.message) {
-      errorMessage = error.errorResponse.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-
-    this.feedbackService.showError(errorMessage);
-  }
 }

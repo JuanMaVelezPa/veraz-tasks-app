@@ -3,6 +3,10 @@
 
     <include resource="org/springframework/boot/logging/logback/base.xml" />
 
+    <!-- Define log directory and file -->
+    <property name="LOG_DIR" value="logs" />
+    <property name="LOG_FILE" value="${LOG_DIR}/tasks-backend" />
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <layout class="ch.qos.logback.classic.PatternLayout">
             <Pattern>%d{dd-MM-yyyy-HH:mm} [%thread] %-5level %logger{36} - %msg%n</Pattern> 
@@ -12,29 +16,31 @@
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_FILE}.%d{dd-MM-yyyy}.%i.log</fileNamePattern>    
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>    
             <maxHistory>7</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy
                 class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>10MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
-
         <encoder>
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%15.15t] %logger{39} : %msg%n</Pattern>
         </encoder>
     </appender>
 
+    <!-- Application logger -->
     <logger name="com.veraz.tasks.backend" level="INFO" additivity="false">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </logger>
 
+    <!-- Framework loggers -->
     <logger name="org.springframework" level="INFO" />
+    <logger name="org.springframework.security" level="INFO" />
     <logger name="org.hibernate.SQL" level="DEBUG" />
     <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" />
-    <logger name="org.springframework.security" level="INFO" />
 
+    <!-- Root logger -->
     <root level="INFO">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />

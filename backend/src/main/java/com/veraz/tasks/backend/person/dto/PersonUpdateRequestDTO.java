@@ -1,6 +1,5 @@
 package com.veraz.tasks.backend.person.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,8 +44,7 @@ public class PersonUpdateRequestDTO {
     @Size(max = 20, message = "{validation.field.max.length}")
     private String mobile;
 
-    @Email(message = "{validation.field.email}")
-    @Size(min = 3, max = 100, message = "{validation.field.size}")
+    @Size(max = 100, message = "{validation.field.max.length}")
     private String email;
 
     @Size(max = 255, message = "{validation.field.max.length}")

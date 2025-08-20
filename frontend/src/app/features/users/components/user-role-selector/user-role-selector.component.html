@@ -16,7 +16,11 @@
     >
       <option value="" disabled>Select a role</option>
       @for (role of availableRoles(); track role.name) {
-        <option [value]="role.name" [title]="role.description || ''">
+        <option
+          [value]="role.name"
+          [title]="role.description || ''"
+          [selected]="role.name === selectedRole()"
+        >
           {{ role.name | titlecase }}
         </option>
       }

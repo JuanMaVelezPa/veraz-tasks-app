@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "ca1e00a5-4362-421d-a735-d97aa2ab3937",
+		"_postman_id": "dfdfa552-596f-4c44-bc8e-a30f3aaabe1f",
 		"name": "VerazDb - Tasks Backend API",
 		"description": "Colección de Postman para la API de Tasks Backend con endpoints optimizados",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
@@ -55,7 +55,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"usernameOrEmail\": \"admin_user\",\n    \"password\": \"Abc123456*\"\n}",
+							"raw": "{\n    \"usernameOrEmail\": \"carava\",\n    \"password\": \"Abc123456*\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1253,6 +1253,335 @@
 			]
 		},
 		{
+			"name": "👤 Profile",
+			"item": [
+				{
+					"name": "Get My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Check Profile Exists",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/profile/exists",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile",
+								"exists"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create My Profile",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"try {",
+									"    const responseJson = pm.response.json();",
+									"    ",
+									"    if (responseJson && responseJson.data && responseJson.data.id) {",
+									"        pm.collectionVariables.set(\"profile_person_id\", responseJson.data.id);",
+									"        console.log(\"Profile Person ID guardado:\", responseJson.data.id);",
+									"    } else {",
+									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");",
+									"    }",
+									"} catch (e) {",
+									"    console.error(\"Error al procesar la respuesta JSON:\", e);",
+									"}",
+									"",
+									"pm.test(\"Status code is 201 Created\", function () {",
+									"    pm.response.to.have.status(201);",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"identType\": \"CC\",\n    \"identNumber\": \"1234567890\",\n    \"firstName\": \"Juan Carlos\",\n    \"lastName\": \"Vélez\",\n    \"birthDate\": \"1990-05-15\",\n    \"gender\": \"M\",\n    \"nationality\": \"Colombiana\",\n    \"mobile\": \"3001234567\",\n    \"email\": \"juan.velez@email.com\",\n    \"address\": \"Calle 123 #45-67\",\n    \"city\": \"Bogotá\",\n    \"country\": \"Colombia\",\n    \"postalCode\": \"110111\",\n    \"notes\": \"Perfil personal para pruebas\",\n    \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"firstName\": \"Juan Carlos\",\n    \"lastName\": \"Vélez López\",\n    \"email\": \"juan.velez.actualizado@email.com\",\n    \"mobile\": \"3009876543\",\n    \"address\": \"Calle 456 #78-90\",\n    \"city\": \"Medellín\",\n    \"notes\": \"Perfil actualizado con nueva información\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete My Profile",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/profile",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get My User Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "http://localhost:3000/api/profile/account",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile",
+								"account"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update My User Account",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwt_token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Accept-Language",
+								"value": "es",
+								"type": "text"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"username\": \"juan.velez.actualizado\",\n    \"email\": \"juan.velez.nuevo@email.com\",\n    \"password\": \"NuevaPassword123*\",\n    \"isActive\": true\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:3000/api/profile/account",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "3000",
+							"path": [
+								"api",
+								"profile",
+								"account"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "🔧 System",
 			"item": [
 				{
@@ -1366,6 +1695,11 @@
 		},
 		{
 			"key": "person_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "profile_person_id",
 			"value": "",
 			"type": "string"
 		},

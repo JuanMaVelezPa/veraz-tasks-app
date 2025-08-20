@@ -7,6 +7,7 @@ import { PersonService } from '@person/services/person.service';
 import { Router } from '@angular/router';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
+import { HttpErrorService } from '@shared/services/http-error.service';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
@@ -17,7 +18,7 @@ import { PersonInfoCardComponent } from '@person/components/person-info-card/per
 import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
 import { AuthService } from '@auth/services/auth.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, catchError } from 'rxjs';
 
 @Component({
   selector: 'user-details',
@@ -36,6 +37,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   formUtils = inject(FormUtilsService);
   passwordUtils = inject(PasswordUtilsService);
+  httpErrorService = inject(HttpErrorService);
   feedbackService = inject(FeedbackMessageService);
   navigationHistory = inject(NavigationHistoryService);
   personAssociationService = inject(PersonAssociationService);
@@ -122,8 +124,10 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       } else {
         await this.createUser();
       }
-    } catch (error) {
-      this.handleUserError(error);
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while saving the user.');
+      // Reset form to original values after error
+      this.setFormValues(this.currentUser()!);
     } finally {
       this.isLoading.set(false);
     }
@@ -141,7 +145,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
     try {
       const createdUser = await firstValueFrom(
-        this.userService.createUser(userData)
+        this.userService.createUser(userData).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'creating user'))
+        )
       );
 
       if (createdUser?.id) {
@@ -153,8 +159,10 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
           this.router.navigate(['/admin/users']);
         }, 500);
       }
-    } catch (error) {
-      this.handleUserError(error);
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while creating the user.');
+      // Reset form to original values after error
+      this.setFormValues(this.currentUser()!);
       throw error;
     }
   }
@@ -178,7 +186,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
     try {
       const updatedUser: User = await firstValueFrom(
-        this.userService.updateUser(originalUser.id, changes)
+        this.userService.updateUser(originalUser.id, changes).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'updating user'))
+        )
       );
 
       if (updatedUser?.id) {
@@ -199,8 +209,10 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         this.feedbackService.showSuccess('User updated successfully!');
         this.wasSaved.set(true);
       }
-    } catch (error) {
-      this.handleUserError(error);
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while updating the user.');
+      // Reset form to original values after error
+      this.setFormValues(this.currentUser()!);
     }
   }
 
@@ -236,7 +248,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
     try {
       const response = await firstValueFrom(
-        this.userService.deleteUser(user.id)
+        this.userService.deleteUser(user.id).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'deleting user'))
+        )
       );
 
       if (response) {
@@ -245,8 +259,8 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       } else {
         this.feedbackService.showError('Failed to delete user');
       }
-    } catch (error) {
-      this.handleUserError(error);
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while deleting the user.');
     } finally {
       this.isLoading.set(false);
       this.showDeleteModal.set(false);
@@ -261,18 +275,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.showDeleteModal.set(false);
   }
 
-  private handleUserError(error: any): void {
-    // Extract error message from ErrorResponse if available
-    let errorMessage = 'An error occurred while saving the user. Please try again.';
 
-    if (error?.errorResponse?.message) {
-      errorMessage = error.errorResponse.message;
-    } else if (error?.message) {
-      errorMessage = error.message;
-    }
-
-    this.feedbackService.showError(errorMessage);
-  }
 
   private detectChanges(formValue: any, originalUser: User): any {
     const changes: any = {};
@@ -296,9 +299,12 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
       changes.isActive = formValue.isActive;
     }
 
-    // Check role changes
-    const currentRole = originalUser.roles?.[0] || '';
+    // Check role changes - improved logic
+    const currentRoles = originalUser.roles || [];
+    const currentRole = currentRoles.length > 0 ? currentRoles[0] : '';
     const newRole = formValue.selectedRole || '';
+
+    // Check if role has actually changed
     if (newRole !== currentRole) {
       changes.roles = newRole ? [newRole] : [];
     }

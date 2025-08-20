@@ -124,6 +124,7 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
             @ApiResponse(responseCode = "404", description = "User not found"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponseDTO<UserResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody UserUpdateRequestDTO userRequest) {
         try {
             UserResponseDTO response = userService.update(id, userRequest);
