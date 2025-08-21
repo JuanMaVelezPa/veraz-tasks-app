@@ -1,8 +1,11 @@
 import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Person } from '@person/interfaces/person.interface';
+import { Employee } from '@employee/interfaces/employee.interface';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PersonService } from '@person/services/person.service';
 import { PersonManagementService } from '@person/services/person-management.service';
+import { EmployeeService } from '@employee/services/employee.service';
+import { EmployeeAssociationService } from '@employee/services/employee-association.service';
 import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
@@ -11,13 +14,14 @@ import { NavigationHistoryService } from '@shared/services/navigation-history.se
 import { HttpErrorService } from '@shared/services/http-error.service';
 import { PersonFormComponent } from '@person/components/person-form/person-form.component';
 import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
+import { EmployeeInfoCardComponent } from '@employee/components/employee-info-card/employee-info-card.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom, catchError } from 'rxjs';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 
 @Component({
   selector: 'person-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent, TimestampInfoComponent, IconComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent, TimestampInfoComponent, EmployeeInfoCardComponent, IconComponent],
   templateUrl: './person-details.component.html',
 })
 export class PersonDetailsComponent implements OnInit, OnDestroy {
@@ -25,8 +29,11 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
   private fb = inject(FormBuilder);
   private route = inject(ActivatedRoute);
+  private router = inject(Router);
   private personService = inject(PersonService);
   private personManagementService = inject(PersonManagementService);
+  private employeeService = inject(EmployeeService);
+  private employeeAssociationService = inject(EmployeeAssociationService);
   private httpErrorService = inject(HttpErrorService);
   private feedbackService = inject(FeedbackMessageService);
   private navigationHistory = inject(NavigationHistoryService);
@@ -37,6 +44,10 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   isEditMode = signal(false);
   showDeleteModal = signal(false);
   currentPerson = signal<Person | null>(null);
+
+  // Employee signals
+  currentEmployee = signal<Employee | null>(null);
+  isLoadingEmployee = signal(false);
 
   personForm = this.fb.nonNullable.group({
     identType: ['', [Validators.required]],
@@ -62,6 +73,11 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.currentPerson.set(person);
     this.setFormValues(person);
     this.isEditMode.set(person.id !== 'new');
+
+    // Load employee info if person exists and has a valid ID
+    if (this.isEditMode() && person.id && person.id !== 'new' && person.id !== 'undefined' && person.id !== 'null') {
+      this.loadEmployeeInfo(person.id);
+    }
   }
 
   private setFormValues(person: Partial<Person>): void {
@@ -229,6 +245,43 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   goBack(): void {
     this.feedbackService.clearMessage();
     this.navigationHistory.goBack('/admin/persons');
+  }
+
+  // Employee methods
+  private async loadEmployeeInfo(personId: string): Promise<void> {
+    if (!personId || personId === 'undefined' || personId === 'null') {
+      this.currentEmployee.set(null);
+      this.isLoadingEmployee.set(false);
+      return;
+    }
+
+    this.isLoadingEmployee.set(true);
+    try {
+      const employee = await firstValueFrom(
+        this.employeeAssociationService.getEmployeeByPersonId(personId)
+      );
+      this.currentEmployee.set(employee);
+    } catch (error) {
+      this.currentEmployee.set(null);
+    } finally {
+      this.isLoadingEmployee.set(false);
+    }
+  }
+
+  onEmployeeAction(): void {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    const employee = this.currentEmployee();
+    if (employee) {
+      // Navigate to edit employee
+      this.router.navigate(['/admin/employees', employee.id]);
+    } else {
+      // Navigate to create employee with person ID
+      this.router.navigate(['/admin/employees/new'], {
+        queryParams: { personId: person.id }
+      });
+    }
   }
 
   ngOnDestroy(): void {

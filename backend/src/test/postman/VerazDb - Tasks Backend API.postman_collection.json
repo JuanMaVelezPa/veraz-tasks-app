@@ -112,7 +112,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -123,7 +123,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"nuevo_usuario\",\n    \"email\": \"nuevo@email.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"Juan\",\n    \"lastName\": \"Pérez\",\n    \"isActive\": true\n}",
+							"raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"Abc123456*\",\n    \"roleId\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -131,13 +131,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:3000/auth/sign-up",
+							"raw": "http://localhost:3000/api/auth/sign-up",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"auth",
 								"sign-up"
 							]
@@ -162,20 +163,21 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/auth/check-status",
+							"raw": "http://localhost:3000/api/auth/check",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
 							"port": "3000",
 							"path": [
+								"api",
 								"auth",
-								"check-status"
+								"check"
 							]
 						}
 					},
@@ -203,12 +205,12 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/users?page=0&size=10&sortBy=username&sortDirection=desc&search=jmvelez",
+							"raw": "http://localhost:3000/api/users?page=0&size=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -226,18 +228,6 @@
 								{
 									"key": "size",
 									"value": "10"
-								},
-								{
-									"key": "sortBy",
-									"value": "username"
-								},
-								{
-									"key": "sortDirection",
-									"value": "desc"
-								},
-								{
-									"key": "search",
-									"value": "jmvelez"
 								}
 							]
 						}
@@ -261,7 +251,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
@@ -298,7 +288,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -309,7 +299,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"nuevo_usuario\",\n    \"email\": \"nuevo@email.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"Juan\",\n    \"lastName\": \"Pérez\",\n    \"isActive\": true,\n    \"roles\": [\"USER\"]\n}",
+							"raw": "{\n    \"username\": \"newuser\",\n    \"email\": \"newuser@example.com\",\n    \"password\": \"Abc123456*\",\n    \"roleId\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -317,13 +307,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/users",
+							"raw": "http://localhost:3000/api/users",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"users"
 							]
 						}
@@ -343,7 +334,7 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Accept-Language",
@@ -358,7 +349,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"username\": \"jmvelez\"\n}",
+							"raw": "{\n    \"username\": \"updateduser\",\n    \"email\": \"updated@example.com\",\n    \"roleId\": \"1\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -398,18 +389,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/users/{{user_id}}",
+							"raw": "http://localhost:3000/api/users/{{user_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"users",
 								"{{user_id}}"
 							]
@@ -439,12 +431,12 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc&search=amanda",
+							"raw": "http://localhost:3000/api/persons?page=0&size=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -462,76 +454,6 @@
 								{
 									"key": "size",
 									"value": "10"
-								},
-								{
-									"key": "sort",
-									"value": "firstName"
-								},
-								{
-									"key": "direction",
-									"value": "asc"
-								},
-								{
-									"key": "search",
-									"value": "amanda"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Persons Availables",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:3000/api/persons?page=0&size=10&sort=firstName&direction=asc&search=amanda",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"persons"
-							],
-							"query": [
-								{
-									"key": "page",
-									"value": "0"
-								},
-								{
-									"key": "size",
-									"value": "10"
-								},
-								{
-									"key": "sort",
-									"value": "firstName"
-								},
-								{
-									"key": "direction",
-									"value": "asc"
-								},
-								{
-									"key": "search",
-									"value": "amanda"
 								}
 							]
 						}
@@ -555,18 +477,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/persons/{{person_id}}",
+							"raw": "http://localhost:3000/api/persons/{{person_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"persons",
 								"{{person_id}}"
 							]
@@ -618,7 +541,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -629,7 +552,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"identType\": \"CC\",\n    \"identNumber\": \"1234567890\",\n    \"firstName\": \"María\",\n    \"lastName\": \"García\",\n    \"birthDate\": \"1990-05-15\",\n    \"gender\": \"F\",\n    \"nationality\": \"Colombiana\",\n    \"mobile\": \"3001234567\",\n    \"email\": \"maria.garcia@email.com\",\n    \"address\": \"Calle 123 #45-67\",\n    \"city\": \"Bogotá\",\n    \"country\": \"Colombia\",\n    \"postalCode\": \"110111\",\n    \"notes\": \"Persona para pruebas\"\n}",
+							"raw": "{\n    \"firstName\": \"John\",\n    \"lastName\": \"Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"phone\": \"+1234567890\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"gender\": \"MALE\",\n    \"address\": \"123 Main St\",\n    \"city\": \"New York\",\n    \"state\": \"NY\",\n    \"country\": \"USA\",\n    \"postalCode\": \"10001\",\n    \"userId\": \"{{user_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -637,13 +560,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/persons",
+							"raw": "http://localhost:3000/api/persons",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"persons"
 							]
 						}
@@ -663,11 +587,11 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -678,7 +602,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"María Elena\",\n    \"lastName\": \"García López\",\n    \"email\": \"maria.actualizada@email.com\",\n    \"mobile\": \"3009876543\"\n}",
+							"raw": "{\n    \"firstName\": \"Jane\",\n    \"lastName\": \"Smith\",\n    \"email\": \"jane.smith@example.com\",\n    \"phone\": \"+1234567890\",\n    \"dateOfBirth\": \"1990-01-01\",\n    \"gender\": \"FEMALE\",\n    \"address\": \"456 Oak St\",\n    \"city\": \"Los Angeles\",\n    \"state\": \"CA\",\n    \"country\": \"USA\",\n    \"postalCode\": \"90210\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -686,13 +610,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/persons/{{person_id}}",
+							"raw": "http://localhost:3000/api/persons/{{person_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"persons",
 								"{{person_id}}"
 							]
@@ -717,18 +642,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/persons/{{person_id}}",
+							"raw": "http://localhost:3000/api/persons/{{person_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"persons",
 								"{{person_id}}"
 							]
@@ -758,12 +684,12 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/clients?page=0&size=10&sort=companyName&direction=asc",
+							"raw": "http://localhost:3000/api/clients?page=0&size=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -781,14 +707,6 @@
 								{
 									"key": "size",
 									"value": "10"
-								},
-								{
-									"key": "sort",
-									"value": "companyName"
-								},
-								{
-									"key": "direction",
-									"value": "asc"
 								}
 							]
 						}
@@ -812,18 +730,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/clients/{{client_id}}",
+							"raw": "http://localhost:3000/api/clients/{{client_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"clients",
 								"{{client_id}}"
 							]
@@ -875,7 +794,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -886,7 +805,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"personId\": \"{{person_id}}\",\n    \"clientCode\": \"CLI001\",\n    \"type\": \"CORPORATE\",\n    \"category\": \"VIP\",\n    \"source\": \"Web\",\n    \"companyName\": \"Tech Solutions S.A.\",\n    \"companyWebsite\": \"https://techsolutions.com\",\n    \"companyIndustry\": \"Tecnología\",\n    \"contactPerson\": \"Carlos Rodríguez\",\n    \"contactPosition\": \"Gerente de TI\",\n    \"taxId\": \"900123456-7\",\n    \"creditLimit\": 10000000,\n    \"currency\": \"COP\",\n    \"paymentTerms\": \"30 días\",\n    \"paymentMethod\": \"Transferencia bancaria\",\n    \"notes\": \"Cliente importante con proyectos de alto valor\",\n    \"preferences\": \"Atención personalizada, reportes mensuales\",\n    \"tags\": \"VIP, recurrente, tecnología\",\n    \"rating\": 5,\n    \"status\": \"ACTIVE\"\n}",
+							"raw": "{\n    \"companyName\": \"Acme Corp\",\n    \"contactPerson\": \"John Manager\",\n    \"contactEmail\": \"contact@acme.com\",\n    \"contactPhone\": \"+1234567890\",\n    \"industry\": \"Technology\",\n    \"website\": \"https://acme.com\",\n    \"billingAddress\": \"123 Business St\",\n    \"billingCity\": \"New York\",\n    \"billingState\": \"NY\",\n    \"billingCountry\": \"USA\",\n    \"billingPostalCode\": \"10001\",\n    \"personId\": \"{{person_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -894,13 +813,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/clients",
+							"raw": "http://localhost:3000/api/clients",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"clients"
 							]
 						}
@@ -920,11 +840,11 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -935,7 +855,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"companyName\": \"Tech Solutions Actualizada S.A.\",\n    \"contactPerson\": \"Ana María López\",\n    \"contactPosition\": \"Directora de Proyectos\",\n    \"rating\": 5,\n    \"notes\": \"Cliente actualizado con nuevos requerimientos\"\n}",
+							"raw": "{\n    \"companyName\": \"Acme Corp Updated\",\n    \"contactPerson\": \"Jane Manager\",\n    \"contactEmail\": \"jane@acme.com\",\n    \"contactPhone\": \"+1234567890\",\n    \"industry\": \"Technology\",\n    \"website\": \"https://acme-updated.com\",\n    \"billingAddress\": \"456 Business Ave\",\n    \"billingCity\": \"Los Angeles\",\n    \"billingState\": \"CA\",\n    \"billingCountry\": \"USA\",\n    \"billingPostalCode\": \"90210\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -943,13 +863,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/clients/{{client_id}}",
+							"raw": "http://localhost:3000/api/clients/{{client_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"clients",
 								"{{client_id}}"
 							]
@@ -974,18 +895,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/clients/{{client_id}}",
+							"raw": "http://localhost:3000/api/clients/{{client_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"clients",
 								"{{client_id}}"
 							]
@@ -1015,12 +937,12 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:3000/api/employees?page=0&size=10&sort=employeeCode&direction=asc",
+							"raw": "http://localhost:3000/api/employees?page=0&size=10",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1038,14 +960,6 @@
 								{
 									"key": "size",
 									"value": "10"
-								},
-								{
-									"key": "sort",
-									"value": "employeeCode"
-								},
-								{
-									"key": "direction",
-									"value": "asc"
 								}
 							]
 						}
@@ -1069,18 +983,19 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/employees/{{employee_id}}",
+							"raw": "http://localhost:3000/api/employees/{{employee_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"employees",
 								"{{employee_id}}"
 							]
@@ -1132,7 +1047,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -1143,7 +1058,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"personId\": \"{{person_id}}\",\n    \"employeeCode\": \"EMP001\",\n    \"position\": \"Desarrollador Senior\",\n    \"department\": \"Tecnología\",\n    \"supervisorId\": null,\n    \"hireDate\": \"2023-01-15\",\n    \"terminationDate\": null,\n    \"salary\": 5000000,\n    \"currency\": \"COP\",\n    \"employmentType\": \"FULL_TIME\",\n    \"status\": \"ACTIVE\",\n    \"workEmail\": \"empleado@empresa.com\",\n    \"workMobile\": \"3001234567\",\n    \"workLocation\": \"Oficina Bogotá\",\n    \"workSchedule\": \"Lunes a Viernes 8:00-17:00\",\n    \"skills\": \"Java, Spring Boot, React, PostgreSQL\",\n    \"certifications\": \"Oracle Certified Professional\",\n    \"education\": \"Ingeniero de Sistemas - Universidad Nacional\",\n    \"benefits\": \"Seguro médico, bonos de productividad\",\n    \"notes\": \"Empleado destacado con excelente rendimiento\"\n}",
+							"raw": "{\n    \"employeeCode\": \"EMP001\",\n    \"department\": \"Engineering\",\n    \"position\": \"Software Developer\",\n    \"employmentType\": \"FULL_TIME\",\n    \"hireDate\": \"2023-01-15\",\n    \"salary\": 75000.00,\n    \"status\": \"ACTIVE\",\n    \"personId\": \"{{person_id}}\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1151,13 +1066,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/employees",
+							"raw": "http://localhost:3000/api/employees",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"employees"
 							]
 						}
@@ -1177,11 +1093,11 @@
 								}
 							]
 						},
-						"method": "PATCH",
+						"method": "PUT",
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							},
 							{
@@ -1192,7 +1108,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"position\": \"Desarrollador Lead\",\n    \"department\": \"Tecnología\",\n    \"salary\": 6000000,\n    \"workEmail\": \"empleado.actualizado@empresa.com\",\n    \"skills\": \"Java, Spring Boot, React, PostgreSQL, Docker, Kubernetes\",\n    \"notes\": \"Empleado promovido a Lead Developer\"\n}",
+							"raw": "{\n    \"employeeCode\": \"EMP001-UPDATED\",\n    \"department\": \"Product Management\",\n    \"position\": \"Senior Developer\",\n    \"employmentType\": \"FULL_TIME\",\n    \"hireDate\": \"2023-01-15\",\n    \"salary\": 85000.00,\n    \"status\": \"ACTIVE\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1200,13 +1116,14 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8080/employees/{{employee_id}}",
+							"raw": "http://localhost:3000/api/employees/{{employee_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"employees",
 								"{{employee_id}}"
 							]
@@ -1231,349 +1148,21 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
 						"url": {
-							"raw": "http://localhost:8080/employees/{{employee_id}}",
+							"raw": "http://localhost:3000/api/employees/{{employee_id}}",
 							"protocol": "http",
 							"host": [
 								"localhost"
 							],
-							"port": "8080",
+							"port": "3000",
 							"path": [
+								"api",
 								"employees",
 								"{{employee_id}}"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "👤 Profile",
-			"item": [
-				{
-					"name": "Get My Profile",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:3000/api/profile",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Check Profile Exists",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:3000/api/profile/exists",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile",
-								"exists"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create My Profile",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"try {",
-									"    const responseJson = pm.response.json();",
-									"    ",
-									"    if (responseJson && responseJson.data && responseJson.data.id) {",
-									"        pm.collectionVariables.set(\"profile_person_id\", responseJson.data.id);",
-									"        console.log(\"Profile Person ID guardado:\", responseJson.data.id);",
-									"    } else {",
-									"        console.log(\"No se encontró 'id' en la respuesta JSON.\");",
-									"    }",
-									"} catch (e) {",
-									"    console.error(\"Error al procesar la respuesta JSON:\", e);",
-									"}",
-									"",
-									"pm.test(\"Status code is 201 Created\", function () {",
-									"    pm.response.to.have.status(201);",
-									"});"
-								],
-								"type": "text/javascript",
-								"packages": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"identType\": \"CC\",\n    \"identNumber\": \"1234567890\",\n    \"firstName\": \"Juan Carlos\",\n    \"lastName\": \"Vélez\",\n    \"birthDate\": \"1990-05-15\",\n    \"gender\": \"M\",\n    \"nationality\": \"Colombiana\",\n    \"mobile\": \"3001234567\",\n    \"email\": \"juan.velez@email.com\",\n    \"address\": \"Calle 123 #45-67\",\n    \"city\": \"Bogotá\",\n    \"country\": \"Colombia\",\n    \"postalCode\": \"110111\",\n    \"notes\": \"Perfil personal para pruebas\",\n    \"isActive\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:3000/api/profile",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update My Profile",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"firstName\": \"Juan Carlos\",\n    \"lastName\": \"Vélez López\",\n    \"email\": \"juan.velez.actualizado@email.com\",\n    \"mobile\": \"3009876543\",\n    \"address\": \"Calle 456 #78-90\",\n    \"city\": \"Medellín\",\n    \"notes\": \"Perfil actualizado con nueva información\"\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:3000/api/profile",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete My Profile",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:3000/api/profile",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get My User Account",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							}
-						],
-						"url": {
-							"raw": "http://localhost:3000/api/profile/account",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile",
-								"account"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update My User Account",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "{{jwt_token}}",
-									"type": "string"
-								}
-							]
-						},
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Accept-Language",
-								"value": "es",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n    \"username\": \"juan.velez.actualizado\",\n    \"email\": \"juan.velez.nuevo@email.com\",\n    \"password\": \"NuevaPassword123*\",\n    \"isActive\": true\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:3000/api/profile/account",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "3000",
-							"path": [
-								"api",
-								"profile",
-								"account"
 							]
 						}
 					},
@@ -1601,7 +1190,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
@@ -1637,7 +1226,7 @@
 						"header": [
 							{
 								"key": "Accept-Language",
-								"value": "es",
+								"value": "en",
 								"type": "text"
 							}
 						],
@@ -1684,33 +1273,8 @@
 	],
 	"variable": [
 		{
-			"key": "jwt_token",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "user_id",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "person_id",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "profile_person_id",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "client_id",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "employee_id",
-			"value": "",
+			"key": "base_url",
+			"value": "http://localhost:3000/api",
 			"type": "string"
 		}
 	]

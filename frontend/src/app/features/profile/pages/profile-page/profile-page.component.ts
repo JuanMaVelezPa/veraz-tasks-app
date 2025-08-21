@@ -8,7 +8,7 @@ import { FeedbackMessageService } from '@shared/services/feedback-message.servic
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
-import { PersonManagementService } from '@person/services/person-management.service';
+
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
@@ -19,6 +19,9 @@ import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
 import { firstValueFrom, catchError, tap } from 'rxjs';
 
+/**
+ * Component for managing user profile information.
+ */
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -41,7 +44,7 @@ export class ProfilePageComponent implements OnInit {
   private formUtils = inject(FormUtilsService);
   private passwordUtils = inject(PasswordUtilsService);
   private httpErrorService = inject(HttpErrorService);
-  private personManagementService = inject(PersonManagementService);
+
   private fb = inject(FormBuilder);
   private router = inject(Router);
 
@@ -236,44 +239,36 @@ export class ProfilePageComponent implements OnInit {
 
     try {
       const formValue = this.personForm.value;
-      const formData = this.personManagementService.prepareFormData(formValue);
+      const formData = this.preparePersonFormData(formValue);
 
       if (this.personalProfile()) {
         // Update existing person
-        await this.personManagementService.updatePerson(
-          this.personalProfile()!,
-          formData,
-          {
-            context: 'profile',
-            onSuccess: (person) => {
-              this.personalProfile.set(person);
-              this.setPersonFormValues(person);
-            },
-            onError: () => {
-              // Reset form to original values after error
-              this.setPersonFormValues(this.personalProfile()!);
-            }
-          }
+        const updatedPerson = await firstValueFrom(
+          this.profileService.updateMyProfile(formData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'updating personal profile'))
+          )
         );
+        this.personalProfile.set(updatedPerson);
+        this.setPersonFormValues(updatedPerson);
+        this.feedbackService.showSuccess('Personal information updated successfully!');
       } else {
         // Create new person
-        if (!this.personManagementService.validateRequiredFields(formData)) {
+        if (!this.validateRequiredPersonFields(formData)) {
           return;
         }
 
-        await this.personManagementService.createPerson(
-          formData,
-          {
-            context: 'profile',
-            onSuccess: (person) => {
-              this.personalProfile.set(person);
-              this.setPersonFormValues(person);
-            }
-          }
+        const newPerson = await firstValueFrom(
+          this.profileService.createMyProfile(formData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'creating personal profile'))
+          )
         );
+        this.personalProfile.set(newPerson);
+        this.setPersonFormValues(newPerson);
+        this.feedbackService.showSuccess('Personal information created successfully!');
       }
     } catch (error: any) {
-      // Error handling is done in the service
+      this.feedbackService.showError(error.message || 'An error occurred while saving personal information.');
+      // Reset form to original values after error
       if (this.personalProfile()) {
         this.setPersonFormValues(this.personalProfile()!);
       }
@@ -355,6 +350,43 @@ export class ProfilePageComponent implements OnInit {
     }
 
     return changes;
+  }
+
+  private preparePersonFormData(formValue: any): any {
+    const formData: any = {};
+
+    // Only include fields that have values
+    if (formValue.identType?.trim()) formData.identType = formValue.identType.trim();
+    if (formValue.identNumber?.trim()) formData.identNumber = formValue.identNumber.trim();
+    if (formValue.firstName?.trim()) formData.firstName = formValue.firstName.trim();
+    if (formValue.lastName?.trim()) formData.lastName = formValue.lastName.trim();
+    if (formValue.birthDate?.trim()) formData.birthDate = formValue.birthDate;
+    if (formValue.gender?.trim()) formData.gender = formValue.gender.trim();
+    if (formValue.nationality?.trim()) formData.nationality = formValue.nationality.trim();
+    if (formValue.mobile?.trim()) formData.mobile = formValue.mobile.trim();
+    if (formValue.email?.trim()) formData.email = formValue.email.trim();
+    if (formValue.address?.trim()) formData.address = formValue.address.trim();
+    if (formValue.city?.trim()) formData.city = formValue.city.trim();
+    if (formValue.country?.trim()) formData.country = formValue.country.trim();
+    if (formValue.postalCode?.trim()) formData.postalCode = formValue.postalCode.trim();
+    if (formValue.notes?.trim()) formData.notes = formValue.notes.trim();
+
+    // Always include isActive
+    formData.isActive = formValue.isActive ?? true;
+
+    return formData;
+  }
+
+  private validateRequiredPersonFields(formData: any): boolean {
+    const requiredFields = ['identType', 'identNumber', 'firstName', 'lastName'];
+    const missingFields = requiredFields.filter(field => !formData[field] || !formData[field].trim());
+
+    if (missingFields.length > 0) {
+      this.feedbackService.showError(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return false;
+    }
+
+    return true;
   }
 
 

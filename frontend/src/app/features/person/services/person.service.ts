@@ -69,7 +69,10 @@ export class PersonService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
         tap((person) => this.cacheService.set(cacheKey, person)),
-        catchError(() => of(emptyPerson))
+        catchError((error) => {
+          console.error('PersonService - getPersonById - Error:', error);
+          return of(emptyPerson);
+        })
       );
   }
 

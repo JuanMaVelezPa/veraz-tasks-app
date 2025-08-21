@@ -7,10 +7,16 @@ import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+/**
+ * DTO for employee responses
+ * Contains all employee information for API responses
+ */
+@Getter
+@Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -20,17 +26,21 @@ public class EmployeeResponseDTO {
     private String employeeCode;
     private String position;
     private String department;
-    private UUID supervisorId;
-    private LocalDate hireDate;
-    private LocalDate terminationDate;
-    private BigDecimal salary;
-    private String currency;
     private String employmentType;
     private String status;
+    private LocalDate hireDate;
+    private LocalDate terminationDate;
+    private LocalDate probationEndDate;
+    private BigDecimal salary;
+    private String currency;
+    private String salaryType;
     private String workEmail;
-    private String workMobile;
+    private String workPhone;
     private String workLocation;
     private String workSchedule;
+    private String jobLevel;
+    private String costCenter;
+    private String workShift;
     private String skills;
     private String certifications;
     private String education;
@@ -39,4 +49,7 @@ public class EmployeeResponseDTO {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-} 
+    private UUID createdBy;
+    private UUID updatedBy;
+}
+

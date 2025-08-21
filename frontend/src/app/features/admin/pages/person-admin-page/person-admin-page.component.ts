@@ -27,7 +27,14 @@ export class PersonAdminPageComponent {
   personResource = rxResource(
     {
       params: () => ({ id: this.personId() }),
-      stream: ({ params }) => this.personService.getPersonById(params.id),
+      stream: ({ params }) => {
+        // Validar que el personId sea válido
+        if (!params.id || params.id === 'undefined' || params.id === 'null') {
+          throw new Error('Invalid person ID');
+        }
+        
+        return this.personService.getPersonById(params.id);
+      },
     }
   )
 

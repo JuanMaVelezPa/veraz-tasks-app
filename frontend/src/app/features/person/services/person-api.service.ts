@@ -7,6 +7,9 @@ import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 
+/**
+ * Service for Person API endpoints.
+ */
 @Injectable({
   providedIn: 'root'
 })
@@ -55,5 +58,9 @@ export class PersonApiService {
   associateUser(id: string, userId: string): Observable<ApiResponse<Person>> {
     const associationData: PersonUserAssociation = { userId };
     return this.http.patch<ApiResponse<Person>>(`${this.baseUrl}/associate-user/${id}`, associationData);
+  }
+
+  getPersonByUserId(userId: string): Observable<ApiResponse<Person>> {
+    return this.http.get<ApiResponse<Person>>(`${this.baseUrl}/by-user/${userId}`);
   }
 }

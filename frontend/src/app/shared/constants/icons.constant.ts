@@ -62,7 +62,10 @@ import {
   faAnglesLeft,
   faAngleLeft,
   faAngleRight,
-  faAnglesRight
+  faAnglesRight,
+  faDollarSign,
+  faCreditCard,
+  faCoins
 } from '@fortawesome/free-solid-svg-icons';
 
 import { faLinkedin } from '@fortawesome/free-brands-svg-icons';
@@ -132,7 +135,10 @@ export {
   faAnglesLeft,
   faAngleLeft,
   faAngleRight,
-  faAnglesRight
+  faAnglesRight,
+  faDollarSign,
+  faCreditCard,
+  faCoins
 };
 
 // Icon mapping for easy access
@@ -223,7 +229,10 @@ export const ICON_MAP = {
   'angles-left': faAnglesLeft,
   'angle-left': faAngleLeft,
   'angle-right': faAngleRight,
-  'angles-right': faAnglesRight
+  'angles-right': faAnglesRight,
+  'dollar-sign': faDollarSign,
+  'credit-card': faCreditCard,
+  'coins': faCoins
 } as const;
 
 // Type for icon names

@@ -1,91 +1,201 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap, map, catchError, throwError } from 'rxjs';
-import { environment } from '@env/environment';
+import { Observable, of, tap, map, catchError, throwError, switchMap } from 'rxjs';
 import { User } from '@users/interfaces/user.interface';
 import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interfaces/person.interface';
+import { Employee, EmployeeCreateRequest, EmployeeUpdateRequest } from '@employee/interfaces/employee.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { CacheService } from '@shared/services/cache.service';
 import { AuthService } from '@auth/services/auth.service';
+import { UserApiService } from '@users/services/user-api.service';
+import { PersonApiService } from '@person/services/person-api.service';
+import { EmployeeApiService } from '@employee/services/employee-api.service';
 
+/**
+ * Service for managing user profile operations using existing API services.
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class ProfileService {
-  private http = inject(HttpClient);
+  private userApiService = inject(UserApiService);
+  private personApiService = inject(PersonApiService);
+  private employeeApiService = inject(EmployeeApiService);
   private cacheService = inject(CacheService);
   private authService = inject(AuthService);
-  private apiUrl = environment.apiUrl;
 
   getMyProfile(): Observable<Person | null> {
-    return this.http.get<ApiResponse<Person>>(`${this.apiUrl}/profile`)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        catchError((error) => {
-          // If profile not found (404), return null instead of throwing error
-          // This is a valid state for users without associated person
-          if (error.status === 404) {
-            return of(null);
-          }
-          return this.handleError(error, 'getting profile');
-        })
-      );
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return this.personApiService.getPersonByUserId(currentUser.id).pipe(
+      map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+      catchError((error) => {
+        if (error.status === 404) {
+          return of(null);
+        }
+        return this.handleError(error, 'getting profile');
+      })
+    );
   }
 
   checkProfileExists(): Observable<boolean> {
-    return this.http.get<ApiResponse<boolean>>(`${this.apiUrl}/profile/exists`)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
-        catchError(() => of(false))
-      );
+    return this.getMyProfile().pipe(
+      map((person) => person !== null),
+      catchError(() => of(false))
+    );
   }
 
   createMyProfile(personData: PersonCreateRequest): Observable<Person> {
-    return this.http.post<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person) => this.cacheService.clearPattern('persons:')),
-        catchError((error) => this.handleError(error, 'creating profile'))
-      );
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    const personDataWithUser = { ...personData, userId: currentUser.id };
+    return this.personApiService.createPerson(personDataWithUser).pipe(
+      map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+      tap((person) => this.cacheService.clearPattern('persons:')),
+      catchError((error) => this.handleError(error, 'creating profile'))
+    );
   }
 
   updateMyProfile(personData: PersonUpdateRequest): Observable<Person> {
-    return this.http.patch<ApiResponse<Person>>(`${this.apiUrl}/profile`, personData)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person) => this.cacheService.clearPattern('persons:')),
-        catchError((error) => this.handleError(error, 'updating profile'))
-      );
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return throwError(() => new Error('No person profile found to update'));
+        }
+        return this.personApiService.updatePerson(person.id, personData).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+          tap((person) => this.cacheService.clearPattern('persons:')),
+          catchError((error) => this.handleError(error, 'updating profile'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
   }
 
   deleteMyProfile(): Observable<boolean> {
-    return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/profile`)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
-        tap(() => this.cacheService.clearPattern('persons:')),
-        catchError((error) => this.handleError(error, 'deleting profile'))
-      );
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return throwError(() => new Error('No person profile found to delete'));
+        }
+        return this.personApiService.deletePerson(person.id).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
+          tap(() => this.cacheService.clearPattern('persons:')),
+          catchError((error) => this.handleError(error, 'deleting profile'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
   }
 
   getMyUserAccount(): Observable<User> {
-    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/profile/account`)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
-        catchError((error) => this.handleError(error, 'getting user account'))
-      );
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return this.userApiService.getUserById(currentUser.id).pipe(
+      map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
+      catchError((error) => this.handleError(error, 'getting user account'))
+    );
   }
 
   updateMyUserAccount(userData: any): Observable<User> {
-    return this.http.patch<ApiResponse<User>>(`${this.apiUrl}/profile/account`, userData)
-      .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
-        tap((user) => {
-          this.cacheService.delete(`user:${user.id}`);
-          this.cacheService.clearPattern('users:');
-          this.authService.updateCurrentUser(user);
-        }),
-        catchError((error) => this.handleError(error, 'updating user account'))
-      );
+    const currentUser = this.authService.user();
+    if (!currentUser) {
+      return throwError(() => new Error('User not authenticated'));
+    }
+
+    return this.userApiService.updateUser(currentUser.id, userData).pipe(
+      map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
+      tap((user) => {
+        this.cacheService.delete(`user:${user.id}`);
+        this.cacheService.clearPattern('users:');
+        this.authService.updateCurrentUser(user);
+      }),
+      catchError((error) => this.handleError(error, 'updating user account'))
+    );
+  }
+
+  getMyEmployee(): Observable<Employee | null> {
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return of(null);
+        }
+        return this.employeeApiService.getEmployeeByPersonId(person.id).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
+          catchError((error) => {
+            if (error.status === 404) {
+              return of(null);
+            }
+            return this.handleError(error, 'getting employee');
+          })
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
+  }
+
+  checkEmployeeExists(): Observable<boolean> {
+    return this.getMyEmployee().pipe(
+      map((employee) => employee !== null),
+      catchError(() => of(false))
+    );
+  }
+
+  createMyEmployee(employeeData: EmployeeCreateRequest): Observable<Employee> {
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return throwError(() => new Error('No person profile found to create employee for'));
+        }
+        const employeeDataWithPerson = { ...employeeData, personId: person.id };
+        return this.employeeApiService.createEmployee(employeeDataWithPerson).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
+          tap((employee) => this.cacheService.clearPattern('employees:')),
+          catchError((error) => this.handleError(error, 'creating employee'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
+  }
+
+  updateMyEmployee(employeeData: EmployeeUpdateRequest): Observable<Employee> {
+    return this.getMyEmployee().pipe(
+      switchMap((employee) => {
+        if (!employee) {
+          return throwError(() => new Error('No employee profile found to update'));
+        }
+        return this.employeeApiService.updateEmployee(employee.id, employeeData).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
+          tap((employee) => this.cacheService.clearPattern('employees:')),
+          catchError((error) => this.handleError(error, 'updating employee'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting employee'))
+    );
+  }
+
+  deleteMyEmployee(): Observable<boolean> {
+    return this.getMyEmployee().pipe(
+      switchMap((employee) => {
+        if (!employee) {
+          return throwError(() => new Error('No employee profile found to delete'));
+        }
+        return this.employeeApiService.deleteEmployee(employee.id).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
+          tap(() => this.cacheService.clearPattern('employees:')),
+          catchError((error) => this.handleError(error, 'deleting employee'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting employee'))
+    );
   }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
@@ -93,12 +203,10 @@ export class ProfileService {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
 
-    // For delete operations, data can be null/undefined, which is valid
     if (type === 'boolean' || type === 'void') {
-      return true; // Return true for successful operations
+      return true;
     }
 
-    // For other operations, data should exist
     if (!apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
@@ -107,7 +215,6 @@ export class ProfileService {
   }
 
   private handleError(error: any, operation: string): Observable<never> {
-    // Propagar el error original para que HttpErrorService pueda manejarlo correctamente
     return throwError(() => error);
   }
 }

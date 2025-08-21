@@ -1,0 +1,458 @@
+<form
+  [formGroup]="employeeForm()"
+  (ngSubmit)="onSubmit()"
+  class="space-y-6"
+>
+
+  <!-- Required Information -->
+  <div class="card bg-base-200 shadow-sm border-l-4 border-l-primary">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="user" />
+        Required Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Employee Code -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Employee Code *</span>
+          </label>
+          <input
+            type="text"
+            formControlName="employeeCode"
+            placeholder="Enter employee code"
+            class="input input-bordered w-full"
+            [class.input-error]="employeeForm().get('employeeCode')?.invalid && employeeForm().get('employeeCode')?.touched"
+          />
+          @if (employeeForm().get('employeeCode')?.invalid && employeeForm().get('employeeCode')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Employee code is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Position -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Position *</span>
+          </label>
+          <input
+            type="text"
+            formControlName="position"
+            placeholder="Enter position"
+            class="input input-bordered w-full"
+            [class.input-error]="employeeForm().get('position')?.invalid && employeeForm().get('position')?.touched"
+          />
+          @if (employeeForm().get('position')?.invalid && employeeForm().get('position')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Position is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Employment Type -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Employment Type *</span>
+          </label>
+          <select
+            formControlName="employmentType"
+            class="select select-bordered w-full"
+            [class.select-error]="employeeForm().get('employmentType')?.invalid && employeeForm().get('employmentType')?.touched"
+          >
+            <option value="">Select type</option>
+            @for (type of employmentTypes(); track type.id) {
+            <option [value]="type.code">
+              {{ type.name }}
+            </option>
+            }
+          </select>
+          @if (employeeForm().get('employmentType')?.invalid && employeeForm().get('employmentType')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Employment type is required</span>
+          </label>
+          }
+        </div>
+
+        <!-- Hire Date -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Hire Date *</span>
+          </label>
+          <input
+            type="date"
+            formControlName="hireDate"
+            class="input input-bordered w-full"
+            [class.input-error]="employeeForm().get('hireDate')?.invalid && employeeForm().get('hireDate')?.touched"
+          />
+          @if (employeeForm().get('hireDate')?.invalid && employeeForm().get('hireDate')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Hire date is required</span>
+          </label>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employment Details -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="building" />
+        Employment Details
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Department -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Department</span>
+          </label>
+          <select
+            formControlName="department"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select department</option>
+            @for (dept of departments(); track dept.id) {
+            <option [value]="dept.code" [title]="dept.description">
+              {{ dept.name }}
+            </option>
+            }
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Status</span>
+          </label>
+          <select
+            formControlName="status"
+            class="select select-bordered w-full"
+          >
+            @for (status of employeeStatuses(); track status.id) {
+            <option [value]="status.code">
+              {{ status.name }}
+            </option>
+            }
+          </select>
+        </div>
+
+        <!-- Job Level -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Job Level</span>
+          </label>
+          <select
+            formControlName="jobLevel"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select level</option>
+            @for (level of jobLevels(); track level.id) {
+            <option [value]="level.code">
+              {{ level.name }}
+            </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Important Dates -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="calendar" />
+        Important Dates
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Termination Date -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Termination Date</span>
+          </label>
+          <input
+            type="date"
+            formControlName="terminationDate"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Probation End Date -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Probation End Date</span>
+          </label>
+          <input
+            type="date"
+            formControlName="probationEndDate"
+            class="input input-bordered w-full"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Compensation -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="user-tie" />
+        Compensation
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Salary -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Salary</span>
+          </label>
+          <div class="relative">
+            <input
+              type="number"
+              formControlName="salary"
+              placeholder="Enter salary"
+              class="input input-bordered w-full pr-12"
+              step="0.01"
+              min="0"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span class="text-gray-500 text-sm">
+                {{ getCurrencySymbol(employeeForm().get('currency')?.value || 'USD') }}
+              </span>
+            </div>
+          </div>
+          @if (employeeForm().get('salary')?.value) {
+          <div class="text-xs text-gray-500 mt-1">
+            Formatted: {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value || 'USD') }}
+          </div>
+          }
+        </div>
+
+        <!-- Currency -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Currency</span>
+          </label>
+          <select
+            formControlName="currency"
+            class="select select-bordered w-full"
+          >
+            @for (currency of currencies(); track currency.id) {
+            <option [value]="currency.code">
+              {{ currency.code }} - {{ currency.name }}
+            </option>
+            }
+          </select>
+        </div>
+
+        <!-- Salary Type -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Salary Type</span>
+          </label>
+          <select
+            formControlName="salaryType"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select type</option>
+            @for (type of salaryTypes(); track type.id) {
+            <option [value]="type.code">
+              {{ type.name }}
+            </option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Work Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="building" />
+        Employee Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Work Email -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Work Email</span>
+          </label>
+          <input
+            type="email"
+            formControlName="workEmail"
+            placeholder="Enter work email"
+            class="input input-bordered w-full"
+            [class.input-error]="employeeForm().get('workEmail')?.invalid && employeeForm().get('workEmail')?.touched"
+          />
+          @if (employeeForm().get('workEmail')?.invalid && employeeForm().get('workEmail')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Please enter a valid email</span>
+          </label>
+          }
+        </div>
+
+        <!-- Work Phone -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Work Phone</span>
+          </label>
+          <input
+            type="tel"
+            formControlName="workPhone"
+            placeholder="Enter work phone"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Work Location -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Work Location</span>
+          </label>
+          <input
+            type="text"
+            formControlName="workLocation"
+            placeholder="Enter work location"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Work Schedule -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Work Schedule</span>
+          </label>
+          <input
+            type="text"
+            formControlName="workSchedule"
+            placeholder="Enter work schedule"
+            class="input input-bordered w-full"
+          />
+        </div>
+
+        <!-- Cost Center -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Cost Center</span>
+          </label>
+          <input
+            type="text"
+            formControlName="costCenter"
+            placeholder="Enter cost center"
+            class="input input-bordered w-full"
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="info" />
+        Account Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Skills -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Skills</span>
+          </label>
+          <textarea
+            formControlName="skills"
+            placeholder="Enter skills"
+            class="textarea textarea-bordered w-full"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Certifications -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Certifications</span>
+          </label>
+          <textarea
+            formControlName="certifications"
+            placeholder="Enter certifications"
+            class="textarea textarea-bordered w-full"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Education -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Education</span>
+          </label>
+          <textarea
+            formControlName="education"
+            placeholder="Enter education"
+            class="textarea textarea-bordered w-full"
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Benefits -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Benefits</span>
+          </label>
+          <textarea
+            formControlName="benefits"
+            placeholder="Enter benefits"
+            class="textarea textarea-bordered w-full"
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-control mt-4">
+        <label class="label">
+          <span class="label-text font-medium">Notes</span>
+        </label>
+        <textarea
+          formControlName="notes"
+          placeholder="Enter additional notes"
+          class="textarea textarea-bordered w-full"
+          rows="3"
+        ></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Submit Button -->
+  <div class="flex justify-end gap-2">
+    <button
+      type="button"
+      class="btn btn-outline"
+      (click)="onCancel()"
+      [disabled]="isLoading()"
+    >
+      Cancel
+    </button>
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="employeeForm().invalid || isLoading()"
+    >
+      @if (isLoading()) {
+      <span class="loading loading-spinner loading-sm"></span>
+      } @else {
+      <shared-icon type="save" />
+      }
+      {{ isEditMode() ? 'Update' : 'Create' }} Employee
+    </button>
+  </div>
+
+</form>

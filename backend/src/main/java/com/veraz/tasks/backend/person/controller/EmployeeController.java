@@ -14,31 +14,34 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.veraz.tasks.backend.person.dto.EmployeeCreateRequestDTO;
 import com.veraz.tasks.backend.person.dto.EmployeeUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.EmployeeResponseDTO;
+import com.veraz.tasks.backend.person.service.EmployeeService;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
 import com.veraz.tasks.backend.shared.util.PaginationUtils;
-import com.veraz.tasks.backend.person.service.EmployeeService;
+import com.veraz.tasks.backend.shared.constants.MessageKeys;
+import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.web.bind.annotation.RequestBody;
 import jakarta.validation.Valid;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
 @RequestMapping("/employees")
-@Tag(name = "Employee", description = "Employee endpoints")
-public class EmployeeController implements ControllerInterface<UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
+@Tag(name = "Employee", description = "Employee management endpoints")
+public class EmployeeController
+        implements ControllerInterface<UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
 
     private final EmployeeService employeeService;
 
@@ -47,88 +50,136 @@ public class EmployeeController implements ControllerInterface<UUID, EmployeeCre
     }
 
     @GetMapping
-    @Operation(summary = "Get all employees", description = "Get all employees with pagination")
+    @Operation(summary = "Get all employees", description = "Admin/Manager/Supervisor access")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Employees retrieved successfully"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
+    @PreAuthorize("@permissionService.canReadResources()")
     public ResponseEntity<ApiResponseDTO<PaginatedResponseDTO<EmployeeResponseDTO>>> findAll(
             @ModelAttribute PaginationRequestDTO paginationRequest) {
 
         paginationRequest.validateAndNormalize();
         Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        PaginatedResponseDTO<EmployeeResponseDTO> response = employeeService.findAll(pageable);
+        PaginatedResponseDTO<EmployeeResponseDTO> response = paginationRequest.hasSearch() 
+            ? employeeService.findBySearch(paginationRequest.getSearch(), pageable)
+            : employeeService.findAll(pageable);
 
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Employees retrieved successfully",
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
+                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employees"),
                 response, null));
     }
 
     @GetMapping("/{id}")
-    @Operation(summary = "Get employee", description = "Get employee with id")
+    @Operation(summary = "Get employee by ID", description = "Admin/Manager/Supervisor access OR resource ownership")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Employee retrieved successfully"),
-            @ApiResponse(responseCode = "404", description = "Employee not found"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'SUPERVISOR')")
+    @PreAuthorize("@permissionService.canAccessResource(#id, 'EMPLOYEE') or @permissionService.hasAdminAccess()")
     public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findById(@PathVariable UUID id) {
         Optional<EmployeeResponseDTO> response = employeeService.findById(id);
-        return ResponseEntity
-                .ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Employee retrieved successfully", response.get(), null));
+        
+        if (response.isPresent()) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    response.get(), null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
+                            MessageUtils.getEntityNotFound("Employee"), null, null));
+        }
     }
 
     @PostMapping
-    @Operation(summary = "Create employee", description = "Create employee with id")
+    @Operation(summary = "Create employee", description = "Admin/Manager access OR create for own person")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Employee created successfully"),
-            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions."),
-            @ApiResponse(responseCode = "409", description = "Conflict - Employee already exists")
+            @ApiResponse(responseCode = "201", description = "Created"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(@Valid @RequestBody EmployeeCreateRequestDTO employeeRequestDTO) {
-        EmployeeResponseDTO response = employeeService.create(employeeRequestDTO);
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, "Employee created successfully", response, null));
+    @PreAuthorize("@permissionService.canCreateEmployee(#requestDTO.personId)")
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(@Valid @RequestBody EmployeeCreateRequestDTO requestDTO) {
+        EmployeeResponseDTO response = employeeService.create(requestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, 
+                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "Employee"), 
+                        response, null));
     }
 
     @PatchMapping("/{id}")
-    @Operation(summary = "Update employee", description = "Update employee with id")
+    @Operation(summary = "Update employee", description = "Admin/Manager access OR employee ownership")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Employee updated successfully"),
-            @ApiResponse(responseCode = "404", description = "Employee not found"),
-            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions."),
-            @ApiResponse(responseCode = "409", description = "Conflict - Employee already exists")
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> update(@PathVariable UUID id,
-            @Valid @RequestBody EmployeeUpdateRequestDTO employeeRequestDTO) {
-
-        EmployeeResponseDTO response = employeeService.update(id, employeeRequestDTO);
-        return ResponseEntity
-                .ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Employee updated successfully", response, null));
+    @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isEmployeeOwner(#id)")
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody EmployeeUpdateRequestDTO requestDTO) {
+        EmployeeResponseDTO response = employeeService.update(id, requestDTO);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Employee"), 
+                response, null));
     }
 
     @DeleteMapping("/{id}")
-    @Operation(summary = "Delete employee", description = "Delete employee with id")
+    @Operation(summary = "Delete employee", description = "Admin/Manager access only")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Employee deleted successfully"),
-            @ApiResponse(responseCode = "404", description = "Employee not found"),
-            @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
-            @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @PreAuthorize("@permissionService.canWriteResources()")
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
         employeeService.deleteById(id);
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, "Employee deleted successfully", null, null));
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Employee"), 
+                null, null));
     }
+
+    @GetMapping("/code/{employeeCode}")
+    @Operation(summary = "Get employee by code", description = "Admin/Manager/Supervisor access OR resource ownership")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    @PreAuthorize("@permissionService.canReadResources()")
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findByEmployeeCode(@PathVariable String employeeCode) {
+        Optional<EmployeeResponseDTO> response = employeeService.findByEmployeeCode(employeeCode);
+        
+        if (response.isPresent()) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    response.get(), null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
+                            MessageUtils.getEntityNotFound("Employee"), null, null));
+        }
+    }
+
+    @GetMapping("/by-person/{personId}")
+    @Operation(summary = "Get employee by person ID", description = "Admin/Manager/Supervisor access OR person ownership")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    @PreAuthorize("@permissionService.canReadResources() or @permissionService.isPersonOwner(#personId)")
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findByPersonId(@PathVariable UUID personId) {
+        Optional<EmployeeResponseDTO> response = employeeService.findByPersonId(personId);
+        
+        if (response.isPresent()) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    response.get(), null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
+                            MessageUtils.getEntityNotFound("Employee"), null, null));
+        }
+    }
+
+
 }

@@ -146,4 +146,63 @@ export class CacheService implements OnDestroy {
   forceCleanupAll(): void {
     this.cleanupAll();
   }
+
+  /**
+   * Get cache keys matching a pattern
+   */
+  getKeysMatching(pattern: string): string[] {
+    return Array.from(this.cache.keys()).filter(key => key.includes(pattern));
+  }
+
+  /**
+   * Get detailed cache statistics
+   */
+  getDetailedStats(): {
+    data: number;
+    preferences: number;
+    total: number;
+    expired: number;
+    patterns: Record<string, number>;
+  } {
+    let dataCount = 0;
+    let preferencesCount = 0;
+    let expiredCount = 0;
+    const patterns: Record<string, number> = {};
+    const now = Date.now();
+
+    for (const [key, entry] of this.cache.entries()) {
+      // Count by type
+      if (entry.type === 'data') {
+        dataCount++;
+
+        // Check if expired
+        if (now - entry.timestamp > entry.ttl) {
+          expiredCount++;
+        }
+      } else {
+        preferencesCount++;
+      }
+
+      // Count by pattern (prefix before first colon)
+      const pattern = key.split(':')[0];
+      patterns[pattern] = (patterns[pattern] || 0) + 1;
+    }
+
+    return {
+      data: dataCount,
+      preferences: preferencesCount,
+      total: this.cache.size,
+      expired: expiredCount,
+      patterns
+    };
+  }
+
+  /**
+   * Check if cache is healthy (not too many expired entries)
+   */
+  isHealthy(): boolean {
+    const stats = this.getDetailedStats();
+    const expiredPercentage = stats.total > 0 ? (stats.expired / stats.total) * 100 : 0;
+    return expiredPercentage < 50; // Consider unhealthy if more than 50% are expired
+  }
 }

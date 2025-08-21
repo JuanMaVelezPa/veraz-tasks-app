@@ -56,7 +56,20 @@
       </div>
 
       <!-- Sidebar Information -->
-      <div class="lg:col-span-1 space-y-4">
+      <div class="lg:col-span-1 space-y-6">
+        <!-- Employee Information -->
+        @if (isEditMode() && person()) {
+        <div class="mb-2">
+          <app-employee-info-card
+            [employee]="currentEmployee()"
+            [isLoading]="isLoadingEmployee()"
+            title="Employee Information"
+            [buttonText]="currentEmployee() ? 'Manage Employee' : 'Create Employee'"
+            (actionClicked)="onEmployeeAction()"
+          />
+        </div>
+        }
+
         <!-- Person Information -->
         @if (isEditMode() && person()) {
         <shared-timestamp-info

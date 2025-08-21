@@ -1,0 +1,16 @@
+@if(employeeResource.isLoading()) {
+<div class="flex justify-center items-center h-32">
+  <shared-loading></shared-loading>
+</div>
+}
+
+@if(employeeResource.error()) {
+<div class="alert alert-error mt-4">
+  <shared-icon type="error" />
+  <span>Error: {{ employeeResource.error()?.message }}</span>
+</div>
+}
+
+@if(employeeResource.hasValue()) {
+<employee-details [employee]="employeeResource.value()"></employee-details>
+}

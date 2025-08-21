@@ -6,8 +6,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -17,11 +18,13 @@ import java.util.UUID;
  * DTO for creating new employees
  * Contains all required fields with mandatory validations
  */
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class EmployeeCreateRequestDTO {
+    
     @NotNull(message = "{validation.field.required}")
     private UUID personId;
 
@@ -36,18 +39,6 @@ public class EmployeeCreateRequestDTO {
     @Size(max = 100, message = "{validation.field.max.length}")
     private String department;
 
-    private UUID supervisorId;
-
-    @NotNull(message = "{validation.field.required}")
-    private LocalDate hireDate;
-
-    private LocalDate terminationDate;
-
-    private BigDecimal salary;
-
-    @Size(max = 3, message = "{validation.field.max.length}")
-    private String currency;
-
     @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String employmentType;
@@ -55,12 +46,27 @@ public class EmployeeCreateRequestDTO {
     @Size(max = 20, message = "{validation.field.max.length}")
     private String status;
 
+    @NotNull(message = "{validation.field.required}")
+    private LocalDate hireDate;
+
+    private LocalDate terminationDate;
+
+    private LocalDate probationEndDate;
+
+    private BigDecimal salary;
+
+    @Size(max = 3, message = "{validation.field.max.length}")
+    private String currency;
+
+    @Size(max = 20, message = "{validation.field.max.length}")
+    private String salaryType;
+
     @Email(message = "{validation.field.email}")
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String workEmail;
 
     @Size(max = 20, message = "{validation.field.max.length}")
-    private String workMobile;
+    private String workPhone;
 
     @Size(max = 100, message = "{validation.field.max.length}")
     private String workLocation;
@@ -68,20 +74,25 @@ public class EmployeeCreateRequestDTO {
     @Size(max = 100, message = "{validation.field.max.length}")
     private String workSchedule;
 
-    @Size(max = 500, message = "{validation.field.max.length}")
+    @Size(max = 20, message = "{validation.field.max.length}")
+    private String jobLevel;
+
+    @Size(max = 50, message = "{validation.field.max.length}")
+    private String costCenter;
+
+    @Size(max = 20, message = "{validation.field.max.length}")
+    private String workShift;
+
     private String skills;
     
-    @Size(max = 500, message = "{validation.field.max.length}")
     private String certifications;
     
-    @Size(max = 500, message = "{validation.field.max.length}")
     private String education;
     
-    @Size(max = 500, message = "{validation.field.max.length}")
     private String benefits;
     
-    @Size(max = 500, message = "{validation.field.max.length}")
     private String notes;
 
     private Boolean isActive;
-} 
+}
+

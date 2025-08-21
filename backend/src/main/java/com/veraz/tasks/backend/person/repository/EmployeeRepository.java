@@ -1,72 +1,106 @@
 package com.veraz.tasks.backend.person.repository;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.veraz.tasks.backend.person.model.Employee;
+import com.veraz.tasks.backend.shared.repository.RepositoryInterface;
 
+/**
+ * Repository interface for Employee entity
+ * Provides data access methods for employee operations
+ */
 @Repository
-public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
+public interface EmployeeRepository extends RepositoryInterface<Employee, UUID> {
 
+    /**
+     * Find employee by employee code
+     * 
+     * @param employeeCode the employee code to search for
+     * @return Optional containing the employee if found
+     */
     Optional<Employee> findByEmployeeCode(String employeeCode);
 
-    Optional<Employee> findByPersonId(UUID personId);
+    /**
+     * Find employee by person ID
+     * 
+     * @param personId the person ID to search for
+     * @return Optional containing the employee if found
+     */
+    @Query("SELECT e FROM Employee e WHERE e.person.id = :personId AND e.isActive = true")
+    Optional<Employee> findByPersonId(@Param("personId") UUID personId);
 
-    @Query("SELECT e FROM Employee e JOIN e.person p WHERE " +
-           "LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(e.position) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(e.department) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<Employee> findByEmployeeCodeOrPositionOrDepartmentOrPersonNameContainingIgnoreCase(
-            @Param("searchTerm") String searchTerm, Pageable pageable);
-
-    // Additional useful methods
+    /**
+     * Check if employee exists by employee code
+     * 
+     * @param employeeCode the employee code to check
+     * @return true if employee exists, false otherwise
+     */
     boolean existsByEmployeeCode(String employeeCode);
 
-    boolean existsByPersonId(UUID personId);
+    /**
+     * Check if employee exists by person ID
+     * 
+     * @param personId the person ID to check
+     * @return true if employee exists, false otherwise
+     */
+    @Query("SELECT COUNT(e) > 0 FROM Employee e WHERE e.person.id = :personId AND e.isActive = true")
+    boolean existsByPersonId(@Param("personId") UUID personId);
 
-    List<Employee> findByIsActive(Boolean isActive);
+    /**
+     * Find all active employees
+     * 
+     * @param pageable pagination parameters
+     * @return Page of active employees
+     */
+    Page<Employee> findByIsActiveTrue(Pageable pageable);
 
-    List<Employee> findByPosition(String position);
+    /**
+     * Find employees by department
+     * 
+     * @param department the department to search for
+     * @param pageable   pagination parameters
+     * @return Page of employees in the department
+     */
+    Page<Employee> findByDepartment(String department, Pageable pageable);
 
-    List<Employee> findByDepartment(String department);
+    /**
+     * Find employees by employment type
+     * 
+     * @param employmentType the employment type to search for
+     * @param pageable       pagination parameters
+     * @return Page of employees with the employment type
+     */
+    Page<Employee> findByEmploymentType(String employmentType, Pageable pageable);
 
-    List<Employee> findByStatus(String status);
+    /**
+     * Find employees by status
+     * 
+     * @param status   the status to search for
+     * @param pageable pagination parameters
+     * @return Page of employees with the status
+     */
+    Page<Employee> findByStatus(String status, Pageable pageable);
 
-    List<Employee> findByEmploymentType(String employmentType);
-
-    List<Employee> findBySupervisorId(UUID supervisorId);
-
-    @Query("SELECT e FROM Employee e WHERE e.salary >= :minSalary")
-    List<Employee> findBySalaryGreaterThanOrEqualTo(@Param("minSalary") java.math.BigDecimal minSalary);
-
-    @Query("SELECT e FROM Employee e WHERE e.hireDate BETWEEN :startDate AND :endDate")
-    List<Employee> findByHireDateBetween(@Param("startDate") java.time.LocalDate startDate, 
-                                        @Param("endDate") java.time.LocalDate endDate);
-
-    @Query("SELECT e FROM Employee e WHERE e.terminationDate IS NULL")
-    List<Employee> findActiveEmployees();
-
-    @Query("SELECT e FROM Employee e WHERE e.terminationDate IS NOT NULL")
-    List<Employee> findTerminatedEmployees();
-
-    long countByIsActive(Boolean isActive);
-
-    long countByPosition(String position);
-
-    long countByDepartment(String department);
-
-    long countByStatus(String status);
-
-    long countByEmploymentType(String employmentType);
-
+    /**
+     * Search employees by multiple criteria
+     * 
+     * @param search   the search term
+     * @param pageable pagination parameters
+     * @return Page of employees matching the search criteria
+     */
+    @Query("SELECT e FROM Employee e " +
+            "WHERE e.isActive = true AND (" +
+            "LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(e.position) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(e.department) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "LOWER(e.workEmail) LIKE LOWER(CONCAT('%', :search, '%')))")
+    Page<Employee> findBySearch(@Param("search") String search, Pageable pageable);
 }
+

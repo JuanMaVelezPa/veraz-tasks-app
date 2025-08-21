@@ -1,0 +1,126 @@
+<div class="table-container">
+  <shared-feedback-message />
+  @if (isSelectionMode()) {
+  <div class="alert alert-info mb-3">
+    <shared-icon type="info" />
+    <div>
+      <h3 class="font-bold">Select Employee to Link</h3>
+      <div class="text-xs">
+        Click "Link Employee" to link an employee to the person, or "Change Link" to switch an existing link.
+      </div>
+    </div>
+  </div>
+  }
+
+  <div class="search-layout">
+    <div class="search-bar-container">
+      <shared-search-bar
+        placeholder="Search employees by code, position, department..."
+        (searchChange)="onSearchChange($event)"
+      />
+    </div>
+  </div>
+
+  <div class="table-wrapper">
+    <div class="table-scroll">
+      <table class="table table-zebra w-full">
+        <thead>
+          <tr class="table-header-row">
+            @for (column of columns; track column.key) {
+            <th
+              [class.table-header-cell-sortable]="column.sortable"
+              (click)="onSort(column.key)"
+              class="table-header-cell"
+            >
+              <div class="flex items-center gap-2">
+                <span
+                  [class]="getSortClass(column.key)"
+                  class="table-header-text"
+                >
+                  {{ column.label }}
+                </span>
+                @if (column.sortable) {
+                <shared-icon
+                  [type]="getSortIcon(column.key)"
+                  size="xs"
+                />
+                }
+              </div>
+            </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (employee of employees(); track trackByEmployeeId($index, employee); let i = $index) {
+          <tr class="table-body-row">
+            <td class="table-cell">
+              <div class="flex items-center gap-3">
+                <div>
+                  <a
+                    [routerLink]="['/admin/employees', employee.id]"
+                    class="table-link"
+                  >
+                    {{ employee.employeeCode }}
+                  </a>
+                </div>
+              </div>
+            </td>
+            <td class="table-cell">{{ employee.position }}</td>
+            <td class="table-cell">{{ getDepartmentName(employee.department || '') }}</td>
+            <td class="table-cell">{{ getEmploymentTypeName(employee.employmentType) }}</td>
+            <td class="table-cell">
+              <span [class]="getStatusClass(employee.status)">
+                <shared-icon type="check" />
+                {{ getStatusName(employee.status) }}
+              </span>
+            </td>
+            <td class="table-cell">{{ employee.hireDate | date:'shortDate' }}</td>
+            <td class="table-cell">
+              {{ employee.salary | salaryDisplay:employee.currency:employee.salaryType }}
+            </td>
+            <td class="table-cell">
+              <div class="flex flex-col gap-1.5">
+                @if (isSelectionMode()) {
+                <button
+                  class="action-button action-button-primary"
+                  (click)="onEmployeeSelect(employee)"
+                >
+                  <shared-icon type="add" />
+                  Select Employee
+                </button>
+                } @else {
+                <a
+                  [routerLink]="['/admin/employees', employee.id]"
+                  class="action-button action-button-info"
+                >
+                  <shared-icon type="ellipsis-vertical" />
+                </a>
+                }
+              </div>
+            </td>
+          </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  @if (employeesResource.isLoading()) {
+  <div class="loading-container">
+    <shared-loading />
+  </div>
+  }
+
+  @if (employeesResource.error()) {
+  <div class="error-container">
+    <shared-icon type="error" />
+    <span>Error: {{ employeesResource.error()?.message }}</span>
+  </div>
+  }
+
+  <shared-pagination
+    [totalPages]="paginationData()?.totalPages ?? 0"
+    [totalItems]="paginationData()?.totalElements ?? 0"
+    [itemsPerPage]="employeesPerPage()"
+  />
+</div>

@@ -290,4 +290,29 @@ public class PersonService {
         logger.info("User {} associated with person with ID: {}", userId, personId);
         return PersonMapper.toDto(person);
     }
+
+    /**
+     * Find person by user
+     * 
+     * @param user The user to search for
+     * @return Optional<PersonResponseDTO> of the person if found
+     */
+    @Transactional(readOnly = true)
+    public Optional<PersonResponseDTO> findByUser(User user) {
+        return personRepository.findByUser(user)
+                .map(PersonMapper::toDto);
+    }
+
+    /**
+     * Find person by user ID
+     * 
+     * @param userId The user ID to search for
+     * @return Optional<PersonResponseDTO> of the person if found
+     */
+    @Transactional(readOnly = true)
+    public Optional<PersonResponseDTO> findByUserId(UUID userId) {
+        User user = User.builder().id(userId).build();
+        return personRepository.findByUser(user)
+                .map(PersonMapper::toDto);
+    }
 }

@@ -5,6 +5,8 @@ import { UserAdminPageComponent } from './pages/user-admin-page/user-admin-page.
 import { UserPersonManagementComponent } from './pages/user-admin-page/user-person-management/user-person-management.component';
 import { PersonsAdminPageComponent } from './pages/persons-admin-page/persons-admin-page.component';
 import { PersonAdminPageComponent } from './pages/person-admin-page/person-admin-page.component';
+import { EmployeesAdminPageComponent } from './pages/employees-admin-page/employees-admin-page.component';
+import { EmployeeAdminPageComponent } from './pages/employee-admin-page/employee-admin-page.component';
 
 export const adminRoutes: Routes = [
 
@@ -31,6 +33,18 @@ export const adminRoutes: Routes = [
       {
         path: 'persons/:id',
         component: PersonAdminPageComponent
+      },
+      {
+        path: 'employees',
+        component: EmployeesAdminPageComponent
+      },
+      {
+        path: 'employees/new',
+        component: EmployeeAdminPageComponent
+      },
+      {
+        path: 'employees/:id',
+        component: EmployeeAdminPageComponent
       },
       {
         path: '**',

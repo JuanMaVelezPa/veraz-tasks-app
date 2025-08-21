@@ -215,15 +215,24 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ErrorResponseDTO> handleMethodArgumentTypeMismatchException(
             MethodArgumentTypeMismatchException ex) {
+        
+        String errorMessage;
+        if (ex.getRequiredType() == UUID.class) {
+            errorMessage = String.format("El parámetro '%s' debe ser un UUID válido. Valor recibido: '%s'", 
+                ex.getName(), ex.getValue());
+        } else {
+            errorMessage = MessageUtils.getMessage(MessageKeys.EXCEPTION_INVALID_PARAMETER_TYPE, ex.getName(), ex.getValue());
+        }
+        
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpConstants.BAD_REQUEST)
                 .error(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                .message(MessageUtils.getMessage(MessageKeys.EXCEPTION_INVALID_PARAMETER_TYPE, ex.getName(), ex.getValue()))
+                .message(errorMessage)
                 .path(getCurrentRequestPath())
                 .build();
 
-        logger.warn("Invalid parameter type: {} = {}", ex.getName(), ex.getValue());
+        logger.warn("Invalid parameter type: {} = {} (required type: {})", ex.getName(), ex.getValue(), ex.getRequiredType());
         return ResponseEntity.badRequest().body(errorResponse);
     }
 

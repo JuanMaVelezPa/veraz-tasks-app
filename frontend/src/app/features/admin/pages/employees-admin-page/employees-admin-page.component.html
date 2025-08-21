@@ -1,0 +1,30 @@
+<div class="space-y-4">
+  <div class="flex flex-wrap gap-4 items-center justify-between bg-base-200 rounded-lg p-3">
+    <div class="flex items-center gap-3">
+      <h1 class="text-3xl font-bold text-base-content">Employees</h1>
+      @if (isSelectionMode()) {
+      <div class="badge badge-info badge-sm">
+        <shared-icon
+          type="users"
+          size="xs"
+        />
+        Selection Mode
+      </div>
+      }
+    </div>
+
+    <div class="flex gap-2">
+      @if (isSelectionMode()) {
+      <button
+        class="btn btn-outline btn-sm"
+        (click)="goBack()"
+        title="Back to Person"
+      >
+        <shared-icon type="back" />
+      </button>
+      }
+    </div>
+  </div>
+
+  <app-employee-table />
+</div>
