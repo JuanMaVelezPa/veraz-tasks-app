@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { User } from '@users/interfaces/user.interface';
-import { Observable, of, tap, map, catchError } from 'rxjs';
+import { Observable, of, tap, map, catchError, throwError } from 'rxjs';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { UserApiService } from './user-api.service';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
@@ -97,7 +97,7 @@ export class UserService {
   deleteUser(id: string): Observable<boolean> {
     return this.userApi.deleteUser(id)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'boolean')),
+        map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
         tap(() => {
           this.cacheService.delete(`user:${id}`);
           this.cacheService.clearPattern('users:');
@@ -112,14 +112,25 @@ export class UserService {
   }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
-    if (!apiResponse.success || !apiResponse.data) {
+    if (!apiResponse.success) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
+    
+    // For delete operations, data can be null/undefined, which is valid
+    if (type === 'boolean' || type === 'void') {
+      return true; // Return true for successful delete operations
+    }
+    
+    // For other operations, data should exist
+    if (!apiResponse.data) {
+      throw new Error(apiResponse.message || `Error ${type}`);
+    }
+    
     return apiResponse.data;
   }
 
   private handleError(error: any, operation: string): Observable<never> {
-    const errorMessage = error?.errorResponse?.message || error?.message || `Error ${operation}`;
-    throw new Error(errorMessage);
+    // Propagar el error original para que HttpErrorService pueda manejarlo correctamente
+    return throwError(() => error);
   }
 }

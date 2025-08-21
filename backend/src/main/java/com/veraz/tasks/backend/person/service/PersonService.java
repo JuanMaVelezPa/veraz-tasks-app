@@ -25,6 +25,7 @@ import com.veraz.tasks.backend.person.repository.PersonRepository;
 import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
+import com.veraz.tasks.backend.shared.constants.MessageKeys;
 
 /**
  * Service class for managing Person entities
@@ -70,7 +71,7 @@ public class PersonService {
 
     @Transactional(readOnly = true)
     public Optional<PersonResponseDTO> findById(UUID id) {
-        Person person = personRepository.findById(id)
+        Person person = personRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
         
         return Optional.of(PersonMapper.toDto(person));
@@ -157,7 +158,7 @@ public class PersonService {
      */
     @Transactional
     public PersonResponseDTO update(UUID id, PersonUpdateRequestDTO personRequestDTO) {
-        Person personToUpdate = personRepository.findById(id)
+        Person personToUpdate = personRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
 
         // Validate identification uniqueness if provided
@@ -199,8 +200,13 @@ public class PersonService {
 
     @Transactional
     public void deleteById(UUID id) {
-        Person person = personRepository.findById(id)
+        Person person = personRepository.findByIdWithUser(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
+        
+        // Verificar si la persona tiene un usuario asignado
+        if (person.getUser() != null) {
+            throw new DataConflictException(MessageUtils.getMessage(MessageKeys.BUSINESS_PERSON_HAS_USER));
+        }
         
         personRepository.delete(person);
         logger.info("Person deleted successfully with ID: {}", id);
@@ -252,7 +258,7 @@ public class PersonService {
      */
     @Transactional
     public PersonResponseDTO removeUserAssociation(UUID personId) {
-        Person person = personRepository.findById(personId)
+        Person person = personRepository.findByIdWithUser(personId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
         
         person.setUser(null);
@@ -274,7 +280,7 @@ public class PersonService {
      */
     @Transactional
     public PersonResponseDTO associateUser(UUID personId, UUID userId) {
-        Person person = personRepository.findById(personId)
+        Person person = personRepository.findByIdWithUser(personId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("Person")));
         
         person.setUser(User.builder().id(userId).build());

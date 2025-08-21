@@ -135,6 +135,7 @@ public final class MessageKeys {
     public static final String BUSINESS_PERSON_HAS_CLIENT = "business.person.has.client";
     public static final String BUSINESS_PERSON_IDENT_EXISTS = "business.person.ident.exists";
     public static final String BUSINESS_USER_HAS_PERSON = "business.user.has.person";
+    public static final String BUSINESS_USER_HAS_PERSON_DELETE = "business.user.has.person.delete";
 
     // ===========================================
     // PAGINATION KEYS

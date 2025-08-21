@@ -8,11 +8,11 @@ export interface HttpErrorInfo {
   errorResponse?: ErrorResponse;
 }
 export interface ErrorResponse {
-  timestamp: string;
+  timestamp: string | any; // Can be LocalDateTime from backend or string
   status: number;
   error: string;
   message: string;
-  errorId: string;
+  errorId?: string;
   path: string;
-  fieldErrors: Record<string, string>;
+  fieldErrors?: Record<string, string>;
 }

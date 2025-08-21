@@ -89,15 +89,18 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(DataConflictException.class)
     public ResponseEntity<ErrorResponseDTO> handleDataConflictException(DataConflictException ex) {
+        String errorId = UUID.randomUUID().toString();
+        
         ErrorResponseDTO errorResponse = ErrorResponseDTO.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpConstants.CONFLICT)
                 .error(HttpStatus.CONFLICT.getReasonPhrase())
                 .message(ex.getMessage())
+                .errorId(errorId)
                 .path(getCurrentRequestPath())
                 .build();
 
-        logger.warn("Data conflict: {}", ex.getMessage());
+        logger.warn("Data conflict [ID: {}]: {}", errorId, ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
     }
 

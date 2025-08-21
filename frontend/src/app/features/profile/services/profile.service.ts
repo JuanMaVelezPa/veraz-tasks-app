@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, tap, map, catchError } from 'rxjs';
+import { Observable, of, tap, map, catchError, throwError } from 'rxjs';
 import { environment } from '@env/environment';
 import { User } from '@users/interfaces/user.interface';
 import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interfaces/person.interface';
@@ -17,11 +17,18 @@ export class ProfileService {
   private authService = inject(AuthService);
   private apiUrl = environment.apiUrl;
 
-  getMyProfile(): Observable<Person> {
+  getMyProfile(): Observable<Person | null> {
     return this.http.get<ApiResponse<Person>>(`${this.apiUrl}/profile`)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        catchError((error) => this.handleError(error, 'getting profile'))
+        catchError((error) => {
+          // If profile not found (404), return null instead of throwing error
+          // This is a valid state for users without associated person
+          if (error.status === 404) {
+            return of(null);
+          }
+          return this.handleError(error, 'getting profile');
+        })
       );
   }
 
@@ -51,10 +58,10 @@ export class ProfileService {
       );
   }
 
-  deleteMyProfile(): Observable<void> {
+  deleteMyProfile(): Observable<boolean> {
     return this.http.delete<ApiResponse<void>>(`${this.apiUrl}/profile`)
       .pipe(
-        map(() => undefined),
+        map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
         tap(() => this.cacheService.clearPattern('persons:')),
         catchError((error) => this.handleError(error, 'deleting profile'))
       );
@@ -82,14 +89,25 @@ export class ProfileService {
   }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
-    if (!apiResponse.success || !apiResponse.data) {
+    if (!apiResponse.success) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
+
+    // For delete operations, data can be null/undefined, which is valid
+    if (type === 'boolean' || type === 'void') {
+      return true; // Return true for successful operations
+    }
+
+    // For other operations, data should exist
+    if (!apiResponse.data) {
+      throw new Error(apiResponse.message || `Error ${type}`);
+    }
+
     return apiResponse.data;
   }
 
   private handleError(error: any, operation: string): Observable<never> {
-    const errorMessage = error?.errorResponse?.message || error?.message || `Error ${operation}`;
-    throw new Error(errorMessage);
+    // Propagar el error original para que HttpErrorService pueda manejarlo correctamente
+    return throwError(() => error);
   }
 }

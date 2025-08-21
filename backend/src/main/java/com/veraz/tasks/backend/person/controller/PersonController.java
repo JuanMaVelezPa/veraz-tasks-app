@@ -147,7 +147,8 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
             @ApiResponse(responseCode = "404", description = "Person not found"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data"),
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
-            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions.")
+            @ApiResponse(responseCode = "403", description = "Forbidden - Insufficient permissions."),
+            @ApiResponse(responseCode = "409", description = "Conflict - Person has associated user")
     })
     @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {

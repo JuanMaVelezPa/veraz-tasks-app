@@ -131,9 +131,7 @@ export class ProfilePageComponent implements OnInit {
     this.isLoadingPerson.set(true);
     try {
       const person = await firstValueFrom(
-        this.profileService.getMyProfile().pipe(
-          catchError(error => this.httpErrorService.handleError(error, 'loading person profile'))
-        )
+        this.profileService.getMyProfile()
       );
       this.personalProfile.set(person);
       if (person) {
@@ -141,10 +139,7 @@ export class ProfilePageComponent implements OnInit {
       }
     } catch (error: any) {
       this.personalProfile.set(null);
-      // Don't show error for profile not found, it's expected for new users
-      if (error.status !== 404) {
-        this.feedbackService.showError(error.message || 'Failed to load personal information.');
-      }
+      this.feedbackService.showError(error.message || 'Failed to load personal information.');
     } finally {
       this.isLoadingPerson.set(false);
     }

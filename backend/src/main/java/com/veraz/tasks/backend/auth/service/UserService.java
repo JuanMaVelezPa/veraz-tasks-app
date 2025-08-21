@@ -29,25 +29,31 @@ import com.veraz.tasks.backend.auth.model.Role;
 import com.veraz.tasks.backend.auth.model.User;
 import com.veraz.tasks.backend.auth.repository.RoleRepository;
 import com.veraz.tasks.backend.auth.repository.UserRepository;
+import com.veraz.tasks.backend.person.repository.PersonRepository;
 import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
+import com.veraz.tasks.backend.shared.constants.MessageKeys;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
 
 @Service
-public class UserService implements UserDetailsService, ServiceInterface<User, UUID, UserCreateRequestDTO, UserUpdateRequestDTO, UserResponseDTO> {
+public class UserService implements UserDetailsService,
+        ServiceInterface<User, UUID, UserCreateRequestDTO, UserUpdateRequestDTO, UserResponseDTO> {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PersonRepository personRepository;
 
     public UserService(UserRepository userRepository,
             RoleRepository roleRepository,
-            PasswordEncoder passwordEncoder) {
+            PasswordEncoder passwordEncoder,
+            PersonRepository personRepository) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
+        this.personRepository = personRepository;
     }
 
     @Transactional(readOnly = true)
@@ -80,7 +86,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
     public Optional<UserResponseDTO> findById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
-        
+
         // Force lazy loading of roles
         user.getRoles().size();
         return Optional.of(UserMapper.toDto(user));
@@ -119,11 +125,12 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
                 .pagination(paginationInfo)
                 .build();
     }
-    
+
     @Transactional
     public UserResponseDTO create(UserCreateRequestDTO userRequest) {
         // Check if user already exists
-        if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(), userRequest.getEmail()).isPresent()) {
+        if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
+                .isPresent()) {
             throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
         }
 
@@ -150,7 +157,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
         // Update username if provided and not empty
         if (userRequestDTO.getUsername() != null && !userRequestDTO.getUsername().trim().isEmpty()) {
             String newUsername = userRequestDTO.getUsername().trim();
-            
+
             // Check if username is different from current
             if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
                 // Check if new username already exists
@@ -164,7 +171,7 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
         // Update email if provided and not empty
         if (userRequestDTO.getEmail() != null && !userRequestDTO.getEmail().trim().isEmpty()) {
             String newEmail = userRequestDTO.getEmail().trim();
-            
+
             // Check if email is different from current
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
                 // Check if new email already exists
@@ -212,7 +219,11 @@ public class UserService implements UserDetailsService, ServiceInterface<User, U
     public void deleteById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
-        
+
+        if (personRepository.findByUser(user).isPresent()) {
+            throw new DataConflictException(MessageUtils.getMessage(MessageKeys.BUSINESS_USER_HAS_PERSON_DELETE));
+        }
+
         userRepository.delete(user);
         logger.info("User deleted successfully with ID: {}", id);
     }

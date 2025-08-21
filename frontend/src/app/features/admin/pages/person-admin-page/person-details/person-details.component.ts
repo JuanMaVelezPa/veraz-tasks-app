@@ -200,18 +200,15 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
           catchError(error => this.httpErrorService.handleError(error, 'deleting person'))
         )
       );
-      if (response) {
-        this.feedbackService.showSuccess('Person deleted successfully');
+      // For delete operations, response will be true if successful
+      this.feedbackService.showSuccess('Person deleted successfully');
 
-        // Check if we came from a user context
-        const userId = this.route.snapshot.queryParamMap.get('userId');
-        if (userId) {
-          this.navigationHistory.goBackToUser(userId);
-        } else {
-          this.navigationHistory.goBackToPersons();
-        }
+      // Check if we came from a user context
+      const userId = this.route.snapshot.queryParamMap.get('userId');
+      if (userId) {
+        this.navigationHistory.goBackToUser(userId);
       } else {
-        this.feedbackService.showError('Error deleting person');
+        this.navigationHistory.goBackToPersons();
       }
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while deleting the person.');

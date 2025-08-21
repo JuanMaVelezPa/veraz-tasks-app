@@ -86,6 +86,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.setFormValues(user);
     this.isEditMode.set(user.id !== 'new');
 
+    // Set password validations based on mode
+    this.setPasswordValidations();
+
     // Load personal profile if user exists
     if (user.id !== 'new') {
       this.loadPersonalProfile();
@@ -105,6 +108,30 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     });
 
     this.cdr.detectChanges();
+  }
+
+  private setPasswordValidations() {
+    const passwordControl = this.userForm.get('password');
+    const confirmPasswordControl = this.userForm.get('confirmPassword');
+
+    if (this.isEditMode()) {
+      // For edit mode: passwords are optional
+      passwordControl?.setValidators([this.passwordUtils.passwordValidator]);
+      confirmPasswordControl?.setValidators([this.passwordUtils.passwordValidator]);
+    } else {
+      // For create mode: passwords are required
+      passwordControl?.setValidators([
+        Validators.required,
+        this.passwordUtils.passwordValidator
+      ]);
+      confirmPasswordControl?.setValidators([
+        Validators.required,
+        this.passwordUtils.passwordValidator
+      ]);
+    }
+
+    passwordControl?.updateValueAndValidity();
+    confirmPasswordControl?.updateValueAndValidity();
   }
 
   async onSubmit() {
@@ -261,12 +288,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         )
       );
 
-      if (response) {
-        this.feedbackService.showSuccess('User deleted successfully!');
-        this.router.navigate(['/admin/users']);
-      } else {
-        this.feedbackService.showError('Failed to delete user');
-      }
+      // For delete operations, response will be true if successful
+      this.feedbackService.showSuccess('User deleted successfully!');
+      this.router.navigate(['/admin/users']);
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while deleting the user.');
     } finally {

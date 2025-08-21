@@ -9,35 +9,12 @@ import { ErrorResponse, HttpErrorInfo } from '@shared/interfaces/error-response.
 export class HttpErrorService {
 
   handleError(error: HttpErrorResponse, context: string): Observable<never> {
-
-    if (error.error && this.isErrorResponse(error.error)) {
-      const errorResponse: ErrorResponse = error.error;
-      return this.createCustomError(
-        errorResponse.message || errorResponse.error,
-        errorResponse.status,
-        error,
-        context,
-        errorResponse
-      );
-    }
-
     if (error.error?.message) {
-      return this.createCustomError(error.error.message, error.status, error, context);
+      return this.createCustomError(error.error.message, error.status, error, context, error.error);
     }
 
     const errorMessage = this.getErrorMessageByStatus(error.status, context);
     return this.createCustomError(errorMessage, error.status, error, context);
-  }
-
-  private isErrorResponse(error: any): error is ErrorResponse {
-    return error &&
-      typeof error.timestamp === 'string' &&
-      typeof error.status === 'number' &&
-      typeof error.error === 'string' &&
-      typeof error.message === 'string' &&
-      typeof error.errorId === 'string' &&
-      typeof error.path === 'string' &&
-      typeof error.fieldErrors === 'object';
   }
 
   private createCustomError(
@@ -133,9 +110,6 @@ export class HttpErrorService {
     }
   }
 
-  /**
-   * Mensaje por defecto para códigos de estado no manejados específicamente
-   */
   private getDefaultMessage(status: number): string {
     if (status >= 500) {
       return 'Server error. Please try again later.';

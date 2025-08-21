@@ -26,11 +26,11 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     Optional<Person> findByIdentNumberAndIdentType(String identNumber, String identType);
 
     @Query("SELECT p FROM Person p WHERE " +
-           "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.identNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.mobile) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+            "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.identNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.mobile) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
     Page<Person> findByFirstNameOrLastNameOrEmailOrIdentNumberOrMobileContainingIgnoreCase(
             @Param("searchTerm") String searchTerm, Pageable pageable);
 
@@ -52,13 +52,16 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     List<Person> findByCountry(String country);
 
     @Query("SELECT p FROM Person p WHERE p.birthDate BETWEEN :startDate AND :endDate")
-    List<Person> findByBirthDateBetween(@Param("startDate") java.time.LocalDate startDate, 
-                                       @Param("endDate") java.time.LocalDate endDate);
+    List<Person> findByBirthDateBetween(@Param("startDate") java.time.LocalDate startDate,
+            @Param("endDate") java.time.LocalDate endDate);
 
     long countByIsActive(Boolean isActive);
 
     long countByGender(String gender);
 
     long countByNationality(String nationality);
+
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.user WHERE p.id = :id")
+    Optional<Person> findByIdWithUser(@Param("id") UUID id);
 
 }
