@@ -16,6 +16,7 @@ export class PersonFormComponent {
   isEditMode = input<boolean>(false);
   isLoading = input<boolean>(false);
   person = input.required<any>();
+  isReadOnly = input<boolean>(false);
 
   formSubmitted = output<void>();
   personUpdated = output<any>();
@@ -33,6 +34,11 @@ export class PersonFormComponent {
       return;
     }
     this.formSubmitted.emit();
+  }
+
+  getIdentificationTypeName(code: string): string {
+    const type = this.identificationTypes().find(t => t.code === code);
+    return type ? type.name : code;
   }
 
 }

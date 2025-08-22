@@ -86,7 +86,6 @@ export class UserPersonManagementComponent implements OnInit, OnDestroy {
       const personalProfile = personsResponse.data.find(person => person.userId === user.id);
       this.personalProfile.set(personalProfile || null);
     } catch (error) {
-      console.error('Error loading personal profile:', error);
       this.personalProfile.set(null);
     } finally {
       this.isLoadingPerson.set(false);

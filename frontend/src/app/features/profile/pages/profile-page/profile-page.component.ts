@@ -245,7 +245,7 @@ export class ProfilePageComponent implements OnInit {
         // Update existing person
         const updatedPerson = await firstValueFrom(
           this.profileService.updateMyProfile(formData).pipe(
-            catchError(error => this.httpErrorService.handleError(error, 'updating personal profile'))
+            catchError(error => this.httpErrorService.handleError(error, 'updating personal information'))
           )
         );
         this.personalProfile.set(updatedPerson);
@@ -259,7 +259,7 @@ export class ProfilePageComponent implements OnInit {
 
         const newPerson = await firstValueFrom(
           this.profileService.createMyProfile(formData).pipe(
-            catchError(error => this.httpErrorService.handleError(error, 'creating personal profile'))
+            catchError(error => this.httpErrorService.handleError(error, 'creating personal informationq'))
           )
         );
         this.personalProfile.set(newPerson);

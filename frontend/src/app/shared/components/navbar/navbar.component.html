@@ -19,7 +19,7 @@
         </div>
 
         <div class="text-left hidden sm:block">
-          <h4 class="font-bold text-xs text-primary">{{ currentUser?.username || 'Usuario' }}</h4>
+          <h4 class="font-bold text-xs text-primary">{{ currentUser?.username || 'Usuario' | uppercase }}</h4>
           <p class="text-xs text-base-content/70">{{ userRole }}</p>
         </div>
 

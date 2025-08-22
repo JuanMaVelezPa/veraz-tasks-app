@@ -120,6 +120,7 @@
         [person]="personalProfile() || null"
         [isEditMode]="!!personalProfile()"
         [isLoading]="isLoadingPerson()"
+        [isReadOnly]="true"
         (formSubmitted)="onPersonFormSubmitted()"
         (personUpdated)="onPersonUpdated($event)"
         (personCreated)="onPersonCreated($event)"

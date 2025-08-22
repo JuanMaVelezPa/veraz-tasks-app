@@ -1,20 +1,25 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { ErrorResponse, HttpErrorInfo } from '@shared/interfaces/error-response.interface';
+import { FeedbackMessageService } from './feedback-message.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class HttpErrorService {
+  private feedbackService = inject(FeedbackMessageService);
 
   handleError(error: HttpErrorResponse, context: string): Observable<never> {
+    let errorMessage: string;
+
     if (error.error?.message) {
-      return this.createCustomError(error.error.message, error.status, error, context, error.error);
+      errorMessage = error.error.message;
+    } else {
+      errorMessage = this.getErrorMessageByStatus(error.status, context);
     }
 
-    const errorMessage = this.getErrorMessageByStatus(error.status, context);
-    return this.createCustomError(errorMessage, error.status, error, context);
+    return this.createCustomError(errorMessage, error.status, error, context, error.error);
   }
 
   private createCustomError(
@@ -93,6 +98,10 @@ export class HttpErrorService {
   private get409Message(context: string): string {
     if (context.includes('sign-up')) {
       return 'User already exists. Try with a different username or email.';
+    } else if (context.includes('creating employee')) {
+      return 'Employee already exists. Check if the person is already an employee or if the employee code is already in use.';
+    } else if (context.includes('updating employee')) {
+      return 'Employee code already exists. Try with a different employee code.';
     } else if (context.includes('creating')) {
       return 'User already exists. Try with a different username or email.';
     } else if (context.includes('updating')) {

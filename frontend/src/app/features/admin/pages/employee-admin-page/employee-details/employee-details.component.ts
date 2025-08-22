@@ -79,10 +79,10 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
     let employee = this.employee();
 
     // If creating new employee and we have personId, create employee object
-    if (employee.id === 'new' && personId) {
+    if (employee.id === 'new' && personId && personId.trim() !== '') {
       employee = {
         ...employee,
-        personId: personId
+        personId: personId.trim()
       };
       this.currentEmployee.set(employee);
     } else {
@@ -92,8 +92,9 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
     this.setFormValues(employee);
     this.isEditMode.set(employee.id !== 'new');
 
-    // Load person information if we have a personId (both for edit and create modes)
-    if (employee.personId && employee.personId !== 'new' && employee.personId !== '') {
+    // Load person information if we have a valid personId (both for edit and create modes)
+    const validPersonId = employee.personId && employee.personId !== 'new' && employee.personId.trim() !== '';
+    if (validPersonId) {
       this.loadPersonInfo(employee.personId);
     }
   }
@@ -148,13 +149,30 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Get personId from current employee or query params for creation
+    let personId = this.currentEmployee()?.personId;
+
+    // If we're in creation mode and don't have a personId, try to get it from query params
+    if (!this.isEditMode() && (!personId || personId === '' || personId === 'new')) {
+      const queryPersonId = this.route.snapshot.queryParamMap.get('personId');
+      if (queryPersonId) {
+        personId = queryPersonId;
+      }
+    }
+
+    // Validate that we have a valid personId for creation
+    if (!this.isEditMode() && (!personId || personId === '' || personId === 'new')) {
+      this.feedbackService.showError('A valid person must be selected to create an employee');
+      return;
+    }
+
     this.isLoading.set(true);
     this.feedbackService.clearMessage();
 
     try {
       const formValue = this.employeeForm.getRawValue();
       const employeeData: EmployeeCreateRequest | EmployeeUpdateRequest = {
-        personId: this.currentEmployee()?.personId || this.employee().personId,
+        personId: personId,
         employeeCode: formValue.employeeCode,
         position: formValue.position,
         department: formValue.department || undefined,
@@ -186,11 +204,17 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
       if (this.isEditMode()) {
         result = await firstValueFrom(
           this.employeeService.updateEmployee(this.employee().id, employeeData as EmployeeUpdateRequest)
+            .pipe(
+              catchError(error => this.httpErrorService.handleError(error, 'updating employee'))
+            )
         );
         this.feedbackService.showSuccess('Employee updated successfully');
       } else {
         result = await firstValueFrom(
           this.employeeService.createEmployee(employeeData as EmployeeCreateRequest)
+            .pipe(
+              catchError(error => this.httpErrorService.handleError(error, 'creating employee'))
+            )
         );
         this.feedbackService.showSuccess('Employee created successfully');
       }
@@ -201,8 +225,10 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
 
       // Navigate to the employee details page
       this.router.navigate(['/admin/employees', result.id]);
-    } catch (error) {
-      this.httpErrorService.handleError(error as any, 'saving employee');
+    } catch (error: any) {
+      // Show error message from backend or fallback to generic message
+      this.feedbackService.showError(error.message || 'An error occurred while saving the employee.');
+      console.error('Employee operation failed:', error);
     } finally {
       this.isLoading.set(false);
     }
@@ -217,12 +243,19 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
 
     try {
-      await firstValueFrom(this.employeeService.deleteEmployee(this.currentEmployee()!.id));
+      await firstValueFrom(
+        this.employeeService.deleteEmployee(this.currentEmployee()!.id)
+          .pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'deleting employee'))
+          )
+      );
       this.feedbackService.showSuccess('Employee deleted successfully');
       this.showDeleteModal.set(false);
       this.goBack();
-    } catch (error) {
-      this.httpErrorService.handleError(error as any, 'deleting employee');
+    } catch (error: any) {
+      // Show error message from backend or fallback to generic message
+      this.feedbackService.showError(error.message || 'An error occurred while deleting the employee.');
+      console.error('Employee deletion failed:', error);
     } finally {
       this.isLoading.set(false);
     }

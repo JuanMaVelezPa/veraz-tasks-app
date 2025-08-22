@@ -41,7 +41,7 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     @Override
     @Transactional(readOnly = true)
     public PaginatedResponseDTO<EmployeeResponseDTO> findAll(Pageable pageable) {
-        Page<Employee> employeePage = employeeRepository.findByIsActiveTrue(pageable);
+        Page<Employee> employeePage = employeeRepository.findAll(pageable);
         List<EmployeeResponseDTO> dtoPage = employeePage.getContent().stream()
                 .map(employeeMapper::toResponseDTO)
                 .collect(Collectors.toList());

@@ -18,6 +18,11 @@
           <label class="label">
             <span class="label-text font-medium">ID Type *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getIdentificationTypeName(personForm().get('identType')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="identType"
             class="select select-bordered w-full"
@@ -33,6 +38,7 @@
             <span class="label-text-alt text-error">ID type is required</span>
           </label>
           }
+          }
         </div>
 
         <!-- Identification Number -->
@@ -40,6 +46,11 @@
           <label class="label">
             <span class="label-text font-medium">ID Number *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ personForm().get('identNumber')?.value }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="identNumber"
@@ -52,6 +63,7 @@
             <span class="label-text-alt text-error">ID number is required</span>
           </label>
           }
+          }
         </div>
 
         <!-- First Name -->
@@ -59,6 +71,11 @@
           <label class="label">
             <span class="label-text font-medium">First Name *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ personForm().get('firstName')?.value }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="firstName"
@@ -71,6 +88,7 @@
             <span class="label-text-alt text-error">First name is required</span>
           </label>
           }
+          }
         </div>
 
         <!-- Last Name -->
@@ -78,6 +96,11 @@
           <label class="label">
             <span class="label-text font-medium">Last Name *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ personForm().get('lastName')?.value }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="lastName"
@@ -89,6 +112,7 @@
           <label class="label">
             <span class="label-text-alt text-error">Last name is required</span>
           </label>
+          }
           }
         </div>
       </div>

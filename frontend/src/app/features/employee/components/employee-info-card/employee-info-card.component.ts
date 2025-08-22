@@ -14,7 +14,7 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 export class EmployeeInfoCardComponent {
   @Input() employee: Employee | null = null;
   @Input() isLoading: boolean = false;
-  @Input() title: string = 'Employee Information';
+  @Input() title: string = 'Employment Information';
   @Input() buttonText: string = 'Manage';
   @Input() showIcon: boolean = true;
 

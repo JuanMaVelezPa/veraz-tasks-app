@@ -5,10 +5,11 @@ import { AuthService } from '@auth/services/auth.service';
 import { LayoutService } from '@shared/services/layout.service';
 import { ThemeSelectorComponent } from '@shared/components/theme-selector/theme-selector.component';
 import { IconComponent } from '../icon/icon.component';
+import { UpperCasePipe } from '@angular/common';
 
 @Component({
   selector: 'shared-navbar',
-  imports: [ThemeSelectorComponent, RouterLink, IconComponent],
+  imports: [ThemeSelectorComponent, RouterLink, IconComponent, UpperCasePipe],
   templateUrl: './navbar.component.html',
 })
 export class NavbarComponent {

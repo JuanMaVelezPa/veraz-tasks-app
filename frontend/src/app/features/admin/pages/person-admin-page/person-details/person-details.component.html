@@ -57,13 +57,13 @@
 
       <!-- Sidebar Information -->
       <div class="lg:col-span-1 space-y-6">
-        <!-- Employee Information -->
+        <!-- Employment Information -->
         @if (isEditMode() && person()) {
         <div class="mb-2">
           <app-employee-info-card
             [employee]="currentEmployee()"
             [isLoading]="isLoadingEmployee()"
-            title="Employee Information"
+            title="Employment Information"
             [buttonText]="currentEmployee() ? 'Manage Employee' : 'Create Employee'"
             (actionClicked)="onEmployeeAction()"
           />

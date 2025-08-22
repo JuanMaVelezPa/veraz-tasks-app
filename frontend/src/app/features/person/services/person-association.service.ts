@@ -43,9 +43,9 @@ export class PersonAssociationService {
   async removePersonalProfile(personId: string, personName: string): Promise<void> {
     try {
       await firstValueFrom(this.personService.removeUserAssociation(personId));
-      this.feedbackService.showSuccess('Personal profile removed successfully');
+      this.feedbackService.showSuccess('Personal Information removed successfully');
     } catch (error) {
-      this.feedbackService.showError('Failed to remove personal profile');
+      this.feedbackService.showError('Failed to remove personal information');
     }
   }
 
@@ -59,9 +59,9 @@ export class PersonAssociationService {
   async changePersonAssociation(personId: string, userId: string): Promise<void> {
     try {
       await firstValueFrom(this.personService.removeUserAssociation(personId));
-      this.feedbackService.showSuccess('Personal profile removed. You can now link a different person.');
+      this.feedbackService.showSuccess('Personal information removed. You can now link a different person.');
     } catch (error) {
-      this.feedbackService.showError('Failed to change personal profile');
+      this.feedbackService.showError('Failed to change personal information');
     }
   }
 }

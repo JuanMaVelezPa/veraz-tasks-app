@@ -53,14 +53,14 @@
 
     <!-- Sidebar Information -->
     <div class="lg:col-span-1 space-y-6">
-      <!-- Personal Profile Info -->
+      <!-- Personal Information -->
       @if (isEditMode()) {
       <div class="mb-2">
         <app-person-info-card
           [person]="personalProfile()"
           [isLoading]="isLoadingPerson()"
-          title="Personal Profile"
-          buttonText="Manage Profile"
+          title="Personal Information"
+          buttonText="Manage Information"
           (actionClicked)="goToPersonManagement()"
         />
       </div>

@@ -44,6 +44,11 @@
         <span class="text-sm font-semibold">Username</span>
         <span class="text-error">*</span>
       </div>
+      @if (isReadOnly()) {
+      <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+        {{ userForm().get('username')?.value }}
+      </div>
+      } @else {
       <input
         type="text"
         placeholder="usuario123"
@@ -57,6 +62,7 @@
         <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'username') }}</span>
       </div>
       }
+      }
     </div>
 
     <!-- Email -->
@@ -65,6 +71,11 @@
         <span class="text-sm font-semibold">Email</span>
         <span class="text-error">*</span>
       </div>
+      @if (isReadOnly()) {
+      <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+        {{ userForm().get('email')?.value }}
+      </div>
+      } @else {
       <input
         type="email"
         placeholder="usuario@ejemplo.com"
@@ -77,6 +88,7 @@
       <div class="mt-1">
         <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'email') }}</span>
       </div>
+      }
       }
     </div>
 

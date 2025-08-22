@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
       <div class="w-full sm:w-auto text-center sm:text-left">
         <h1 class="text-xl sm:text-2xl font-bold">Person Management</h1>
-        <p class="text-sm text-gray-500">Manage personal profile for user: {{ currentUser()?.username }}</p>
+        <p class="text-sm text-gray-500">Manage personal information for user: {{ currentUser()?.username }}</p>
       </div>
 
       <!-- Action Buttons -->
@@ -48,7 +48,7 @@
         <div class="flex items-center justify-between mb-6">
           <h3 class="card-title text-lg font-semibold">
             <shared-icon type="user" />
-            Personal Profile Details
+            Personal Information Details
           </h3>
           <div
             class="badge badge-lg"
@@ -166,7 +166,7 @@
       </div>
     </div>
     } @else {
-    <!-- No Personal Profile -->
+    <!-- No Personal Information -->
     <div class="card bg-base-100 shadow-lg">
       <div class="card-body p-8">
         <div class="text-center">
@@ -176,8 +176,8 @@
               size="xl"
             />
           </div>
-          <h3 class="text-xl font-semibold mb-2">No Personal Profile</h3>
-          <p class="text-base-content/70 mb-6">This user doesn't have a personal profile. You can link an
+          <h3 class="text-xl font-semibold mb-2">No Personal Information</h3>
+          <p class="text-base-content/70 mb-6">This user doesn't have a personal information. You can link an
             existing person or create a new one.</p>
 
           <div class="flex flex-col sm:flex-row gap-3 justify-center">

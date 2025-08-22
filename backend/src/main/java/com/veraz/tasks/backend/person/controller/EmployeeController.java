@@ -62,11 +62,11 @@ public class EmployeeController
         paginationRequest.validateAndNormalize();
         Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        PaginatedResponseDTO<EmployeeResponseDTO> response = paginationRequest.hasSearch() 
-            ? employeeService.findBySearch(paginationRequest.getSearch(), pageable)
-            : employeeService.findAll(pageable);
+        PaginatedResponseDTO<EmployeeResponseDTO> response = paginationRequest.hasSearch()
+                ? employeeService.findBySearch(paginationRequest.getSearch(), pageable)
+                : employeeService.findAll(pageable);
 
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
                 MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employees"),
                 response, null));
     }
@@ -81,10 +81,10 @@ public class EmployeeController
     @PreAuthorize("@permissionService.canAccessResource(#id, 'EMPLOYEE') or @permissionService.hasAdminAccess()")
     public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findById(@PathVariable UUID id) {
         Optional<EmployeeResponseDTO> response = employeeService.findById(id);
-        
+
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -100,11 +100,12 @@ public class EmployeeController
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     @PreAuthorize("@permissionService.canCreateEmployee(#requestDTO.personId)")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(@Valid @RequestBody EmployeeCreateRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> create(
+            @Valid @RequestBody EmployeeCreateRequestDTO requestDTO) {
         EmployeeResponseDTO response = employeeService.create(requestDTO);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, 
-                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "Employee"), 
+                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED,
+                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "Employee"),
                         response, null));
     }
 
@@ -116,10 +117,11 @@ public class EmployeeController
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isEmployeeOwner(#id)")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody EmployeeUpdateRequestDTO requestDTO) {
+    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> update(@PathVariable UUID id,
+            @Valid @RequestBody EmployeeUpdateRequestDTO requestDTO) {
         EmployeeResponseDTO response = employeeService.update(id, requestDTO);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Employee"), 
+                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Employee"),
                 response, null));
     }
 
@@ -133,7 +135,7 @@ public class EmployeeController
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
         employeeService.deleteById(id);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Employee"), 
+                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Employee"),
                 null, null));
     }
 
@@ -147,10 +149,10 @@ public class EmployeeController
     @PreAuthorize("@permissionService.canReadResources()")
     public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findByEmployeeCode(@PathVariable String employeeCode) {
         Optional<EmployeeResponseDTO> response = employeeService.findByEmployeeCode(employeeCode);
-        
+
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -169,10 +171,10 @@ public class EmployeeController
     @PreAuthorize("@permissionService.canReadResources() or @permissionService.isPersonOwner(#personId)")
     public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findByPersonId(@PathVariable UUID personId) {
         Optional<EmployeeResponseDTO> response = employeeService.findByPersonId(personId);
-        
+
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"), 
+                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -180,6 +182,5 @@ public class EmployeeController
                             MessageUtils.getEntityNotFound("Employee"), null, null));
         }
     }
-
 
 }
