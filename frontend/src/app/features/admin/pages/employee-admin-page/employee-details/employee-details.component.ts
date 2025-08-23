@@ -1,6 +1,6 @@
 import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Employee, EmployeeCreateRequest, EmployeeUpdateRequest } from '@employee/interfaces/employee.interface';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { EmployeeService } from '@employee/services/employee.service';
 import { PersonService } from '@person/services/person.service';
 import { Router, ActivatedRoute } from '@angular/router';
@@ -12,20 +12,19 @@ import { HttpErrorService } from '@shared/services/http-error.service';
 import { EmployeeFormComponent } from '@employee/components/employee-form/employee-form.component';
 import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { PersonInfoCardComponent } from '@person/components/person-info-card/person-info-card.component';
+
 import { firstValueFrom, catchError } from 'rxjs';
-import { FormUtilsService } from '@shared/services/form-utils.service';
+import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 
 @Component({
   selector: 'employee-details',
-  standalone: true,
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, EmployeeFormComponent, IconComponent, TimestampInfoComponent, PersonInfoCardComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, EmployeeFormComponent, IconComponent, TimestampInfoComponent],
   templateUrl: './employee-details.component.html',
 })
 export class EmployeeDetailsComponent implements OnInit, OnDestroy {
   employee = input.required<Employee>();
 
-  private fb = inject(FormBuilder);
+  private formBuilders = inject(FormBuildersManagerService);
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private employeeService = inject(EmployeeService);
@@ -43,32 +42,7 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
   currentPerson = signal<any>(null);
   isLoadingPerson = signal(false);
 
-  employeeForm = this.fb.nonNullable.group({
-    employeeCode: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(20)]],
-    position: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(100)]],
-    department: ['', [Validators.maxLength(100)]],
-    employmentType: ['', [Validators.required, Validators.maxLength(20)]],
-    status: ['ACTIVE', [Validators.maxLength(20)]],
-    hireDate: ['', [Validators.required]],
-    terminationDate: [''],
-    probationEndDate: [''],
-    salary: [null as number | null],
-    currency: ['USD', [Validators.maxLength(3)]],
-    salaryType: ['', [Validators.maxLength(20)]],
-    workEmail: ['', [Validators.pattern(FormUtilsService.emailPattern), Validators.maxLength(100)]],
-    workPhone: ['', [Validators.maxLength(20)]],
-    workLocation: ['', [Validators.maxLength(100)]],
-    workSchedule: ['', [Validators.maxLength(100)]],
-    jobLevel: ['', [Validators.maxLength(20)]],
-    costCenter: ['', [Validators.maxLength(50)]],
-    workShift: ['', [Validators.maxLength(20)]],
-    skills: [''],
-    certifications: [''],
-    education: [''],
-    benefits: [''],
-    notes: [''],
-    isActive: [true]
-  });
+  employeeForm = this.formBuilders.buildEmployeeForm();
 
   ngOnInit(): void {
     this.feedbackService.clearMessage();
@@ -116,32 +90,8 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
   }
 
   private setFormValues(employee: Employee): void {
-    this.employeeForm.patchValue({
-      employeeCode: employee.employeeCode || '',
-      position: employee.position || '',
-      department: employee.department || '',
-      employmentType: employee.employmentType || '',
-      status: employee.status || 'ACTIVE',
-      hireDate: employee.hireDate || '',
-      terminationDate: employee.terminationDate || '',
-      probationEndDate: employee.probationEndDate || '',
-      salary: employee.salary || null,
-      currency: employee.currency || 'USD',
-      salaryType: employee.salaryType || '',
-      workEmail: employee.workEmail || '',
-      workPhone: employee.workPhone || '',
-      workLocation: employee.workLocation || '',
-      workSchedule: employee.workSchedule || '',
-      jobLevel: employee.jobLevel || '',
-      costCenter: employee.costCenter || '',
-      workShift: employee.workShift || '',
-      skills: employee.skills || '',
-      certifications: employee.certifications || '',
-      education: employee.education || '',
-      benefits: employee.benefits || '',
-      notes: employee.notes || '',
-      isActive: employee.isActive ?? true
-    });
+    this.formBuilders.patchForm(this.employeeForm, employee);
+    this.cdr.detectChanges();
   }
 
   async onSubmit(): Promise<void> {
@@ -170,33 +120,10 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
 
     try {
-      const formValue = this.employeeForm.getRawValue();
-      const employeeData: EmployeeCreateRequest | EmployeeUpdateRequest = {
-        personId: personId,
-        employeeCode: formValue.employeeCode,
-        position: formValue.position,
-        department: formValue.department || undefined,
-        employmentType: formValue.employmentType,
-        status: formValue.status,
-        hireDate: formValue.hireDate,
-        terminationDate: formValue.terminationDate || undefined,
-        probationEndDate: formValue.probationEndDate || undefined,
-        salary: formValue.salary || undefined,
-        currency: formValue.currency || undefined,
-        salaryType: formValue.salaryType || undefined,
-        workEmail: formValue.workEmail || undefined,
-        workPhone: formValue.workPhone || undefined,
-        workLocation: formValue.workLocation || undefined,
-        workSchedule: formValue.workSchedule || undefined,
-        jobLevel: formValue.jobLevel || undefined,
-        costCenter: formValue.costCenter || undefined,
-        workShift: formValue.workShift || undefined,
-        skills: formValue.skills || undefined,
-        certifications: formValue.certifications || undefined,
-        education: formValue.education || undefined,
-        benefits: formValue.benefits || undefined,
-        notes: formValue.notes || undefined,
-        isActive: formValue.isActive
+      const formValue = this.employeeForm.value;
+      const employeeData = {
+        ...this.formBuilders.prepareEmployeeFormData(formValue),
+        personId: personId
       };
 
       let result: Employee;
@@ -250,14 +177,13 @@ export class EmployeeDetailsComponent implements OnInit, OnDestroy {
           )
       );
       this.feedbackService.showSuccess('Employee deleted successfully');
-      this.showDeleteModal.set(false);
       this.goBack();
     } catch (error: any) {
-      // Show error message from backend or fallback to generic message
       this.feedbackService.showError(error.message || 'An error occurred while deleting the employee.');
       console.error('Employee deletion failed:', error);
     } finally {
       this.isLoading.set(false);
+      this.showDeleteModal.set(false);
     }
   }
 

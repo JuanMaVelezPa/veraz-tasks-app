@@ -4,6 +4,7 @@ import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { PersonService } from '@person/services/person.service';
 import { PersonParamsService } from '@person/services/person-params.service';
+import { EmployeeService } from '@employee/services/employee.service';
 
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { SortableColumn } from '@shared/interfaces/sort.interface';
@@ -22,7 +23,7 @@ import { IconType } from '@shared/constants/icons.constant';
 
 @Component({
   selector: 'app-person-table',
-  imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent, LoadingComponent, FeedbackMessageComponent, IconComponent],
+  imports: [RouterLink, PaginationComponent, SearchBarComponent, LoadingComponent, FeedbackMessageComponent, IconComponent],
   templateUrl: './person-table.component.html',
 })
 export class PersonTableComponent implements OnInit {
@@ -39,6 +40,7 @@ export class PersonTableComponent implements OnInit {
 
   private personService = inject(PersonService);
   private personParamsService = inject(PersonParamsService);
+  private employeeService = inject(EmployeeService);
   private pagination = inject(PaginationService);
   private sortService = inject(SortService);
   private searchService = inject(SearchService);
@@ -50,6 +52,7 @@ export class PersonTableComponent implements OnInit {
   personsPerPage = signal(10);
   currentPage = this.pagination.currentPage;
   showLastNameFirst = signal(false);
+  showOnlyEmployees = signal(false);
   sortState: SortState;
   searchState: SearchState;
 
@@ -104,13 +107,22 @@ export class PersonTableComponent implements OnInit {
     stream: ({ params }) => this.personService.getPersons(params)
   });
 
+  // Filter persons based on showOnlyEmployees flag
+  filteredPersons = computed(() => {
+    const persons = this.personsResource.value()?.data ?? [];
+    if (this.showOnlyEmployees()) {
+      return persons.filter(person => person.isEmployee);
+    }
+    return persons;
+  });
+
   columns: SortableColumn[] = [
     { key: 'firstName', label: 'Full Name', sortable: true },
     { key: 'identNumber', label: 'ID Number', sortable: true },
     { key: 'email', label: 'Email', sortable: true },
     { key: 'mobile', label: 'Mobile', sortable: true },
     { key: 'city', label: 'City', sortable: true },
-    { key: 'createdAt', label: 'Created At', sortable: true },
+    { key: 'personType', label: 'Type', sortable: false },
     { key: 'isActive', label: 'Status', sortable: true },
     { key: 'actions', label: 'Actions', sortable: false }
   ];
@@ -130,6 +142,11 @@ export class PersonTableComponent implements OnInit {
     return type?.name || code;
   };
 
+  getIdentificationTypeCode = (code: string): string => {
+    const type = this.personParamsService.getIdentificationTypeByCode(code);
+    return type?.code || code;
+  };
+
   getGenderName = (code: string): string => {
     const gender = this.personParamsService.getGenderByCode(code);
     return gender?.name || code;
@@ -140,15 +157,27 @@ export class PersonTableComponent implements OnInit {
     return nationality?.name || code;
   };
 
+  getPersonType = (person: any): string => {
+    return person.isEmployee ? '👤 Employee' : '👤 Person';
+  };
+
+  getPersonTypeClass = (person: any): string => {
+    return person.isEmployee ? 'status-badge-success' : 'status-badge-ghost';
+  };
+
   handleSort = (field: string): void => {
     this.sortState.handleSort(field, this.columns);
     this.saveSortPreferences();
-    this.resetToFirstPage();
+    if (this.currentPage() !== 1) {
+      this.pagination.goToFirst();
+    }
   };
 
   handleSearch = (term: string): void => {
     this.searchState.setSearchTerm(term);
-    this.resetToFirstPage();
+    if (this.currentPage() !== 1) {
+      this.pagination.goToFirst();
+    }
   };
 
   toggleNameOrder = (): void => {
@@ -156,10 +185,8 @@ export class PersonTableComponent implements OnInit {
     this.showLastNameFirst.set(newValue);
   };
 
-  private resetToFirstPage = (): void => {
-    if (this.currentPage() !== 1) {
-      this.pagination.goToFirst();
-    }
+  toggleEmployeeFilter = (): void => {
+    this.showOnlyEmployees.update(value => !value);
   };
 
   private loadPreferences(): void {

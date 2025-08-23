@@ -10,7 +10,6 @@ import { CacheService } from '@shared/services/cache.service';
 const emptyEmployee: Employee = {
   id: 'new',
   personId: '',
-  employeeCode: '',
   position: '',
   employmentType: '',
   status: 'ACTIVE',
@@ -53,14 +52,17 @@ export class EmployeeService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'employees')),
         tap(response => this.cacheService.set(cacheKey, response)),
-        catchError(() => of(emptyPagination))
+        catchError((error) => {
+          console.error('EmployeeService - getEmployees - Error:', error);
+          return of(emptyPagination);
+        })
       );
   }
 
   getEmployeeById(id: string): Observable<Employee> {
     if (id === 'new') return of(emptyEmployee);
 
-    const cacheKey = this.generateEmployeeCacheKey(id);
+    const cacheKey = `employee:${id}`;
     const cached = this.cacheService.get<Employee>(cacheKey);
 
     if (cached) {
@@ -71,31 +73,18 @@ export class EmployeeService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
         tap((employee) => this.cacheService.set(cacheKey, employee)),
-        catchError(() => of(emptyEmployee))
+        catchError((error) => {
+          console.error('EmployeeService - getEmployeeById - Error:', error);
+          return of(emptyEmployee);
+        })
       );
   }
 
   createEmployee(employeeData: EmployeeCreateRequest): Observable<Employee> {
-    // Clear any existing cache for this person before creating
-    if (employeeData.personId) {
-      this.forceRefreshPersonCache(employeeData.personId);
-    }
-
     return this.employeeApiService.createEmployee(employeeData)
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
-        tap((employee: Employee) => {
-          // Cache the new employee
-          this.cacheService.set(this.generateEmployeeCacheKey(employee.id), employee);
-
-          // Cache by person ID if available
-          if (employee.personId) {
-            this.cacheService.set(this.generatePersonCacheKey(employee.personId), employee);
-          }
-
-          // Clear employee lists
-          this.cacheService.clearPattern('employees:');
-        }),
+        tap((employee: Employee) => this.cacheService.clearPattern('employees:')),
         catchError((error) => this.handleError(error, 'creating employee'))
       );
   }
@@ -105,38 +94,19 @@ export class EmployeeService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
         tap((employee: Employee) => {
-          // Update employee cache
-          this.cacheService.set(this.generateEmployeeCacheKey(employee.id), employee);
-
-          // Update person-employee cache if available
-          if (employee.personId) {
-            this.cacheService.set(this.generatePersonCacheKey(employee.personId), employee);
-          }
-
-          // Clear employee lists to force refresh
+          this.cacheService.set(`employee:${employee.id}`, employee);
           this.cacheService.clearPattern('employees:');
         }),
         catchError((error) => this.handleError(error, 'updating employee'))
       );
   }
 
-  deleteEmployee(id: string): Observable<boolean> {
-    // Get employee from cache to know personId before deletion
-    const cachedEmployee = this.cacheService.get<Employee>(this.generateEmployeeCacheKey(id));
-
+  deleteEmployee(id: string): Observable<void> {
     return this.employeeApiService.deleteEmployee(id)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
+        map(() => {}),
         tap(() => {
-          // Delete specific employee cache
-          this.cacheService.delete(this.generateEmployeeCacheKey(id));
-
-          // Delete person-employee cache if we know the personId
-          if (cachedEmployee?.personId) {
-            this.cacheService.delete(this.generatePersonCacheKey(cachedEmployee.personId));
-          }
-
-          // Clear employee lists to force refresh
+          this.cacheService.delete(`employee:${id}`);
           this.cacheService.clearPattern('employees:');
         }),
         catchError((error) => this.handleError(error, 'deleting employee'))
@@ -150,7 +120,7 @@ export class EmployeeService {
       return of(null);
     }
 
-    const cacheKey = this.generatePersonCacheKey(personId);
+    const cacheKey = `employee:person:${personId}`;
     const cached = this.cacheService.get<Employee | null>(cacheKey);
 
     // Only use cache if we have a valid employee (not null)
@@ -189,58 +159,7 @@ export class EmployeeService {
     return `employees:${page}:${size}:${search || ''}:${sort || ''}:${order || ''}`;
   }
 
-  private generatePersonCacheKey(personId: string): string {
-    return `employee:person:${personId}`;
-  }
 
-  private generateEmployeeCacheKey(employeeId: string): string {
-    return `employee:${employeeId}`;
-  }
-
-  /**
-   * Clear all employee-related cache
-   */
-  clearAllCache(): void {
-    this.cacheService.clearPattern('employee:');
-    this.cacheService.clearPattern('employees:');
-  }
-
-  /**
-   * Force refresh cache for a specific person
-   */
-  forceRefreshPersonCache(personId: string): void {
-    this.cacheService.delete(this.generatePersonCacheKey(personId));
-  }
-
-  /**
-   * Clear all employee cache and force refresh
-   */
-  forceRefreshAllEmployeeCache(): void {
-    this.clearAllCache();
-  }
-
-  /**
-   * Debug method to get cache statistics
-   */
-  getCacheStats(): any {
-    return this.cacheService.getDetailedStats();
-  }
-
-  /**
-   * Clear cache for specific employee
-   */
-  clearEmployeeCache(employeeId: string): void {
-    this.cacheService.delete(this.generateEmployeeCacheKey(employeeId));
-    this.cacheService.clearPattern('employees:');
-  }
-
-  /**
-   * Clear cache for employee by person ID
-   */
-  clearEmployeeCacheByPersonId(personId: string): void {
-    this.cacheService.delete(this.generatePersonCacheKey(personId));
-    this.cacheService.clearPattern('employees:');
-  }
 
   private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
     if (!apiResponse.success) {

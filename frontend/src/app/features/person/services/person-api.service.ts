@@ -7,9 +7,6 @@ import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 
-/**
- * Service for Person API endpoints.
- */
 @Injectable({
   providedIn: 'root'
 })

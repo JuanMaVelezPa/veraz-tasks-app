@@ -89,6 +89,9 @@ public class Person {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "pers_user", referencedColumnName = "user_user")
     private User user;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "person")
+    private Employee employee;
     
     @PrePersist
     public void prePersist() {

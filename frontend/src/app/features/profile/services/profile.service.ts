@@ -10,9 +10,6 @@ import { UserApiService } from '@users/services/user-api.service';
 import { PersonApiService } from '@person/services/person-api.service';
 import { EmployeeApiService } from '@employee/services/employee-api.service';
 
-/**
- * Service for managing user profile operations using existing API services.
- */
 @Injectable({
   providedIn: 'root'
 })
@@ -182,14 +179,14 @@ export class ProfileService {
     );
   }
 
-  deleteMyEmployee(): Observable<boolean> {
+  deleteMyEmployee(): Observable<void> {
     return this.getMyEmployee().pipe(
       switchMap((employee) => {
         if (!employee) {
           return throwError(() => new Error('No employee profile found to delete'));
         }
         return this.employeeApiService.deleteEmployee(employee.id).pipe(
-          map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
+          map(() => {}),
           tap(() => this.cacheService.clearPattern('employees:')),
           catchError((error) => this.handleError(error, 'deleting employee'))
         );

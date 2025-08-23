@@ -38,47 +38,138 @@
     <!-- Feedback Messages -->
     <shared-feedback-message />
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Person Form Section -->
-      <div class="lg:col-span-3">
-        <div class="card bg-base-100 shadow-lg">
-          <div class="card-body p-4 sm:p-6">
-            <app-person-form
-              [personForm]="personForm"
-              [person]="person()"
-              [isEditMode]="isEditMode()"
-              [isLoading]="isLoading()"
-              (formSubmitted)="onSubmit()"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Sidebar Information -->
-      <div class="lg:col-span-1 space-y-6">
-        <!-- Employment Information -->
-        @if (isEditMode() && person()) {
-        <div class="mb-2">
-          <app-employee-info-card
-            [employee]="currentEmployee()"
-            [isLoading]="isLoadingEmployee()"
-            title="Employment Information"
-            [buttonText]="currentEmployee() ? 'Manage Employee' : 'Create Employee'"
-            (actionClicked)="onEmployeeAction()"
+    <!-- Navigation Tabs -->
+    <div class="tabs tabs-bordered mb-0">
+      <button
+        class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+        [class.tab-active]="activeTab() === 'person'"
+        [class.bg-primary]="activeTab() === 'person'"
+        [class.text-primary-content]="activeTab() === 'person'"
+        [class.border-primary]="activeTab() === 'person'"
+        [class.border-base-300]="activeTab() !== 'person'"
+        (click)="setActiveTab('person')"
+      >
+        <shared-icon type="user" />
+        Personal Information
+      </button>
+      @if (isEditMode() && currentPerson() && currentPerson()!.id !== 'new') {
+      <button
+        class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+        [class.tab-active]="activeTab() === 'employee'"
+        [class.bg-primary]="activeTab() === 'employee'"
+        [class.text-primary-content]="activeTab() === 'employee'"
+        [class.border-primary]="activeTab() === 'employee'"
+        [class.border-base-300]="activeTab() !== 'employee'"
+        (click)="setActiveTab('employee')"
+      >
+        <shared-icon type="user-tie" />
+        Employment Information
+        @if (!currentEmployee()) {
+        <div class="badge badge-warning badge-xs ml-1">Optional</div>
+        } @else {
+        <div class="badge badge-success badge-xs ml-1">
+          <shared-icon
+            type="check"
+            size="xs"
           />
         </div>
         }
+      </button>
+      }
+    </div>
 
-        <!-- Person Information -->
-        @if (isEditMode() && person()) {
-        <shared-timestamp-info
-          [entity]="person()"
-          title="Person Information"
+    <!-- Person Tab Content -->
+    @if (activeTab() === 'person') {
+    <div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
+      <div class="card-body p-4 sm:p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+            <shared-icon
+              type="user"
+              size="1x"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold">Personal Information</h2>
+            <p class="text-base-content/70 text-sm">Complete personal data and contact information</p>
+          </div>
+        </div>
+
+        <app-person-form
+          [personForm]="personForm"
+          [person]="person()"
+          [isEditMode]="isEditMode()"
+          [isLoading]="isLoading()"
+          (formSubmitted)="onSubmit()"
+        />
+      </div>
+    </div>
+    }
+
+    <!-- Employee Tab Content -->
+    @if (activeTab() === 'employee' && isEditMode() && currentPerson() && currentPerson()!.id !== 'new') {
+    <div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
+      <div class="card-body p-4 sm:p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
+            <shared-icon
+              type="user-tie"
+              size="1x"
+            />
+          </div>
+          <div>
+            <h2 class="text-xl font-bold">Employment Information</h2>
+            <p class="text-base-content/70 text-sm">Manage professional and employment details</p>
+          </div>
+        </div>
+
+        @if (isLoadingEmployee()) {
+        <shared-loading />
+        } @else {
+        <app-employee-form
+          [employeeForm]="employeeForm"
+          [employee]="currentEmployee() || null"
+          [isEditMode]="!!currentEmployee()"
+          [isLoading]="isLoadingEmployee()"
+          (formSubmitted)="onEmployeeFormSubmitted()"
         />
         }
       </div>
     </div>
+    }
+
+    <!-- Dynamic Timestamp Information based on active tab -->
+    @if (isEditMode()) {
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-4 sm:p-6">
+        @if (activeTab() === 'person' && person()) {
+          <shared-timestamp-info
+            [entity]="person()"
+            title="Personal Information"
+          />
+        }
+        @if (activeTab() === 'employee' && currentEmployee()) {
+          <shared-timestamp-info
+            [entity]="currentEmployee()"
+            title="Employment Information"
+          />
+        }
+        @if (activeTab() === 'employee' && !currentEmployee()) {
+          <div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm">
+            <div class="flex items-center gap-3">
+              <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
+                <shared-icon type="warning" size="sm" class="text-warning" />
+              </div>
+              <div>
+                <h3 class="font-semibold text-base-content">Employment Information</h3>
+                <p class="text-sm text-base-content/60">No employment information available</p>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+    }
 
   </div>
 

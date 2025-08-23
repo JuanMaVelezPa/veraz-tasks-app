@@ -4,7 +4,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
       <div class="w-full sm:w-auto text-center sm:text-left">
         <h1 class="text-xl sm:text-2xl font-bold">{{ isEditMode() ? 'Edit' : 'Create' }} Employee</h1>
-        <p class="text-sm text-gray-500">Employee management information</p>
+        <p class="text-sm text-gray-500">Employment management information</p>
       </div>
 
       <!-- Action Buttons - Responsive Layout -->
@@ -38,50 +38,32 @@
     <!-- Feedback Messages -->
     <shared-feedback-message />
 
-    <!-- Main Content Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-      <!-- Employee Form Section -->
-      <div class="lg:col-span-3">
-        <div class="card bg-base-100 shadow-lg">
-          <div class="card-body p-4 sm:p-6">
-            <app-employee-form
-              [employeeForm]="employeeForm"
-              [employee]="employee()"
-              [isEditMode]="isEditMode()"
-              [isLoading]="isLoading()"
-              (formSubmitted)="onSubmit()"
-              (formCancelled)="goBack()"
-            />
-          </div>
-        </div>
+    <!-- Main Content - Full Width -->
+    <div class="card bg-base-100 shadow-lg">
+      <div class="card-body p-4 sm:p-6">
+        <app-employee-form
+          [employeeForm]="employeeForm"
+          [employee]="employee()"
+          [isEditMode]="isEditMode()"
+          [isLoading]="isLoading()"
+          (formSubmitted)="onSubmit()"
+          (formCancelled)="goBack()"
+        />
       </div>
+    </div>
 
-      <!-- Sidebar Information -->
-      <div class="lg:col-span-1 space-y-6">
-        <!-- Person Information -->
-        @if (currentEmployee()?.personId && currentEmployee()?.personId !== '' && currentEmployee()?.personId !== 'new') {
-        <div class="mb-2">
-          <app-person-info-card
-            [person]="currentPerson()"
-            [isLoading]="isLoadingPerson()"
-            [title]="'Personal Information'"
-            [buttonText]="'View Person'"
-            [showIcon]="true"
-            (actionClicked)="onPersonAction()"
-          />
-        </div>
-        }
-
-        <!-- Timestamp Information -->
-        @if (isEditMode()) {
+    <!-- Timestamp Information -->
+    @if (isEditMode()) {
+    <div class="card bg-base-100 shadow-lg mt-6">
+      <div class="card-body p-4 sm:p-6">
         <shared-timestamp-info
           [entity]="employee()"
           [title]="'Account Information'"
-          [showIcon]="true"
+          [showIcons]="true"
         />
-        }
       </div>
     </div>
+    }
   </div>
 </div>
 

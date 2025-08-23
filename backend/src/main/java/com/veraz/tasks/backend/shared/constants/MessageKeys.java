@@ -93,7 +93,6 @@ public final class MessageKeys {
 
     // Employee entity
     public static final String ENTITY_EMPLOYEE = "entity.employee";
-    public static final String ENTITY_EMPLOYEE_CODE = "entity.employee.code";
     public static final String ENTITY_EMPLOYEE_POSITION = "entity.employee.position";
     public static final String ENTITY_EMPLOYEE_DEPARTMENT = "entity.employee.department";
     public static final String ENTITY_EMPLOYEE_HIRE_DATE = "entity.employee.hireDate";

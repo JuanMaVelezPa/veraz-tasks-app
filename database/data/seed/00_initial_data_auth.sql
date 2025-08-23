@@ -56,16 +56,16 @@ INSERT INTO GE_TPERM (perm_name, perm_descr) VALUES
 -- Insert Example User into GE_TUSER
 -- Note: Replace 'password_hashed_here' with the actual hashed password
 INSERT INTO GE_TUSER (user_username, user_email, user_pwd) VALUES
-('jmvelez', 'jmvelez@empresa.com', '$2a$10$T9WY1lL.AGTy14qvfqfTMe45YjO6IiDyTLrAMhylgGWni3CP2t8Mi');
+('jmvelez', 'jmvelez@empresa.com', '$2a$10$sT16vxheEx5PmMt.OBfhrOk5k1hEocQeU//wb9ebsz/oZ9Z3IElx6');
 
 -- =====================================================
 -- STEP 4: ASSIGN ROLES TO USERS
 -- =====================================================
 
--- Assign the 'ADMIN' role to the 'admin_user'
+-- Assign the 'ADMIN' role to the 'jmvelez'
 INSERT INTO GE_TUSRO (usro_user, usro_role) VALUES
 (
-    (SELECT user_user FROM GE_TUSER WHERE user_username = 'admin_user'),
+    (SELECT user_user FROM GE_TUSER WHERE user_username = 'jmvelez'),
     (SELECT role_role FROM GE_TROLE WHERE role_name = 'ADMIN')
 );
 
@@ -196,7 +196,7 @@ BEGIN
     RAISE NOTICE '- 17 system permissions';
     RAISE NOTICE '';
     RAISE NOTICE 'Created user:';
-    RAISE NOTICE '- admin_user (admin@empresa.com) with ADMIN role';
+    RAISE NOTICE '- jmvelez (admin@empresa.com) with ADMIN role';
     RAISE NOTICE '';
     RAISE NOTICE 'Role-permission assignments completed';
     RAISE NOTICE '=====================================================';

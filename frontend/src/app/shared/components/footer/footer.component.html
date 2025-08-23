@@ -1,21 +1,19 @@
-<footer class="footer footer-horizontal bg-neutral text-neutral-content p-3 sm:p-4">
-  <aside class="grid-flow-col items-center gap-2 sm:gap-3">
+<footer
+  class="footer footer-horizontal bg-base-100/60 backdrop-blur border-t border-base-300/30 p-2 text-xs text-base-content/90"
+>
+  <aside class="grid-flow-col items-center gap-2">
     <shared-icon
       type="copyright"
       size="xl"
     />
-    <div class="flex flex-col text-xs sm:text-sm leading-tight">
-      <span>Copyright <span class="text-primary font-bold">Veraz</span> © {{ currentYear }}</span>
-      <span>All right reserved</span>
-    </div>
+    <span>© {{ currentYear }} <span class="text-primary font-medium">Veraz</span>. All rights reserved.</span>
   </aside>
-  <nav class="grid-flow-col gap-2 sm:gap-4 place-self-end">
+  <nav class="grid-flow-col gap-2 place-self-end">
     <a
       href="https://www.linkedin.com/in/juanmavelezpa/"
       target="_blank"
       rel="noopener noreferrer"
-      class="hover:text-primary transition-colors duration-200 p-1"
-      title="Follow me on LinkedIn"
+      class="btn btn-ghost btn-xs"
     >
       <shared-icon
         type="linkedin"

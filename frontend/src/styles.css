@@ -11,6 +11,22 @@
   --animation-fadeIn: fadeIn 0.5s ease-in-out;
 }
 
+/* Global styles to prevent double scroll */
+html, body {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure proper layout structure */
+#root {
+  height: 100%;
+}
+
 @keyframes fadeIn {
   0% {
     opacity: 0;

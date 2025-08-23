@@ -32,7 +32,8 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 @Transactional
-public class EmployeeService implements ServiceInterface<Employee, UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
+public class EmployeeService implements
+        ServiceInterface<Employee, UUID, EmployeeCreateRequestDTO, EmployeeUpdateRequestDTO, EmployeeResponseDTO> {
 
     private final EmployeeRepository employeeRepository;
     private final PersonRepository personRepository;
@@ -65,7 +66,6 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     @Transactional(readOnly = true)
     public Optional<EmployeeResponseDTO> findById(UUID id) {
         return employeeRepository.findById(id)
-                .filter(Employee::getIsActive)
                 .map(employeeMapper::toResponseDTO);
     }
 
@@ -73,16 +73,12 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     public EmployeeResponseDTO create(EmployeeCreateRequestDTO createRequest) {
         // Validate person exists
         Person person = personRepository.findById(createRequest.getPersonId())
-                .orElseThrow(() -> new ResourceNotFoundException("Person not found with ID: " + createRequest.getPersonId()));
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Person not found with ID: " + createRequest.getPersonId()));
 
         // Check if person is already an employee
         if (employeeRepository.existsByPersonId(createRequest.getPersonId())) {
             throw new DataConflictException("Person is already an employee");
-        }
-
-        // Check if employee code already exists
-        if (employeeRepository.existsByEmployeeCode(createRequest.getEmployeeCode())) {
-            throw new DataConflictException("Employee code already exists: " + createRequest.getEmployeeCode());
         }
 
         Employee employee = employeeMapper.toEntity(createRequest, person);
@@ -94,15 +90,7 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     @Override
     public EmployeeResponseDTO update(UUID id, EmployeeUpdateRequestDTO updateRequest) {
         Employee employee = employeeRepository.findById(id)
-                .filter(Employee::getIsActive)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + id));
-
-        // Check if employee code is being changed and if it already exists
-        if (updateRequest.getEmployeeCode() != null &&
-                !updateRequest.getEmployeeCode().equals(employee.getEmployeeCode()) &&
-                employeeRepository.existsByEmployeeCode(updateRequest.getEmployeeCode())) {
-            throw new DataConflictException("Employee code already exists: " + updateRequest.getEmployeeCode());
-        }
 
         Employee updatedEmployee = employeeMapper.updateEntity(employee, updateRequest);
         Employee savedEmployee = employeeRepository.save(updatedEmployee);
@@ -112,25 +100,16 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
 
     @Override
     public void deleteById(UUID id) {
-        Employee employee = employeeRepository.findById(id)
-                .filter(Employee::getIsActive)
+        Employee employee = employeeRepository.findByIdWithPerson(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + id));
 
-        employee.setIsActive(false);
-        employeeRepository.save(employee);
-    }
+        // Verificar si el empleado tiene una persona asociada
+        if (employee.getPerson() != null) {
+            throw new DataConflictException(
+                    "Cannot delete employee with associated person. Remove person association first.");
+        }
 
-    /**
-     * Find employee by employee code
-     * 
-     * @param employeeCode employee code
-     * @return Optional containing employee if found
-     */
-    @Transactional(readOnly = true)
-    public Optional<EmployeeResponseDTO> findByEmployeeCode(String employeeCode) {
-        return employeeRepository.findByEmployeeCode(employeeCode)
-                .filter(Employee::getIsActive)
-                .map(employeeMapper::toResponseDTO);
+        employeeRepository.delete(employee);
     }
 
     /**
@@ -142,7 +121,6 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
     @Transactional(readOnly = true)
     public Optional<EmployeeResponseDTO> findByPersonId(UUID personId) {
         return employeeRepository.findByPersonId(personId)
-                .filter(Employee::getIsActive)
                 .map(employeeMapper::toResponseDTO);
     }
 
@@ -261,5 +239,44 @@ public class EmployeeService implements ServiceInterface<Employee, UUID, Employe
                         .build())
                 .build();
     }
-}
 
+    /**
+     * Removes person association from an employee
+     * 
+     * @param employeeId The employee ID to remove person association from
+     * @return EmployeeResponseDTO of the updated employee
+     * @throws ResourceNotFoundException if employee not found
+     */
+    @Transactional
+    public EmployeeResponseDTO removePersonAssociation(UUID employeeId) {
+        Employee employee = employeeRepository.findByIdWithPerson(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
+
+        employee.setPerson(null);
+        employeeRepository.save(employee);
+
+        return employeeMapper.toResponseDTO(employee);
+    }
+
+    /**
+     * Associates a person with an employee
+     * 
+     * @param employeeId The employee ID to associate with
+     * @param personId   The person ID to associate
+     * @return EmployeeResponseDTO of the updated employee
+     * @throws ResourceNotFoundException if employee or person not found
+     */
+    @Transactional
+    public EmployeeResponseDTO associatePerson(UUID employeeId, UUID personId) {
+        Employee employee = employeeRepository.findByIdWithPerson(employeeId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found with ID: " + employeeId));
+
+        Person person = personRepository.findById(personId)
+                .orElseThrow(() -> new ResourceNotFoundException("Person not found with ID: " + personId));
+
+        employee.setPerson(person);
+        employeeRepository.save(employee);
+
+        return employeeMapper.toResponseDTO(employee);
+    }
+}

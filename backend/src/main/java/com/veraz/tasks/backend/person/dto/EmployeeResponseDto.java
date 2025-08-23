@@ -13,7 +13,7 @@ import lombok.Setter;
 
 /**
  * DTO for employee responses
- * Contains all employee information for API responses
+ * Contains all employment information for API responses
  */
 @Getter
 @Setter
@@ -23,7 +23,6 @@ import lombok.Setter;
 public class EmployeeResponseDTO {
     private UUID id;
     private UUID personId;
-    private String employeeCode;
     private String position;
     private String department;
     private String employmentType;

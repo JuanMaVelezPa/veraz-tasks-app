@@ -139,28 +139,6 @@ public class EmployeeController
                 null, null));
     }
 
-    @GetMapping("/code/{employeeCode}")
-    @Operation(summary = "Get employee by code", description = "Admin/Manager/Supervisor access OR resource ownership")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "403", description = "Forbidden"),
-            @ApiResponse(responseCode = "404", description = "Not found")
-    })
-    @PreAuthorize("@permissionService.canReadResources()")
-    public ResponseEntity<ApiResponseDTO<EmployeeResponseDTO>> findByEmployeeCode(@PathVariable String employeeCode) {
-        Optional<EmployeeResponseDTO> response = employeeService.findByEmployeeCode(employeeCode);
-
-        if (response.isPresent()) {
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Employee"),
-                    response.get(), null));
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
-                            MessageUtils.getEntityNotFound("Employee"), null, null));
-        }
-    }
-
     @GetMapping("/by-person/{personId}")
     @Operation(summary = "Get employee by person ID", description = "Admin/Manager/Supervisor access OR person ownership")
     @ApiResponses(value = {

@@ -45,6 +45,7 @@ public class PersonMapper {
                 .isActive(person.getIsActive())
                 .createdAt(person.getCreatedAt())
                 .updatedAt(person.getUpdatedAt())
+                .isEmployee(person.getEmployee() != null)
                 .build();
     }
 

@@ -1,27 +1,24 @@
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '@auth/services/auth.service';
 import { ProfileService } from '@profile/services/profile.service';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
-import { FormUtilsService } from '@shared/services/form-utils.service';
-import { PasswordUtilsService } from '@shared/services/password-utils.service';
+import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
 
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
 import { PersonFormComponent } from '@person/components/person-form/person-form.component';
-import { PersonInfoCardComponent } from '@person/components/person-info-card/person-info-card.component';
+import { EmployeeFormComponent } from '@employee/components/employee-form/employee-form.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
-import { firstValueFrom, catchError, tap } from 'rxjs';
+import { Employee } from '@employee/interfaces/employee.interface';
+import { firstValueFrom, catchError } from 'rxjs';
 
-/**
- * Component for managing user profile information.
- */
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -32,7 +29,7 @@ import { firstValueFrom, catchError, tap } from 'rxjs';
     LoadingComponent,
     UserFormComponent,
     PersonFormComponent,
-    PersonInfoCardComponent,
+    EmployeeFormComponent,
     IconComponent
   ],
   templateUrl: './profile-page.component.html'
@@ -41,61 +38,24 @@ export class ProfilePageComponent implements OnInit {
   private authService = inject(AuthService);
   private profileService = inject(ProfileService);
   private feedbackService = inject(FeedbackMessageService);
-  private formUtils = inject(FormUtilsService);
-  private passwordUtils = inject(PasswordUtilsService);
+  private formBuilders = inject(FormBuildersManagerService);
   private httpErrorService = inject(HttpErrorService);
 
-  private fb = inject(FormBuilder);
   private router = inject(Router);
 
   // Signals
   currentUser = signal<User | null>(null);
   personalProfile = signal<Person | null>(null);
+  employmentProfile = signal<Employee | null>(null);
   isLoadingUser = signal(false);
   isLoadingPerson = signal(false);
-  activeTab = signal<'user' | 'person'>('user');
+  isLoadingEmployment = signal(false);
+  activeTab = signal<'user' | 'person' | 'employment'>('user');
 
   // Forms
-  userForm = this.fb.nonNullable.group({
-    username: ['', [
-      Validators.required,
-      this.formUtils.usernameValidator
-    ]],
-    email: ['', [
-      Validators.required,
-      Validators.pattern(FormUtilsService.emailPattern),
-    ]],
-    password: ['', [
-      this.passwordUtils.passwordValidator
-    ]],
-    confirmPassword: ['', [
-      this.passwordUtils.passwordValidator
-    ]],
-    isActive: [true],
-    selectedRole: ['' as string, [Validators.required]],
-  }, {
-    validators: [
-      FormUtilsService.isFieldOneEqualFieldTwo('password', 'confirmPassword')
-    ]
-  });
-
-  personForm = this.fb.nonNullable.group({
-    identType: ['', [Validators.required]],
-    identNumber: ['', [Validators.required, Validators.minLength(3)]],
-    firstName: ['', [Validators.required, Validators.minLength(2)]],
-    lastName: ['', [Validators.required, Validators.minLength(2)]],
-    birthDate: [''],
-    gender: [''],
-    nationality: [''],
-    mobile: [''],
-    email: ['', [Validators.pattern(FormUtilsService.emailPattern)]],
-    address: [''],
-    city: [''],
-    country: [''],
-    postalCode: [''],
-    notes: [''],
-    isActive: [true]
-  });
+  userForm = this.formBuilders.buildUserForm({ includePasswordValidation: true });
+  personForm = this.formBuilders.buildPersonForm();
+  employmentForm = this.formBuilders.buildEmployeeForm();
 
   ngOnInit() {
     this.feedbackService.clearMessage();
@@ -139,6 +99,8 @@ export class ProfilePageComponent implements OnInit {
       this.personalProfile.set(person);
       if (person) {
         this.setPersonFormValues(person);
+        // Load employment info if person exists
+        this.loadEmploymentProfile(person.id);
       }
     } catch (error: any) {
       this.personalProfile.set(null);
@@ -148,37 +110,43 @@ export class ProfilePageComponent implements OnInit {
     }
   }
 
-  private setUserFormValues(user: User) {
-    const selectedRole = user.roles && user.roles.length > 0 ? user.roles[0] : '';
+  private async loadEmploymentProfile(personId: string) {
+    if (!personId) return;
 
-    this.userForm.patchValue({
-      username: user.username || '',
-      email: user.email || '',
+    this.isLoadingEmployment.set(true);
+    try {
+      const employee = await firstValueFrom(
+        this.profileService.getMyEmployee()
+      );
+      this.employmentProfile.set(employee);
+      if (employee) {
+        this.setEmploymentFormValues(employee);
+      }
+    } catch (error: any) {
+      this.employmentProfile.set(null);
+      // Don't show error for employment as it's optional
+    } finally {
+      this.isLoadingEmployment.set(false);
+    }
+  }
+
+  private setUserFormValues(user: User) {
+    const userData = {
+      ...user,
+      selectedRole: user.roles && user.roles.length > 0 ? user.roles[0] : '',
       password: '',
-      confirmPassword: '',
-      isActive: user.isActive ?? true,
-      selectedRole: selectedRole,
-    });
+      confirmPassword: ''
+    };
+
+    this.formBuilders.patchForm(this.userForm, userData);
   }
 
   private setPersonFormValues(person: Person) {
-    this.personForm.patchValue({
-      firstName: person.firstName || '',
-      lastName: person.lastName || '',
-      identNumber: person.identNumber || '',
-      identType: person.identType || '',
-      email: person.email || '',
-      mobile: person.mobile || '',
-      address: person.address || '',
-      city: person.city || '',
-      country: person.country || '',
-      postalCode: person.postalCode || '',
-      birthDate: person.birthDate ? new Date(person.birthDate).toISOString().split('T')[0] : '',
-      gender: person.gender || '',
-      nationality: person.nationality || '',
-      notes: person.notes || '',
-      isActive: person.isActive ?? true
-    });
+    this.formBuilders.patchForm(this.personForm, person);
+  }
+
+  private setEmploymentFormValues(employee: Employee) {
+    this.formBuilders.patchForm(this.employmentForm, employee);
   }
 
   async onUserFormSubmitted() {
@@ -203,7 +171,10 @@ export class ProfilePageComponent implements OnInit {
 
   private async updateUser(): Promise<void> {
     const formValue = this.userForm.value;
-    const changes = this.detectUserChanges(formValue, this.currentUser()!);
+    const changes = this.formBuilders.detectUserChanges(formValue, this.currentUser()!, {
+      includeRoles: false, // Profile mode doesn't allow role changes
+      includePassword: true
+    });
 
     if (Object.keys(changes).length === 0) {
       this.feedbackService.showWarning('No changes detected. Nothing to save.');
@@ -239,7 +210,7 @@ export class ProfilePageComponent implements OnInit {
 
     try {
       const formValue = this.personForm.value;
-      const formData = this.preparePersonFormData(formValue);
+      const formData = this.formBuilders.preparePersonFormData(formValue);
 
       if (this.personalProfile()) {
         // Update existing person
@@ -253,13 +224,15 @@ export class ProfilePageComponent implements OnInit {
         this.feedbackService.showSuccess('Personal information updated successfully!');
       } else {
         // Create new person
-        if (!this.validateRequiredPersonFields(formData)) {
+        const validation = this.formBuilders.validateRequiredPersonFields(formData);
+        if (!validation.isValid) {
+          this.feedbackService.showError(`Please fill in all required fields: ${validation.missingFields.join(', ')}`);
           return;
         }
 
         const newPerson = await firstValueFrom(
           this.profileService.createMyProfile(formData).pipe(
-            catchError(error => this.httpErrorService.handleError(error, 'creating personal informationq'))
+            catchError(error => this.httpErrorService.handleError(error, 'creating personal information'))
           )
         );
         this.personalProfile.set(newPerson);
@@ -294,102 +267,68 @@ export class ProfilePageComponent implements OnInit {
     this.feedbackService.showSuccess('Personal information created successfully!');
   }
 
-  setActiveTab(tab: 'user' | 'person') {
+  async onEmploymentFormSubmitted() {
+    if (this.employmentForm.invalid) {
+      this.employmentForm.markAllAsTouched();
+      this.feedbackService.showError('Please fix the validation errors before saving.');
+      return;
+    }
+
+    this.isLoadingEmployment.set(true);
+
+    try {
+      const formValue = this.employmentForm.value;
+      const formData = this.formBuilders.prepareEmployeeFormData(formValue);
+
+      if (this.employmentProfile()) {
+        // Update existing employee
+        const updatedEmployee = await firstValueFrom(
+          this.profileService.updateMyEmployee(formData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'updating employment information'))
+          )
+        );
+        this.employmentProfile.set(updatedEmployee);
+        this.setEmploymentFormValues(updatedEmployee);
+        this.feedbackService.showSuccess('Employment information updated successfully!');
+      } else {
+        // Create new employee
+        const person = this.personalProfile();
+        if (!person) {
+          this.feedbackService.showError('Personal information must be completed first.');
+          return;
+        }
+
+        const employeeData = { ...formData, personId: person.id };
+        const newEmployee = await firstValueFrom(
+          this.profileService.createMyEmployee(employeeData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'creating employment information'))
+          )
+        );
+        this.employmentProfile.set(newEmployee);
+        this.setEmploymentFormValues(newEmployee);
+        this.feedbackService.showSuccess('Employment information created successfully!');
+      }
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while saving employment information.');
+      // Reset form to original values after error
+      if (this.employmentProfile()) {
+        this.setEmploymentFormValues(this.employmentProfile()!);
+      }
+    } finally {
+      this.isLoadingEmployment.set(false);
+    }
+  }
+
+  setActiveTab(tab: 'user' | 'person' | 'employment') {
     this.activeTab.set(tab);
 
-    // Clear person form when switching to person tab and no personal profile exists
     if (tab === 'person' && !this.personalProfile()) {
-      this.personForm.reset({
-        firstName: '',
-        lastName: '',
-        identNumber: '',
-        identType: '',
-        email: '',
-        mobile: '',
-        address: '',
-        city: '',
-        country: '',
-        postalCode: '',
-        birthDate: '',
-        gender: '',
-        nationality: '',
-        notes: '',
-        isActive: true
-      });
+      this.formBuilders.resetForm(this.personForm);
+    }
+
+    if (tab === 'employment' && !this.employmentProfile()) {
+      this.formBuilders.resetForm(this.employmentForm);
     }
   }
-
-  private detectUserChanges(formValue: any, originalUser: User): any {
-    const changes: any = {};
-
-    const compareStrings = (original: string | undefined, newValue: string | undefined) => {
-      return (original?.trim() || '') !== (newValue?.trim() || '');
-    };
-
-    // Check username changes
-    if (compareStrings(originalUser.username, formValue.username)) {
-      changes.username = formValue.username?.trim().toLowerCase();
-    }
-
-    // Check email changes
-    if (compareStrings(originalUser.email, formValue.email)) {
-      changes.email = formValue.email?.trim().toLowerCase();
-    }
-
-    // Check isActive changes
-    if (formValue.isActive !== originalUser.isActive) {
-      changes.isActive = formValue.isActive;
-    }
-
-    // Note: Role changes are not allowed in profile mode
-    // Only admins can change roles through the admin interface
-
-    // Check password changes (only if provided)
-    if (formValue.password?.trim()) {
-      changes.password = formValue.password.trim();
-    }
-
-    return changes;
-  }
-
-  private preparePersonFormData(formValue: any): any {
-    const formData: any = {};
-
-    // Only include fields that have values
-    if (formValue.identType?.trim()) formData.identType = formValue.identType.trim();
-    if (formValue.identNumber?.trim()) formData.identNumber = formValue.identNumber.trim();
-    if (formValue.firstName?.trim()) formData.firstName = formValue.firstName.trim();
-    if (formValue.lastName?.trim()) formData.lastName = formValue.lastName.trim();
-    if (formValue.birthDate?.trim()) formData.birthDate = formValue.birthDate;
-    if (formValue.gender?.trim()) formData.gender = formValue.gender.trim();
-    if (formValue.nationality?.trim()) formData.nationality = formValue.nationality.trim();
-    if (formValue.mobile?.trim()) formData.mobile = formValue.mobile.trim();
-    if (formValue.email?.trim()) formData.email = formValue.email.trim();
-    if (formValue.address?.trim()) formData.address = formValue.address.trim();
-    if (formValue.city?.trim()) formData.city = formValue.city.trim();
-    if (formValue.country?.trim()) formData.country = formValue.country.trim();
-    if (formValue.postalCode?.trim()) formData.postalCode = formValue.postalCode.trim();
-    if (formValue.notes?.trim()) formData.notes = formValue.notes.trim();
-
-    // Always include isActive
-    formData.isActive = formValue.isActive ?? true;
-
-    return formData;
-  }
-
-  private validateRequiredPersonFields(formData: any): boolean {
-    const requiredFields = ['identType', 'identNumber', 'firstName', 'lastName'];
-    const missingFields = requiredFields.filter(field => !formData[field] || !formData[field].trim());
-
-    if (missingFields.length > 0) {
-      this.feedbackService.showError(`Please fill in all required fields: ${missingFields.join(', ')}`);
-      return false;
-    }
-
-    return true;
-  }
-
-
-
 
 }

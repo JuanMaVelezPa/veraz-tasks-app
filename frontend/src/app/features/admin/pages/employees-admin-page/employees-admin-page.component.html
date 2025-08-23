@@ -23,8 +23,19 @@
         <shared-icon type="back" />
       </button>
       }
+
+      <button
+        class="btn btn-primary btn-sm"
+        (click)="createNewEmployee()"
+      >
+        <shared-icon type="add" />
+        @if (isSelectionMode()) {
+        New Employee & Link
+        } @else {
+        New Employee
+        }
+      </button>
     </div>
   </div>
 
-  <app-employee-table />
 </div>

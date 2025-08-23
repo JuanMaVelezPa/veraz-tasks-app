@@ -20,17 +20,32 @@
       />
     </div>
 
-    <!-- Name Order Toggle -->
-    <div class="form-control w-full lg:w-auto">
-      <label class="label cursor-pointer gap-3 justify-start lg:justify-end">
-        <span class="label-text text-sm font-medium">Last Name First</span>
-        <input
-          type="checkbox"
-          class="toggle toggle-primary toggle-sm"
-          [checked]="showLastNameFirst()"
-          (change)="toggleNameOrder()"
-        />
-      </label>
+    <div class="flex gap-3 items-center">
+      <!-- Employee Filter Toggle -->
+      <div class="form-control w-auto">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <span class="label-text text-sm font-medium">Employees Only</span>
+          <input
+            type="checkbox"
+            class="toggle toggle-secondary toggle-sm"
+            [checked]="showOnlyEmployees()"
+            (change)="toggleEmployeeFilter()"
+          />
+        </label>
+      </div>
+
+      <!-- Name Order Toggle -->
+      <div class="form-control w-auto">
+        <label class="label cursor-pointer gap-3 justify-start">
+          <span class="label-text text-sm font-medium">Last Name First</span>
+          <input
+            type="checkbox"
+            class="toggle toggle-primary toggle-sm"
+            [checked]="showLastNameFirst()"
+            (change)="toggleNameOrder()"
+          />
+        </label>
+      </div>
     </div>
   </div>
 
@@ -63,8 +78,8 @@
             }
           </tr>
         </thead>
-        <tbody>
-          @for (person of personsResource.value()?.data ?? []; track person.id; let i = $index) {
+                 <tbody>
+           @for (person of filteredPersons(); track person.id; let i = $index) {
           <tr class="table-body-row">
             <td class="table-cell">
               <div class="flex items-center gap-3">
@@ -78,35 +93,22 @@
                 </div>
               </div>
             </td>
-            <td class="table-cell">{{ getIdentificationTypeName(person.identType) }} - {{ person.identNumber }}</td>
+            <td class="table-cell">{{ getIdentificationTypeCode(person.identType) }} - {{ person.identNumber }}</td>
             <td class="table-cell">{{ person.email }}</td>
             <td class="table-cell">{{ person.mobile }}</td>
             <td class="table-cell">{{ person.city }}</td>
-            <td class="table-cell">{{ person.createdAt | date:'dd/MM/yyyy' }}</td>
             <td class="table-cell">
-              <div class="flex flex-col gap-1.5">
-                <!-- Status Badge -->
-                <span
-                  class="status-badge"
-                  [class]="person.isActive ? 'status-badge-success' : 'status-badge-error'"
-                >
-                  <shared-icon type="check" />
-                  {{ person.isActive ? 'Active' : 'Inactive' }}
-                </span>
-
-                <!-- Profile Status -->
-                @if (person.userId) {
-                <span class="status-badge status-badge-info">
-                  <shared-icon type="users" />
-                  Profile
-                </span>
-                } @else {
-                <span class="status-badge status-badge-ghost">
-                  <shared-icon type="users" />
-                  No Profile
-                </span>
-                }
-              </div>
+              <span class="status-badge" [class]="getPersonTypeClass(person)">
+                {{ getPersonType(person) }}
+              </span>
+            </td>
+            <td class="table-cell">
+              <span
+                class="status-badge"
+                [class]="person.isActive ? 'status-badge-success' : 'status-badge-error'"
+              >
+                {{ person.isActive ? 'Active' : 'Inactive' }}
+              </span>
             </td>
             <td class="table-cell">
               @if (isSelectionMode()) {
@@ -156,9 +158,9 @@
   </div>
   }
 
-  <shared-pagination
-    [totalPages]="personsResource.value()?.pagination?.totalPages ?? 0"
-    [totalItems]="personsResource.value()?.pagination?.totalElements ?? 0"
-    [itemsPerPage]="personsPerPage()"
-  />
+     <shared-pagination
+     [totalPages]="personsResource.value()?.pagination?.totalPages ?? 0"
+     [totalItems]="filteredPersons().length"
+     [itemsPerPage]="personsPerPage()"
+   />
 </div>

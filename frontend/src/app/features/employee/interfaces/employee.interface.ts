@@ -2,7 +2,6 @@ import { Timestamped } from '@shared/interfaces/timestamped.interface';
 
 export interface EmployeeFields {
   personId: string;
-  employeeCode: string;
   position: string;
   department?: string;
   employmentType: string;

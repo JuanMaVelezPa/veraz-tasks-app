@@ -148,5 +148,5 @@ WHERE tablename LIKE 'GE_%' OR tablename LIKE 'CL_%';
 - **GE_TROPE**: Role-permission assignments
 
 ### Business Tables
-- **GE_TEMPL**: Employee information
+- **GE_TEMPL**: Employment information
 - **CL_TCLIE**: Client information 

@@ -51,7 +51,7 @@ export class UserService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'users')),
         tap(response => this.cacheService.set(cacheKey, response)),
-        catchError(() => of(emptyPagination))
+        catchError((error) => this.handleError(error, 'getting users'))
       );
   }
 
@@ -69,7 +69,7 @@ export class UserService {
       .pipe(
         map((apiResponse) => this.handleSuccess(apiResponse, 'user')),
         tap((user) => this.cacheService.set(cacheKey, user)),
-        catchError(() => of(emptyUser))
+        catchError((error) => this.handleError(error, 'getting user'))
       );
   }
 
@@ -115,17 +115,17 @@ export class UserService {
     if (!apiResponse.success) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
-    
+
     // For delete operations, data can be null/undefined, which is valid
     if (type === 'boolean' || type === 'void') {
       return true; // Return true for successful delete operations
     }
-    
+
     // For other operations, data should exist
     if (!apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
-    
+
     return apiResponse.data;
   }
 

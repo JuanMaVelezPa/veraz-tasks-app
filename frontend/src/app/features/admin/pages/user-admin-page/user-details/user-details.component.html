@@ -33,46 +33,17 @@
     </div>
   </div>
 
-  <!-- Main Content Grid -->
-  <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-    <!-- User Form Section -->
-    <div class="lg:col-span-3">
-      <div class="card bg-base-100 shadow-lg">
-        <div class="card-body p-6">
-          <app-user-form
-            [userForm]="userForm"
-            [user]="user()"
-            [isEditMode]="isEditMode()"
-            [isLoading]="isLoading()"
-            (formSubmitted)="onSubmit()"
-            (roleSelected)="onRoleSelected($event)"
-          />
-        </div>
-      </div>
-    </div>
-
-    <!-- Sidebar Information -->
-    <div class="lg:col-span-1 space-y-6">
-      <!-- Personal Information -->
-      @if (isEditMode()) {
-      <div class="mb-2">
-        <app-person-info-card
-          [person]="personalProfile()"
-          [isLoading]="isLoadingPerson()"
-          title="Personal Information"
-          buttonText="Manage Information"
-          (actionClicked)="goToPersonManagement()"
-        />
-      </div>
-      }
-
-      <!-- Account Information -->
-      @if (isEditMode() && user()) {
-      <shared-timestamp-info
-        [entity]="user()"
-        title="Account Information"
+  <!-- Main Content - Full Width -->
+  <div class="card bg-base-100 shadow-lg">
+    <div class="card-body p-6">
+      <app-user-form
+        [userForm]="userForm"
+        [user]="user()"
+        [isEditMode]="isEditMode()"
+        [isLoading]="isLoading()"
+        (formSubmitted)="onSubmit()"
+        (roleSelected)="onRoleSelected($event)"
       />
-      }
     </div>
   </div>
 

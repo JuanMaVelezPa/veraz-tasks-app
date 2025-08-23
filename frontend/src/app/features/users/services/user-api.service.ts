@@ -7,9 +7,6 @@ import { SearchOptions } from '@shared/interfaces/search.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 
-/**
- * Service for User API endpoints.
- */
 @Injectable({
   providedIn: 'root'
 })

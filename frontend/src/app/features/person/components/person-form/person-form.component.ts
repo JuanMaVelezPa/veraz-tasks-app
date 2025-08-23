@@ -36,9 +36,9 @@ export class PersonFormComponent {
     this.formSubmitted.emit();
   }
 
-  getIdentificationTypeName(code: string): string {
-    const type = this.identificationTypes().find(t => t.code === code);
-    return type ? type.name : code;
+  getIdentificationTypeName(code: string | undefined): string {
+    if (!code) return '';
+    return this.identificationTypes().find(t => t.code === code)?.name || code;
   }
 
 }

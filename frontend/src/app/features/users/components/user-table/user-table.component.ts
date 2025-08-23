@@ -68,15 +68,13 @@ export class UserTableComponent {
 
   handleSort = (field: string): void => {
     this.sortState.handleSort(field, this.columns);
-    this.resetToFirstPage();
+    if (this.currentPage() !== 1) {
+      this.pagination.goToFirst();
+    }
   };
 
   handleSearch = (term: string): void => {
     this.searchState.setSearchTerm(term);
-    this.resetToFirstPage();
-  };
-
-  private resetToFirstPage = (): void => {
     if (this.currentPage() !== 1) {
       this.pagination.goToFirst();
     }

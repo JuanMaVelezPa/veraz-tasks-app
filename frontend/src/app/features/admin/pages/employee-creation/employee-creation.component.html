@@ -1,0 +1,252 @@
+<div class="max-w-6xl mx-auto p-4">
+  <shared-feedback-message></shared-feedback-message>
+
+  <!-- Header -->
+  <div class="bg-base-100 rounded-lg shadow-sm p-4 mb-4">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+          <shared-icon type="user-tie" />
+        </div>
+        <div>
+          <h1 class="text-xl font-bold">Create New Employee</h1>
+          <p class="text-sm text-base-content/70">Step by step process</p>
+        </div>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="flex-1 max-w-md">
+        <ul class="steps steps-horizontal w-full">
+          @for (step of steps; track step.id) {
+          <li
+            class="step transition-all duration-200"
+            [class]="step.current ? 'step-primary cursor-pointer' :
+                     step.completed ? 'step-success cursor-pointer' :
+                     canGoToStep(step.id) ? 'cursor-pointer hover:step-primary' :
+                     'cursor-not-allowed opacity-50'"
+            (click)="canGoToStep(step.id) ? goToStep(step.id) : null"
+          >
+            {{ step.title }}
+          </li>
+          }
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Current Step Content -->
+<div class="bg-base-100 rounded-lg shadow-sm">
+  <!-- Step Header -->
+  <div class="border-b border-base-300 p-4">
+    <h2 class="text-lg font-bold">{{ getCurrentStepTitle() }}</h2>
+  </div>
+
+  <!-- Step Content -->
+  <div class="p-4">
+    @if (isLoading()) {
+    <shared-loading />
+    } @else {
+
+    <!-- Step 1: Personal Information -->
+    @if (currentStep() === 1) {
+    <div class="space-y-6">
+      <app-person-form
+        [personForm]="personForm"
+        [person]="null"
+        [isEditMode]="false"
+        [isLoading]="isLoading()"
+        (formSubmitted)="onPersonFormSubmitted()"
+        (personUpdated)="onPersonUpdated($event)"
+        (personCreated)="onPersonCreated($event)"
+      />
+    </div>
+    }
+
+    <!-- Step 2: Employment Information -->
+    @if (currentStep() === 2) {
+    <div class="space-y-6">
+      @if (createdPerson()) {
+      <!-- Person Summary -->
+      <div class="alert alert-info">
+        <shared-icon type="info" />
+        <div>
+          <h3 class="font-bold">Personal Information Complete</h3>
+          <div class="text-sm">
+            <strong>{{ createdPerson()!.firstName }} {{ createdPerson()!.lastName }}</strong> -
+            {{ createdPerson()!.identType }}: {{ createdPerson()!.identNumber }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Employee Form -->
+      <app-employee-form
+        [employeeForm]="employeeForm"
+        [employee]="null"
+        [isEditMode]="false"
+        [isLoading]="isLoading()"
+        (formSubmitted)="onEmployeeFormSubmitted()"
+      />
+      } @else {
+      <div class="alert alert-error">
+        <shared-icon type="error" />
+        <div>
+          <h3 class="font-bold">Error</h3>
+          <div class="text-sm">Personal information is required before proceeding.</div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- Step 3: System Access (Optional) -->
+    @if (currentStep() === 3) {
+    <div class="space-y-6">
+      @if (createdEmployee()) {
+      <!-- Employee Summary -->
+      <div class="alert alert-success">
+        <shared-icon type="check" />
+        <div>
+          <h3 class="font-bold">Employment Information Complete</h3>
+        </div>
+      </div>
+
+      <!-- User Creation Choice -->
+      <div class="card bg-base-200">
+        <div class="card-body">
+          <h3 class="card-title">
+            <shared-icon type="settings" />
+            System Access
+          </h3>
+          <p class="text-base-content/70">
+            Would you like to create a user account for this employee?
+            This will allow them to access the system.
+          </p>
+
+          <div class="flex gap-4 mt-4">
+            <button
+              class="btn btn-primary"
+              (click)="showUserForm.set(true)"
+              [disabled]="showUserForm()"
+            >
+              <shared-icon type="settings" />
+              Create User Account
+            </button>
+            <button
+              class="btn btn-outline"
+              (click)="skipUserCreation()"
+            >
+              <shared-icon type="check" />
+              Skip User Creation
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Form (Conditional) -->
+      @if (showUserForm()) {
+      <div class="card bg-base-100 border border-base-300">
+        <div class="card-body">
+          <h3 class="card-title">
+            <shared-icon type="settings" />
+            User Account Details
+          </h3>
+          <app-user-form
+            [userForm]="userForm"
+            [user]="null"
+            [isEditMode]="false"
+            [isLoading]="isLoading()"
+            (formSubmitted)="onUserFormSubmitted()"
+            (roleSelected)="onRoleSelected($event)"
+          />
+        </div>
+      </div>
+      }
+      } @else {
+      <div class="alert alert-error">
+        <shared-icon type="error" />
+        <div>
+          <h3 class="font-bold">Error</h3>
+          <div class="text-sm">Employment information is required before proceeding.</div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+    }
+  </div>
+
+  <!-- Navigation Buttons -->
+  <div class="border-t border-base-300 p-3">
+    <div class="flex justify-between items-center">
+      <!-- Previous Button -->
+      <button
+        class="btn btn-circle btn-outline btn-sm"
+        (click)="previousStep()"
+        [disabled]="!canGoToPreviousStep()"
+        [class]="!canGoToPreviousStep() ? 'opacity-50 cursor-not-allowed' : 'hover:btn-primary'"
+        title="Previous Step"
+      >
+        <shared-icon
+          type="back"
+          size="xs"
+        />
+      </button>
+
+      <!-- Step Indicator -->
+      <div class="text-sm text-base-content/70">
+        Step {{ currentStep() }} of {{ steps.length }}
+      </div>
+
+      <!-- Next/Complete Button -->
+      <div class="flex gap-2">
+        @if (currentStep() <
+          3)
+          {
+          <button
+          class="btn btn-circle btn-primary btn-sm"
+          (click)="nextStep()"
+          [disabled]="!canProceedToNextStep()"
+          [class]="!canProceedToNextStep() ? 'opacity-50 cursor-not-allowed' : ''"
+          title="Next Step"
+        >
+          <shared-icon
+            type="forward"
+            size="xs"
+          />
+          </button>
+          } @else if (showUserForm()) {
+          <button
+            class="btn btn-circle btn-success btn-sm"
+            (click)="onUserFormSubmitted()"
+            [disabled]="userForm.invalid || isLoading()"
+            [class]="(userForm.invalid || isLoading()) ? 'opacity-50 cursor-not-allowed' : ''"
+            title="Create User & Complete"
+          >
+            @if (isLoading()) {
+            <div class="loading loading-spinner loading-xs"></div>
+            } @else {
+            <shared-icon
+              type="check"
+              size="xs"
+            />
+            }
+          </button>
+          } @else {
+          <button
+            class="btn btn-circle btn-success btn-sm"
+            (click)="skipUserCreation()"
+            [disabled]="isLoading()"
+            [class]="isLoading() ? 'opacity-50 cursor-not-allowed' : ''"
+            title="Complete Process"
+          >
+            <shared-icon
+              type="check"
+              size="xs"
+            />
+          </button>
+          }
+      </div>
+    </div>
+  </div>
+</div>

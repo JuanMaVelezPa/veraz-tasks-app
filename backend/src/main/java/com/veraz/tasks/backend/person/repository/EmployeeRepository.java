@@ -20,29 +20,22 @@ import com.veraz.tasks.backend.shared.repository.RepositoryInterface;
 public interface EmployeeRepository extends RepositoryInterface<Employee, UUID> {
 
     /**
-     * Find employee by employee code
-     * 
-     * @param employeeCode the employee code to search for
-     * @return Optional containing the employee if found
-     */
-    Optional<Employee> findByEmployeeCode(String employeeCode);
-
-    /**
      * Find employee by person ID
      * 
      * @param personId the person ID to search for
      * @return Optional containing the employee if found
      */
-    @Query("SELECT e FROM Employee e WHERE e.person.id = :personId AND e.isActive = true")
+    @Query("SELECT e FROM Employee e WHERE e.person.id = :personId")
     Optional<Employee> findByPersonId(@Param("personId") UUID personId);
 
     /**
-     * Check if employee exists by employee code
+     * Find employee by ID with person loaded
      * 
-     * @param employeeCode the employee code to check
-     * @return true if employee exists, false otherwise
+     * @param id the employee ID to search for
+     * @return Optional containing the employee with person if found
      */
-    boolean existsByEmployeeCode(String employeeCode);
+    @Query("SELECT e FROM Employee e LEFT JOIN FETCH e.person WHERE e.id = :id")
+    Optional<Employee> findByIdWithPerson(@Param("id") UUID id);
 
     /**
      * Check if employee exists by person ID
@@ -50,7 +43,7 @@ public interface EmployeeRepository extends RepositoryInterface<Employee, UUID> 
      * @param personId the person ID to check
      * @return true if employee exists, false otherwise
      */
-    @Query("SELECT COUNT(e) > 0 FROM Employee e WHERE e.person.id = :personId AND e.isActive = true")
+    @Query("SELECT COUNT(e) > 0 FROM Employee e WHERE e.person.id = :personId")
     boolean existsByPersonId(@Param("personId") UUID personId);
 
     /**
@@ -96,11 +89,8 @@ public interface EmployeeRepository extends RepositoryInterface<Employee, UUID> 
      * @return Page of employees matching the search criteria
      */
     @Query("SELECT e FROM Employee e " +
-            "WHERE e.isActive = true AND (" +
-            "LOWER(e.employeeCode) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(e.position) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
+            "WHERE LOWER(e.position) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
             "LOWER(e.department) LIKE LOWER(CONCAT('%', :search, '%')) OR " +
-            "LOWER(e.workEmail) LIKE LOWER(CONCAT('%', :search, '%')))")
+            "LOWER(e.workEmail) LIKE LOWER(CONCAT('%', :search, '%'))")
     Page<Employee> findBySearch(@Param("search") String search, Pageable pageable);
 }
-

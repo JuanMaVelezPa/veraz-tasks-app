@@ -7,9 +7,6 @@ import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { environment } from '@env/environment';
 
-/**
- * Service for Employee API endpoints.
- */
 @Injectable({
   providedIn: 'root'
 })

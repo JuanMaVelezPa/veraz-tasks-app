@@ -25,7 +25,6 @@ public class EmployeeMapper {
     public Employee toEntity(EmployeeCreateRequestDTO dto, Person person) {
         return Employee.builder()
                 .person(person)
-                .employeeCode(dto.getEmployeeCode())
                 .position(dto.getPosition())
                 .department(dto.getDepartment())
                 .employmentType(dto.getEmploymentType())
@@ -60,9 +59,6 @@ public class EmployeeMapper {
      * @return updated Employee entity
      */
     public Employee updateEntity(Employee entity, EmployeeUpdateRequestDTO dto) {
-        if (dto.getEmployeeCode() != null) {
-            entity.setEmployeeCode(dto.getEmployeeCode());
-        }
         if (dto.getPosition() != null) {
             entity.setPosition(dto.getPosition());
         }
@@ -149,7 +145,6 @@ public class EmployeeMapper {
         return EmployeeResponseDTO.builder()
                 .id(employee.getId())
                 .personId(employee.getPerson().getId())
-                .employeeCode(employee.getEmployeeCode())
                 .position(employee.getPosition())
                 .department(employee.getDepartment())
                 .employmentType(employee.getEmploymentType())

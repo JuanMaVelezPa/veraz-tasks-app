@@ -40,9 +40,6 @@ public class Employee {
     @JoinColumn(name = "empl_pers", referencedColumnName = "pers_pers")
     private Person person;
 
-    @Column(name = "empl_employee_code", nullable = false, length = 20, unique = true)
-    private String employeeCode;
-
     @Column(name = "empl_position", nullable = false, length = 100)
     private String position;
 
@@ -161,9 +158,6 @@ public class Employee {
         }
         if (this.department != null) {
             this.department = this.department.trim();
-        }
-        if (this.employeeCode != null) {
-            this.employeeCode = this.employeeCode.trim().toUpperCase();
         }
     }
 }

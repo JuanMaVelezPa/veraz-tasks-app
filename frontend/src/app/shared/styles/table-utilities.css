@@ -74,6 +74,10 @@
   @apply badge-ghost;
 }
 
+.status-badge-warning {
+  @apply badge-warning;
+}
+
 /* Action Buttons */
 .action-button {
   @apply btn btn-sm;

@@ -20,6 +20,7 @@ export interface PersonFields {
 
 export interface PersonWithUser extends PersonFields {
   userId?: string | null;
+  isEmployee?: boolean;
 }
 
 export interface Person extends PersonWithUser, Timestamped {

@@ -33,4 +33,7 @@ public class PersonResponseDTO {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    
+    // Employment status
+    private Boolean isEmployee;
 } 

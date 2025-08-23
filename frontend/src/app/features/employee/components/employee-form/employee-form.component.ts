@@ -18,6 +18,7 @@ export class EmployeeFormComponent implements OnInit {
   employee = input<Employee | null>(null);
   isEditMode = input<boolean>(false);
   isLoading = input<boolean>(false);
+  isReadOnly = input<boolean>(false);
 
   // Outputs
   formSubmitted = output<void>();

@@ -29,10 +29,6 @@ public class EmployeeCreateRequestDTO {
     private UUID personId;
 
     @NotBlank(message = "{validation.field.required}")
-    @Size(min = 3, max = 20, message = "{validation.field.size}")
-    private String employeeCode;
-
-    @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String position;
 

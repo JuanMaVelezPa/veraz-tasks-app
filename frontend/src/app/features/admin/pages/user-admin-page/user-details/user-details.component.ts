@@ -1,12 +1,11 @@
 import { Component, inject, input, signal, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '@users/services/user.service';
 import { PersonService } from '@person/services/person.service';
 import { Router } from '@angular/router';
-import { FormUtilsService } from '@shared/services/form-utils.service';
-import { PasswordUtilsService } from '@shared/services/password-utils.service';
+import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
@@ -14,29 +13,26 @@ import { FeedbackMessageService } from '@shared/services/feedback-message.servic
 import { NavigationHistoryService } from '@shared/services/navigation-history.service';
 import { PersonAssociationService } from '@person/services/person-association.service';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
-import { PersonInfoCardComponent } from '@person/components/person-info-card/person-info-card.component';
-import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
+
 import { AuthService } from '@auth/services/auth.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom, catchError } from 'rxjs';
 
 @Component({
   selector: 'user-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent, PersonInfoCardComponent, TimestampInfoComponent, IconComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent, IconComponent],
   templateUrl: './user-details.component.html',
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {
 
   user = input.required<User>();
 
-  fb = inject(FormBuilder);
+  formBuilders = inject(FormBuildersManagerService);
   router = inject(Router);
 
   userService = inject(UserService);
   personService = inject(PersonService);
 
-  formUtils = inject(FormUtilsService);
-  passwordUtils = inject(PasswordUtilsService);
   httpErrorService = inject(HttpErrorService);
   feedbackService = inject(FeedbackMessageService);
   navigationHistory = inject(NavigationHistoryService);
@@ -54,84 +50,34 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   personalProfile = signal<Person | null>(null);
   isLoadingPerson = signal(false);
 
-  userForm = this.fb.nonNullable.group({
-    username: ['', [
-      Validators.required,
-      this.formUtils.usernameValidator
-    ]],
-    email: ['', [
-      Validators.required,
-      Validators.pattern(FormUtilsService.emailPattern),
-    ]],
-    password: ['', [
-      // Validators.required,
-      this.passwordUtils.passwordValidator
-    ]],
-    confirmPassword: ['', [
-      // Validators.required,
-      this.passwordUtils.passwordValidator
-    ]],
-    isActive: [true],
-    selectedRole: ['' as string, [Validators.required]],
-  }, {
-    validators: [
-      FormUtilsService.isFieldOneEqualFieldTwo('password', 'confirmPassword')
-    ]
-  });
+  userForm = this.formBuilders.buildUserForm({ isEditMode: false });
 
   ngOnInit() {
     this.feedbackService.clearMessage();
     const user = this.user();
     this.currentUser.set(user);
-    this.setFormValues(user);
     this.isEditMode.set(user.id !== 'new');
 
-    // Set password validations based on mode
-    this.setPasswordValidations();
+    // Recreate form with correct edit mode
+    this.userForm = this.formBuilders.buildUserForm({
+      isEditMode: this.isEditMode()
+    });
 
-    // Load personal profile if user exists
+    this.setFormValues(user);
+    this.setPasswordValidations();
     if (user.id !== 'new') {
       this.loadPersonalProfile();
     }
   }
 
   private setFormValues(user: Partial<User>) {
-    const selectedRole = user.roles && user.roles.length > 0 ? user.roles[0] : '';
-
-    this.userForm.patchValue({
-      username: user.username || '',
-      email: user.email || '',
-      password: '',
-      confirmPassword: '',
-      isActive: user.isActive ?? true,
-      selectedRole: selectedRole,
-    });
-
+    this.formBuilders.patchForm(this.userForm, user);
     this.cdr.detectChanges();
   }
 
   private setPasswordValidations() {
-    const passwordControl = this.userForm.get('password');
-    const confirmPasswordControl = this.userForm.get('confirmPassword');
-
-    if (this.isEditMode()) {
-      // For edit mode: passwords are optional
-      passwordControl?.setValidators([this.passwordUtils.passwordValidator]);
-      confirmPasswordControl?.setValidators([this.passwordUtils.passwordValidator]);
-    } else {
-      // For create mode: passwords are required
-      passwordControl?.setValidators([
-        Validators.required,
-        this.passwordUtils.passwordValidator
-      ]);
-      confirmPasswordControl?.setValidators([
-        Validators.required,
-        this.passwordUtils.passwordValidator
-      ]);
-    }
-
-    passwordControl?.updateValueAndValidity();
-    confirmPasswordControl?.updateValueAndValidity();
+    // No need to recreate the form, just update password validations if needed
+    // The form is already built with the correct isEditMode in the constructor
   }
 
   async onSubmit() {
@@ -163,10 +109,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
   private async createUser() {
     const formValue = this.userForm.value;
     const userData = {
-      username: formValue.username?.trim().toLowerCase(),
-      email: formValue.email?.trim().toLowerCase(),
-      password: formValue.password,
-      isActive: formValue.isActive,
+      ...this.formBuilders.prepareUserFormData(formValue),
       roles: formValue.selectedRole ? [formValue.selectedRole] : []
     };
 
@@ -204,7 +147,10 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     }
 
     const formValue = this.userForm.value;
-    const changes = this.detectChanges(formValue, originalUser);
+    const changes = this.formBuilders.detectUserChanges(formValue, originalUser, {
+      includeRoles: true,
+      includePassword: true
+    });
 
     if (Object.keys(changes).length === 0) {
       this.feedbackService.showWarning('No changes detected. Nothing to save.');
@@ -236,8 +182,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
         // Reload personal profile if user data changed (username/email might affect profile)
         await this.loadPersonalProfile();
 
-        // Clear password fields
-        this.userForm.patchValue({
+        this.formBuilders.patchForm(this.userForm, {
           password: '',
           confirmPassword: ''
         });
@@ -305,46 +250,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   cancelDelete() {
     this.showDeleteModal.set(false);
-  }
-
-  private detectChanges(formValue: any, originalUser: User): any {
-    const changes: any = {};
-
-    const compareStrings = (original: string | undefined, newValue: string | undefined) => {
-      return (original?.trim() || '') !== (newValue?.trim() || '');
-    };
-
-    // Check username changes
-    if (compareStrings(originalUser.username, formValue.username)) {
-      changes.username = formValue.username?.trim().toLowerCase();
-    }
-
-    // Check email changes
-    if (compareStrings(originalUser.email, formValue.email)) {
-      changes.email = formValue.email?.trim().toLowerCase();
-    }
-
-    // Check isActive changes
-    if (formValue.isActive !== originalUser.isActive) {
-      changes.isActive = formValue.isActive;
-    }
-
-    // Check role changes - improved logic
-    const currentRoles = originalUser.roles || [];
-    const currentRole = currentRoles.length > 0 ? currentRoles[0] : '';
-    const newRole = formValue.selectedRole || '';
-
-    // Check if role has actually changed
-    if (newRole !== currentRole) {
-      changes.roles = newRole ? [newRole] : [];
-    }
-
-    // Check password changes (only if provided)
-    if (formValue.password?.trim()) {
-      changes.password = formValue.password.trim();
-    }
-
-    return changes;
   }
 
   goBack() {
@@ -426,7 +331,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLInputElement;
     const isActive = target.checked;
 
-    this.userForm.patchValue({
+    this.formBuilders.patchForm(this.userForm, {
       isActive: isActive
     });
   }

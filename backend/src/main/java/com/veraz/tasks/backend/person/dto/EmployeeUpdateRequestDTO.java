@@ -21,9 +21,6 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @Builder
 public class EmployeeUpdateRequestDTO {
-    
-    @Size(min = 3, max = 20, message = "{validation.field.size}")
-    private String employeeCode;
 
     @Size(min = 3, max = 100, message = "{validation.field.size}")
     private String position;
@@ -74,15 +71,14 @@ public class EmployeeUpdateRequestDTO {
     private String workShift;
 
     private String skills;
-    
+
     private String certifications;
-    
+
     private String education;
-    
+
     private String benefits;
-    
+
     private String notes;
 
     private Boolean isActive;
 }
-

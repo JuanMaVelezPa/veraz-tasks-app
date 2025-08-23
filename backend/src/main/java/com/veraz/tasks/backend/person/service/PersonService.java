@@ -45,7 +45,7 @@ public class PersonService {
 
     @Transactional(readOnly = true)
     public PaginatedResponseDTO<PersonResponseDTO> findAll(Pageable pageable) {
-        Page<Person> personPage = personRepository.findAll(pageable);
+        Page<Person> personPage = personRepository.findAllWithEmployee(pageable);
 
         List<PersonResponseDTO> personDtos = personPage.getContent().stream()
                 .map(PersonMapper::toDto)
@@ -79,7 +79,7 @@ public class PersonService {
 
     @Transactional(readOnly = true)
     public PaginatedResponseDTO<PersonResponseDTO> findBySearch(String query, Pageable pageable) {
-        Page<Person> personPage = personRepository.findByFirstNameOrLastNameOrEmailOrIdentNumberOrMobileContainingIgnoreCase(query, pageable);
+        Page<Person> personPage = personRepository.findBySearchWithEmployee(query, pageable);
 
         List<PersonResponseDTO> personDtos = personPage.getContent().stream()
                 .map(PersonMapper::toDto)

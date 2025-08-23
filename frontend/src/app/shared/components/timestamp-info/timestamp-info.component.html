@@ -1,43 +1,46 @@
 @if (hasData && entity) {
-<div class="card bg-base-100 shadow-lg">
-  <div class="card-body p-4">
-    <h3 class="font-semibold mb-3">{{ title }}</h3>
-    <div class="space-y-3">
-      @if (entity.createdAt) {
-      <div class="flex items-center justify-between">
-        <span class="text-sm text-base-content/70">Created</span>
+<div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm hover:shadow-md transition-shadow">
+  <!-- Header -->
+  <div class="flex items-center gap-3 mb-4">
+    @if (showIcons) {
+      <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+        <shared-icon type="clock" size="sm" class="text-primary" />
+      </div>
+    }
+    <h3 class="font-semibold text-base-content">{{ title }}</h3>
+  </div>
+
+  <!-- Timestamp Information -->
+  <div class="space-y-3">
+    @if (entity.createdAt) {
+      <div class="flex items-center justify-between p-3 bg-success/5 rounded-lg border border-success/20">
         <div class="flex items-center gap-2">
-          <span class="text-sm font-medium">{{ entity.createdAt | date:'dd/MM/yyyy' }}</span>
-          <span class="text-xs text-base-content/50">{{ entity.createdAt | date:'hh:mm a' }}</span>
-          @if (showIcon) {
-          <div class="w-6 h-6 bg-info/10 rounded-full flex items-center justify-center">
-            <shared-icon
-              type="info"
-              size="xs"
-            />
-          </div>
+          @if (showIcons) {
+            <shared-icon type="add" size="xs" class="text-success" />
           }
+                     <span class="text-sm font-medium text-base-content">Created</span>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-medium text-base-content">{{ formatDate(entity.createdAt) }}</div>
+          <div class="text-xs text-base-content/60">{{ formatTime(entity.createdAt) }}</div>
         </div>
       </div>
-      }
-      @if (entity.updatedAt) {
-      <div class="flex items-center justify-between">
-        <span class="text-sm text-base-content/70">Updated</span>
+    }
+
+    @if (entity.updatedAt) {
+      <div class="flex items-center justify-between p-3 bg-warning/5 rounded-lg border border-warning/20">
         <div class="flex items-center gap-2">
-          <span class="text-sm font-medium">{{ entity.updatedAt | date:'dd/MM/yyyy' }}</span>
-          <span class="text-xs text-base-content/50">{{ entity.updatedAt | date:'hh:mm a' }}</span>
-          @if (showIcon) {
-          <div class="w-6 h-6 bg-info/10 rounded-full flex items-center justify-center">
-            <shared-icon
-              type="sync"
-              size="xs"
-            />
-          </div>
+          @if (showIcons) {
+            <shared-icon type="edit" size="xs" class="text-warning" />
           }
+                     <span class="text-sm font-medium text-base-content">Updated</span>
+        </div>
+        <div class="text-right">
+          <div class="text-sm font-medium text-base-content">{{ formatDate(entity.updatedAt) }}</div>
+          <div class="text-xs text-base-content/60">{{ formatTime(entity.updatedAt) }}</div>
         </div>
       </div>
-      }
-    </div>
+    }
   </div>
 </div>
 }

@@ -10,7 +10,7 @@
 --
 -- OBJECT TYPE: TABLE
 -- OBJECT NAME: GE_TEMPL
--- DESCRIPTION: Stores employee information linked to persons and users
+-- DESCRIPTION: Stores employment information linked to persons
 --
 
 DROP TABLE IF EXISTS GE_TEMPL;
@@ -18,7 +18,6 @@ CREATE TABLE GE_TEMPL (
     -- Identificación básica
     empl_empl UUID DEFAULT GEN_RANDOM_UUID(),
     empl_pers UUID NOT NULL,
-    empl_employee_code VARCHAR(20) NOT NULL,
     
     -- Información laboral básica
     empl_position VARCHAR(100) NOT NULL,

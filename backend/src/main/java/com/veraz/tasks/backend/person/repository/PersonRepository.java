@@ -64,4 +64,21 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
     @Query("SELECT p FROM Person p LEFT JOIN FETCH p.user WHERE p.id = :id")
     Optional<Person> findByIdWithUser(@Param("id") UUID id);
 
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.employee WHERE p.id = :id")
+    Optional<Person> findByIdWithEmployee(@Param("id") UUID id);
+
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.user LEFT JOIN FETCH p.employee WHERE p.id = :id")
+    Optional<Person> findByIdWithUserAndEmployee(@Param("id") UUID id);
+
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.employee")
+    Page<Person> findAllWithEmployee(Pageable pageable);
+
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.employee WHERE " +
+            "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.identNumber) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.mobile) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Person> findBySearchWithEmployee(@Param("searchTerm") String searchTerm, Pageable pageable);
+
 }
