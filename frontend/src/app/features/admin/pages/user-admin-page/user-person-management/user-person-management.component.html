@@ -27,20 +27,12 @@
     <div class="card bg-base-100 shadow-lg">
       <div class="card-body p-8">
         <div class="text-center">
-          <div class="loading loading-spinner loading-lg"></div>
-          <p class="mt-4 text-base-content/70">Loading user information...</p>
+          <shared-loading></shared-loading>
         </div>
       </div>
     </div>
     } @else if (isLoadingPerson()) {
-    <div class="card bg-base-100 shadow-lg">
-      <div class="card-body p-8">
-        <div class="text-center">
-          <div class="loading loading-spinner loading-lg"></div>
-          <p class="mt-4 text-base-content/70">Loading person information...</p>
-        </div>
-      </div>
-    </div>
+    <shared-loading></shared-loading>
     } @else if (personalProfile()) {
     <!-- Person Details Card -->
     <div class="card bg-base-100 shadow-lg mb-6">

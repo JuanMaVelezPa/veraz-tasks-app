@@ -1,0 +1,49 @@
+<div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
+  <div class="card-body p-4 sm:p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="avatar placeholder">
+        <div class="bg-primary/10 text-primary rounded-full w-10">
+          <shared-icon
+            type="user-tie"
+            size="1x"
+          />
+        </div>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold">Employment Information</h2>
+        <p class="text-base-content/70 text-sm">Manage professional and employment details</p>
+      </div>
+    </div>
+
+    @if (!isEditMode()) {
+      <div class="text-center py-12">
+        <div class="avatar placeholder">
+          <div class="bg-info/10 text-info rounded-full w-16">
+            <shared-icon
+              type="user-tie"
+              size="2xl"
+            />
+          </div>
+        </div>
+        <h3 class="text-lg font-semibold mb-2">Employment Information</h3>
+        <p class="text-base-content/70 mb-4">
+          Save the person first to add employment details.
+        </p>
+        <div class="badge badge-info badge-lg">Save person first</div>
+      </div>
+    } @else {
+      @if (isLoadingEmployee()) {
+        <shared-loading />
+      } @else {
+        <app-employee-form
+          [employeeForm]="employeeForm()"
+          [employee]="employee() || null"
+          [isEditMode]="!!employee()"
+          [isLoading]="isLoadingEmployee()"
+          [isReadOnly]="isReadOnly()"
+          (formSubmitted)="formSubmitted.emit()"
+        />
+      }
+    }
+  </div>
+</div>

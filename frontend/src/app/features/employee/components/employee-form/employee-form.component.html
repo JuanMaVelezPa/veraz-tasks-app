@@ -563,7 +563,7 @@
       [disabled]="employeeForm().invalid || isLoading()"
     >
       @if (isLoading()) {
-      <span class="loading loading-spinner loading-sm"></span>
+      <shared-loading></shared-loading>
       } @else {
       <shared-icon type="save" />
       }

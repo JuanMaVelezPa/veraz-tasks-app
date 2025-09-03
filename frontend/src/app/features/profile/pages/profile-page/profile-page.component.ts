@@ -12,14 +12,17 @@ import { ScrollService } from '@shared/services/scroll.service';
 
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
-import { UserFormComponent } from '@users/components/user-form/user-form.component';
-import { PersonFormComponent } from '@person/components/person-form/person-form.component';
-import { EmployeeFormComponent } from '@employee/components/employee-form/employee-form.component';
+import { PersonalInfoTabComponent } from '@person/components/personal-info-tab/personal-info-tab.component';
+import { EmployeeTabComponent } from '@employee/components/employee-tab/employee-tab.component';
+import { UserTabComponent } from '@users/components/user-tab/user-tab.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
 import { Employee } from '@employee/interfaces/employee.interface';
 import { firstValueFrom, catchError } from 'rxjs';
+import { TabsComponent } from '@shared/components/tabs/tabs.component';
+import { TabItem } from '@shared/interfaces/tab.interface';
+import { TabsService } from '@shared/services/tabs.service';
 
 @Component({
   selector: 'app-profile-page',
@@ -29,10 +32,11 @@ import { firstValueFrom, catchError } from 'rxjs';
     ReactiveFormsModule,
     FeedbackMessageComponent,
     LoadingComponent,
-    UserFormComponent,
-    PersonFormComponent,
-    EmployeeFormComponent,
-    IconComponent
+    PersonalInfoTabComponent,
+    EmployeeTabComponent,
+    UserTabComponent,
+    IconComponent,
+    TabsComponent
   ],
   templateUrl: './profile-page.component.html'
 })
@@ -44,10 +48,10 @@ export class ProfilePageComponent implements OnInit {
   private formBuilders = inject(FormBuildersManagerService);
   private httpErrorService = inject(HttpErrorService);
   private scrollService = inject(ScrollService);
+  private tabsService = inject(TabsService);
 
   private router = inject(Router);
 
-  // Signals
   currentUser = signal<User | null>(null);
   personalProfile = signal<Person | null>(null);
   employmentProfile = signal<Employee | null>(null);
@@ -55,8 +59,8 @@ export class ProfilePageComponent implements OnInit {
   isLoadingPerson = signal(false);
   isLoadingEmployment = signal(false);
   activeTab = signal<'user' | 'person' | 'employment'>('user');
+  tabs = signal<TabItem[]>([]);
 
-  // Forms
   userForm = this.formBuilders.buildUserForm({ includePasswordValidation: true });
   personForm = this.formBuilders.buildPersonForm();
   employmentForm = this.formBuilders.buildEmployeeForm();
@@ -64,6 +68,29 @@ export class ProfilePageComponent implements OnInit {
   ngOnInit() {
     this.feedbackService.clearMessage();
     this.loadCurrentUser();
+    this.initializeTabs();
+  }
+
+  private initializeTabs(): void {
+    const context = {
+      type: 'profile' as const,
+      hasPersonalProfile: !!this.personalProfile(),
+      hasEmploymentProfile: !!this.employmentProfile()
+    };
+
+    const tabs = this.tabsService.initializeTabs(context);
+    this.tabs.set(tabs);
+  }
+
+  private updateTabs(): void {
+    const context = {
+      type: 'profile' as const,
+      hasPersonalProfile: !!this.personalProfile(),
+      hasEmploymentProfile: !!this.employmentProfile()
+    };
+
+    const tabs = this.tabsService.initializeTabs(context);
+    this.tabs.set(tabs);
   }
 
   private async loadCurrentUser() {
@@ -84,6 +111,7 @@ export class ProfilePageComponent implements OnInit {
       this.currentUser.set(user);
       this.setUserFormValues(user);
       this.loadPersonalProfile();
+      this.updateTabs();
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'Failed to load user profile');
     } finally {
@@ -111,6 +139,7 @@ export class ProfilePageComponent implements OnInit {
       this.feedbackService.showError(error.message || 'Failed to load personal information.');
     } finally {
       this.isLoadingPerson.set(false);
+      this.updateTabs();
     }
   }
 
@@ -128,9 +157,9 @@ export class ProfilePageComponent implements OnInit {
       }
     } catch (error: any) {
       this.employmentProfile.set(null);
-      // Don't show error for employment as it's optional
     } finally {
       this.isLoadingEmployment.set(false);
+      this.updateTabs();
     }
   }
 
@@ -166,7 +195,6 @@ export class ProfilePageComponent implements OnInit {
       await this.updateUser();
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while updating the user profile.');
-      // Reset form to original values after error
       this.setUserFormValues(this.currentUser()!);
     } finally {
       this.isLoadingUser.set(false);
@@ -176,7 +204,7 @@ export class ProfilePageComponent implements OnInit {
   private async updateUser(): Promise<void> {
     const formValue = this.userForm.value;
     const changes = this.formBuilders.detectUserChanges(formValue, this.currentUser()!, {
-      includeRoles: false, // Profile mode doesn't allow role changes
+      includeRoles: false,
       includePassword: true
     });
 
@@ -185,7 +213,6 @@ export class ProfilePageComponent implements OnInit {
       return;
     }
 
-    // Check if username or email changed
     const hasLoginChanges = changes.username || changes.email;
 
     const updatedUser = await firstValueFrom(
@@ -235,7 +262,6 @@ export class ProfilePageComponent implements OnInit {
           }
         );
       } else {
-        // Create new person
         const validation = this.formBuilders.validateRequiredPersonFields(formData);
         if (!validation.isValid) {
           this.feedbackService.showError(`Please fill in all required fields: ${validation.missingFields.join(', ')}`);
@@ -277,6 +303,7 @@ export class ProfilePageComponent implements OnInit {
     this.setPersonFormValues(updatedPerson);
     this.feedbackService.showSuccess('Personal information updated successfully!');
     this.scrollService.scrollToTop();
+    this.updateTabs();
   }
 
   onPersonCreated(newPerson: Person) {
@@ -284,6 +311,7 @@ export class ProfilePageComponent implements OnInit {
     this.setPersonFormValues(newPerson);
     this.feedbackService.showSuccess('Personal information created successfully!');
     this.scrollService.scrollToTop();
+    this.updateTabs();
   }
 
   async onEmploymentFormSubmitted() {
@@ -309,6 +337,7 @@ export class ProfilePageComponent implements OnInit {
         this.setEmploymentFormValues(updatedEmployee);
         this.feedbackService.showSuccess('Employment information updated successfully!');
         this.scrollService.scrollToTop();
+        this.updateTabs();
       } else {
         const person = this.personalProfile();
         if (!person) {
@@ -326,6 +355,7 @@ export class ProfilePageComponent implements OnInit {
         this.setEmploymentFormValues(newEmployee);
         this.feedbackService.showSuccess('Employment information created successfully!');
         this.scrollService.scrollToTop();
+        this.updateTabs();
       }
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while saving employment information.');
@@ -337,8 +367,8 @@ export class ProfilePageComponent implements OnInit {
     }
   }
 
-  setActiveTab(tab: 'user' | 'person' | 'employment') {
-    this.activeTab.set(tab);
+  setActiveTab(tab: string) {
+    this.activeTab.set(tab as 'user' | 'person' | 'employment');
 
     if (tab === 'person' && !this.personalProfile()) {
       this.formBuilders.resetForm(this.personForm);

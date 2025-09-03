@@ -124,10 +124,9 @@ public class PersonService {
         if (person.getUser() != null) {
             logger.info("Desassociating user {} from person {} before deletion", person.getUser().getId(), id);
             person.setUser(null);
+            personRepository.save(person);
+            logger.info("User disassociation persisted for person {}", id);
         }
-
-        personRepository.save(person);
-        logger.info("User disassociation persisted for person {}", id);
 
         personRepository.delete(person);
         logger.info("Person and all associated data (Employee) deleted successfully with ID: {}", id);

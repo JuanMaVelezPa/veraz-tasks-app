@@ -15,10 +15,12 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 
 import { firstValueFrom, catchError } from 'rxjs';
 import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'employee-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, EmployeeFormComponent, IconComponent, TimestampInfoComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, EmployeeFormComponent,
+    IconComponent, TimestampInfoComponent, LoadingComponent],
   templateUrl: './employee-details.component.html',
 })
 export class EmployeeDetailsComponent implements OnInit, OnDestroy {

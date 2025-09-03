@@ -208,11 +208,14 @@ export class UserFormBuilderService extends BaseFormBuilderService {
   private preparePatchData(data: any): any {
     const patchData = { ...data };
 
-    if (data.roles && Array.isArray(data.roles)) {
-      patchData.selectedRole = data.roles.length > 0 ? data.roles[0] : '';
+    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
+      patchData.selectedRole = data.roles[0];
+    } else if (data.selectedRole) {
+      patchData.selectedRole = data.selectedRole;
+    } else {
+      patchData.selectedRole = '';
     }
 
-    // Clear password fields when patching
     patchData.password = '';
     patchData.confirmPassword = '';
 

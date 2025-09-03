@@ -11,10 +11,12 @@ import { NavigationHistoryService } from '@shared/services/navigation-history.se
 import { PersonAssociationService } from '@person/services/person-association.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom } from 'rxjs';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'user-person-management',
-  imports: [CommonModule, FeedbackMessageComponent, IconComponent],
+  imports: [CommonModule, FeedbackMessageComponent, IconComponent,
+    LoadingComponent],
   templateUrl: './user-person-management.component.html',
 })
 export class UserPersonManagementComponent implements OnInit, OnDestroy {

@@ -37,7 +37,6 @@ export class UserTableComponent implements OnInit {
   sortState: SortState;
   searchState: SearchState;
 
-  // Selection mode
   isSelectionMode = signal(false);
   selectedPersonId = signal('');
   selectedPersonName = signal('');
@@ -118,38 +117,25 @@ export class UserTableComponent implements OnInit {
   };
 
   async associateUser(userId: string): Promise<void> {
-    console.log('associateUser called with:');
-    console.log('- userId:', userId);
-    console.log('- selectedPersonId:', this.selectedPersonId());
-    console.log('- selectedPersonName:', this.selectedPersonName());
-
     if (!this.selectedPersonId()) {
       this.feedbackService.showError('No person ID provided for association');
       return;
     }
 
     try {
-      console.log('Calling personService.associateUser with:');
-      console.log('- personId:', this.selectedPersonId());
-      console.log('- userId:', userId);
-
       await firstValueFrom(
         this.personService.associateUser(this.selectedPersonId(), userId)
       );
 
       this.feedbackService.showSuccess(`User associated successfully with ${this.selectedPersonName()}`);
-
-      // Limpiar cache de usuarios disponibles para refrescar la lista
       this.userService.clearAvailableUsersCache();
 
-      // Navigate back to person details
       if (this.returnUrl()) {
         this.router.navigateByUrl(this.returnUrl());
       } else {
         this.router.navigate(['/admin/persons', this.selectedPersonId()]);
       }
     } catch (error: any) {
-      console.error('Error associating user:', error);
       this.feedbackService.showError(
         error.error?.message || error.message || 'Failed to associate user. Please try again.'
       );

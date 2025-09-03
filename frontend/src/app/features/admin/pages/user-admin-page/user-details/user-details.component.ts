@@ -16,10 +16,12 @@ import { UserFormComponent } from '@users/components/user-form/user-form.compone
 import { AuthService } from '@auth/services/auth.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom, catchError } from 'rxjs';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'user-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent, IconComponent],
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, UserFormComponent,
+    IconComponent, LoadingComponent],
   templateUrl: './user-details.component.html',
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {
@@ -186,6 +188,11 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   private setFormValues(user: Partial<User>): void {
     this.formBuilders.patchForm(this.userForm, user);
+
+    if (user.roles && user.roles.length > 0) {
+      this.userForm.get('selectedRole')?.setValue(user.roles[0]);
+    }
+
     this.cdr.detectChanges();
   }
 

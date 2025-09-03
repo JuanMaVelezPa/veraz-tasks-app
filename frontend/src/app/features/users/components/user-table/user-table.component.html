@@ -2,11 +2,17 @@
   @if (isSelectionMode()) {
   <div class="bg-info/10 border border-info/20 rounded-lg p-4 mb-4">
     <div class="flex items-center gap-3">
-      <shared-icon type="info" class="text-info" />
+      <shared-icon
+        type="info"
+        class="text-info"
+      />
       <div>
         <h3 class="font-semibold text-info">Select User for {{ selectedPersonName() }}</h3>
         <p class="text-xs text-info/70">
-          <shared-icon type="filter" size="xs" />
+          <shared-icon
+            type="filter"
+            size="xs"
+          />
           Available users only
         </p>
       </div>
@@ -116,9 +122,7 @@
   </div>
 
   @if(usersResource.isLoading()) {
-  <div class="loading-container">
-    <shared-loading></shared-loading>
-  </div>
+  <shared-loading></shared-loading>
   }
 
   @if(usersResource.error()) {

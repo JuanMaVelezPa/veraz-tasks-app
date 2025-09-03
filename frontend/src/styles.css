@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @plugin "daisyui" {
-  themes: corporate --default, forest, garden, lofi, winter;
+  themes: corporate --default, business, garden;
 }
 
 /* Import shared table utilities */
@@ -12,7 +12,8 @@
 }
 
 /* Global styles to prevent double scroll */
-html, body {
+html,
+body {
   height: 100%;
   overflow-x: hidden;
 }
@@ -48,7 +49,8 @@ body {
 }
 
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
   }
   50% {

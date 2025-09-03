@@ -1,0 +1,30 @@
+<div class="tabs tabs-bordered mb-0 flex-wrap gap-1">
+  @for (tab of tabs(); track tab.id) {
+  <button
+    [class]="getTabClasses(tab)"
+    (click)="setActiveTab(tab.id)"
+    [disabled]="tab.disabled"
+    [title]="tab.label"
+  >
+    <shared-icon
+      [type]="tab.icon"
+      class="hidden sm:inline"
+    />
+    <span class="hidden sm:inline">{{ tab.label }}</span>
+    <span class="sm:hidden">{{ tab.shortLabel || tab.label }}</span>
+
+    @if (tab.badge) {
+    <div class="badge badge-{{ tab.badge.type }} badge-xs ml-1 hidden sm:inline">
+      @if (tab.badge.icon) {
+      <shared-icon
+        [type]="tab.badge.icon"
+        size="xs"
+      />
+      } @else {
+      {{ tab.badge.text }}
+      }
+    </div>
+    }
+  </button>
+  }
+</div>

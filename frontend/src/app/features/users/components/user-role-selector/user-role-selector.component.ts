@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 import { RoleService } from '@users/services/role.service';
 import { RoleResponse } from '@users/interfaces/role.interface';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user-role-selector',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, LoadingComponent],
   templateUrl: './user-role-selector.component.html'
 })
 export class UserRoleSelectorComponent implements OnInit {

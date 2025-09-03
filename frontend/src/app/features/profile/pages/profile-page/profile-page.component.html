@@ -11,195 +11,48 @@
   </div>
 
   <!-- Navigation Tabs -->
-  <div class="tabs tabs-bordered mb-0 flex-wrap gap-1">
-    <button
-      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
-      [class.tab-active]="activeTab() === 'user'"
-      [class.bg-primary]="activeTab() === 'user'"
-      [class.text-primary-content]="activeTab() === 'user'"
-      [class.border-primary]="activeTab() === 'user'"
-      [class.border-base-300]="activeTab() !== 'user'"
-      (click)="setActiveTab('user')"
-    >
-      <shared-icon
-        type="user"
-        class="hidden sm:inline"
-      />
-      <span class="hidden sm:inline">Account & Security</span>
-      <span class="sm:hidden">Account</span>
-    </button>
-    @if (personalProfile()) {
-    <button
-      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
-      [class.tab-active]="activeTab() === 'person'"
-      [class.bg-primary]="activeTab() === 'person'"
-      [class.text-primary-content]="activeTab() === 'person'"
-      [class.border-primary]="activeTab() === 'person'"
-      [class.border-base-300]="activeTab() !== 'person'"
-      (click)="setActiveTab('person')"
-    >
-      <shared-icon
-        type="user"
-        class="hidden sm:inline"
-      />
-      <span class="hidden sm:inline">Personal Information</span>
-      <span class="sm:hidden">Personal</span>
-      <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
-        <shared-icon
-          type="check"
-          size="xs"
-        />
-      </div>
-    </button>
-    }
-    @if (employmentProfile()) {
-    <button
-      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
-      [class.tab-active]="activeTab() === 'employment'"
-      [class.bg-primary]="activeTab() === 'employment'"
-      [class.text-primary-content]="activeTab() === 'employment'"
-      [class.border-primary]="activeTab() === 'employment'"
-      [class.border-base-300]="activeTab() !== 'employment'"
-      (click)="setActiveTab('employment')"
-    >
-      <shared-icon
-        type="user-tie"
-        class="hidden sm:inline"
-      />
-      <span class="hidden sm:inline">Employment Information</span>
-      <span class="sm:hidden">Employment</span>
-      <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
-        <shared-icon
-          type="check"
-          size="xs"
-        />
-      </div>
-    </button>
-    }
-  </div>
+  <shared-tabs
+    [tabs]="tabs()"
+    [activeTab]="activeTab()"
+    (activeTabChange)="setActiveTab($event)"
+  />
 
   <!-- Main Content -->
   @if (activeTab() === 'user') {
-  <!-- Account & Security - Full Width -->
-  <div class="card bg-base-100 shadow-lg rounded-tl-none">
-    <div class="card-body p-6">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-          <shared-icon
-            type="user"
-            size="1x"
-          />
-        </div>
-        <div>
-          <h2 class="text-xl font-bold">Account & Security</h2>
-          <p class="text-base-content/70 text-sm">Update your system access information</p>
-        </div>
-      </div>
-
-      <app-user-form
-        [userForm]="userForm"
-        [user]="currentUser()!"
-        [isEditMode]="true"
-        [isLoading]="isLoadingUser()"
-        [isReadOnly]="true"
-        (formSubmitted)="onUserFormSubmitted()"
-        (roleSelected)="onRoleSelected($event)"
-      />
-    </div>
-  </div>
-
-  <!-- No Profile Information Message -->
-  @if (!personalProfile() && !employmentProfile()) {
-  <div class="card bg-base-100 shadow-lg mt-6">
-    <div class="card-body p-6">
-      <div class="text-center">
-        <div class="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <shared-icon
-            type="user"
-            size="2x"
-          />
-        </div>
-        <h3 class="text-lg font-semibold mb-2">Complete Your Profile</h3>
-        <p class="text-base-content/70 mb-4">
-          You haven't added any personal or employment information yet.
-          Contact your administrator to set up your profile information.
-        </p>
-        <div class="flex flex-col sm:flex-row gap-2 justify-center">
-          <div class="badge badge-primary">Personal Information</div>
-          <div class="badge badge-secondary">Employment Information</div>
-        </div>
-      </div>
-    </div>
-  </div>
-  }
+  <app-user-tab
+    [currentUser]="currentUser()"
+    [isEditMode]="true"
+    [isLoadingUser]="isLoadingUser()"
+    [userForm]="userForm"
+    [isReadOnly]="true"
+    (formSubmitted)="onUserFormSubmitted()"
+    (roleSelected)="onRoleSelected($event)"
+  />
   }
 
   @if (activeTab() === 'person') {
-  <!-- Personal Information - Full Width -->
-  <div class="card bg-base-100 shadow-lg rounded-tl-none">
-    <div class="card-body p-6">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-          <shared-icon
-            type="user"
-            size="1x"
-          />
-        </div>
-        <div>
-          <h2 class="text-xl font-bold">Personal Information</h2>
-          <p class="text-base-content/70 text-sm">Complete your personal data and contact information</p>
-        </div>
-      </div>
-
-      @if (isLoadingPerson()) {
-      <shared-loading></shared-loading>
-      } @else {
-      <app-person-form
-        [personForm]="personForm"
-        [person]="personalProfile() || null"
-        [isEditMode]="!!personalProfile()"
-        [isLoading]="isLoadingPerson()"
-        [isReadOnly]="true"
-        (formSubmitted)="onPersonFormSubmitted()"
-        (personUpdated)="onPersonUpdated($event)"
-        (personCreated)="onPersonCreated($event)"
-      />
-      }
-    </div>
-  </div>
+  <app-personal-info-tab
+    [personForm]="personForm"
+    [person]="personalProfile() || null"
+    [isEditMode]="!!personalProfile()"
+    [isLoading]="isLoadingPerson()"
+    [isReadOnly]="true"
+    (formSubmitted)="onPersonFormSubmitted()"
+    (personUpdated)="onPersonUpdated($event)"
+    (personCreated)="onPersonCreated($event)"
+  />
   }
 
   @if (activeTab() === 'employment') {
-  <!-- Employment Information - Full Width -->
-  <div class="card bg-base-100 shadow-lg rounded-tl-none">
-    <div class="card-body p-6">
-      <div class="flex items-center gap-3 mb-6">
-        <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-          <shared-icon
-            type="user-tie"
-            size="1x"
-          />
-        </div>
-        <div>
-          <h2 class="text-xl font-bold">Employment Information</h2>
-          <p class="text-base-content/70 text-sm">Manage your professional and employment details</p>
-        </div>
-      </div>
-
-      @if (isLoadingEmployment()) {
-      <shared-loading></shared-loading>
-      } @else {
-      <app-employee-form
-        [employeeForm]="employmentForm"
-        [employee]="employmentProfile() || null"
-        [isEditMode]="!!employmentProfile()"
-        [isLoading]="isLoadingEmployment()"
-        [isReadOnly]="true"
-        (formSubmitted)="onEmploymentFormSubmitted()"
-      />
-      }
-    </div>
-  </div>
+  <app-employee-tab
+    [employeeForm]="employmentForm"
+    [employee]="employmentProfile() || null"
+    [isEditMode]="!!employmentProfile()"
+    [isLoading]="isLoadingEmployment()"
+    [isLoadingEmployee]="isLoadingEmployment()"
+    [isReadOnly]="true"
+    (formSubmitted)="onEmploymentFormSubmitted()"
+  />
   }
   } @else {
   <div class="alert alert-error shadow-lg">

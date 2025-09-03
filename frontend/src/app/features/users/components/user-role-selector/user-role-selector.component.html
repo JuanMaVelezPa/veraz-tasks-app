@@ -4,10 +4,7 @@
   </label>
 
   @if (isLoadingRoles()) {
-  <div class="text-center py-2">
-    <div class="loading loading-spinner loading-xs"></div>
-    <span class="text-xs text-gray-500">Loading roles...</span>
-  </div>
+  <shared-loading></shared-loading>
   } @else if (availableRoles().length > 0) {
   <select
     class="select select-bordered w-full"

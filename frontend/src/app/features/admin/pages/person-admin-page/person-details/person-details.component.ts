@@ -15,18 +15,26 @@ import { FeedbackMessageComponent } from '@shared/components/feedback-message/fe
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { NavigationHistoryService } from '@shared/services/navigation-history.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
-import { PersonFormComponent } from '@person/components/person-form/person-form.component';
 import { TimestampInfoComponent } from '@shared/components/timestamp-info/timestamp-info.component';
-import { EmployeeFormComponent } from '@employee/components/employee-form/employee-form.component';
-import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom, catchError, filter } from 'rxjs';
 import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 import { EmployeeService } from '@employee/services/employee.service';
+import { TabsComponent } from '@shared/components/tabs/tabs.component';
+import { TabItem } from '@shared/interfaces/tab.interface';
+import { TabsService } from '@shared/services/tabs.service';
+import { PersonalInfoTabComponent } from '@person/components/personal-info-tab/personal-info-tab.component';
+import { EmployeeTabComponent } from '@employee/components/employee-tab/employee-tab.component';
+import { UserTabComponent } from '@users/components/user-tab/user-tab.component';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'person-details',
-  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent, PersonFormComponent, TimestampInfoComponent, EmployeeFormComponent, LoadingComponent, IconComponent],
+  standalone: true,
+  imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent,
+    TimestampInfoComponent, IconComponent, TabsComponent,
+    PersonalInfoTabComponent, EmployeeTabComponent, UserTabComponent,
+    LoadingComponent],
   templateUrl: './person-details.component.html',
 })
 export class PersonDetailsComponent implements OnInit, OnDestroy {
@@ -46,23 +54,23 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   private cdr = inject(ChangeDetectorRef);
   private employeeService = inject(EmployeeService);
   private scrollService = inject(ScrollService);
+  private tabsService = inject(TabsService);
 
   wasSaved = signal(false);
   isLoading = signal(false);
   isEditMode = signal(false);
   showDeleteModal = signal(false);
   currentPerson = signal<Person | null>(null);
-
   currentEmployee = signal<Employee | null>(null);
   isLoadingEmployee = signal(false);
-
   currentUser = signal<User | null>(null);
   isLoadingUser = signal(false);
-
   activeTab = signal<'person' | 'employee' | 'user'>('person');
+  tabs = signal<TabItem[]>([]);
 
   personForm = this.formBuilders.buildPersonForm();
   employeeForm = this.formBuilders.buildEmployeeForm();
+  userForm = this.formBuilders.buildUserForm({ isEditMode: true });
 
   ngOnInit(): void {
     this.feedbackService.clearMessage();
@@ -70,6 +78,8 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.currentPerson.set(person);
     this.setFormValues(person);
     this.isEditMode.set(person.id !== 'new');
+
+    this.initializeTabs();
 
     if (this.isEditMode()) {
       this.loadEmployeeInfo(person.id);
@@ -97,6 +107,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
           await this.loadUserInfo(updatedPerson);
         } else {
           this.currentUser.set(null);
+          this.formBuilders.resetForm(this.userForm);
         }
       } catch (error) {
         console.error('Error refreshing person info:', error);
@@ -107,6 +118,30 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   private setFormValues(person: Partial<Person>): void {
     this.formBuilders.patchForm(this.personForm, person);
     this.cdr.detectChanges();
+  }
+
+  private initializeTabs(): void {
+    const context = {
+      type: 'admin' as const,
+      hasUserAccount: !!this.currentUser(),
+      hasEmploymentProfile: !!this.currentEmployee(),
+      isEditMode: this.isEditMode()
+    };
+
+    const tabs = this.tabsService.initializeTabs(context);
+    this.tabs.set(tabs);
+  }
+
+  private updateTabs(): void {
+    const context = {
+      type: 'admin' as const,
+      hasUserAccount: !!this.currentUser(),
+      hasEmploymentProfile: !!this.currentEmployee(),
+      isEditMode: this.isEditMode()
+    };
+
+    const tabs = this.tabsService.initializeTabs(context);
+    this.tabs.set(tabs);
   }
 
   async submitForm(): Promise<void> {
@@ -144,7 +179,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     const userId = this.route.snapshot.queryParamMap.get('userId');
 
     try {
-      const createdPerson = await this.personManagementService.createPerson(
+      await this.personManagementService.createPerson(
         formData,
         {
           context: 'admin',
@@ -197,6 +232,8 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
 
     try {
+      await this.removeUserAssociation();
+
       await firstValueFrom(
         this.personService.deletePerson(person.id).pipe(
           catchError(error => this.httpErrorService.handleError(error, 'deleting person'))
@@ -244,6 +281,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       this.currentEmployee.set(null);
     } finally {
       this.isLoadingEmployee.set(false);
+      this.updateTabs();
     }
   }
 
@@ -260,28 +298,23 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
         this.userService.getUserById(person.userId)
       );
       this.currentUser.set(user);
+      // Actualizar el formulario con los datos del usuario
+      this.formBuilders.patchForm(this.userForm, user);
     } catch (error) {
       console.error('Error fetching user:', error);
       this.currentUser.set(null);
     } finally {
       this.isLoadingUser.set(false);
+      this.updateTabs();
     }
   }
 
-  setActiveTab(tab: 'person' | 'employee' | 'user') {
-    this.activeTab.set(tab);
+  setActiveTab(tab: string) {
+    this.activeTab.set(tab as 'person' | 'employee' | 'user');
+    if (tab === 'user' && this.currentUser()) {
+      this.formBuilders.patchForm(this.userForm, this.currentUser());
+    }
     this.scrollService.scrollToTop();
-  }
-
-  getTabClasses(tab: 'person' | 'employee' | 'user'): string {
-    const isActive = this.activeTab() === tab;
-    const isDisabled = (tab === 'user' || tab === 'employee') && !this.isEditMode();
-
-    const baseClasses = 'tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0';
-    const activeClasses = isActive ? 'tab-active bg-primary text-primary-content border-primary' : 'border-base-300';
-    const disabledClasses = isDisabled ? 'opacity-50 cursor-not-allowed' : '';
-
-    return `${baseClasses} ${activeClasses} ${disabledClasses}`.trim();
   }
 
   async submitEmployeeForm(): Promise<void> {
@@ -307,14 +340,26 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-
-
   async removeUserAssociation(): Promise<void> {
     const person = this.currentPerson();
     if (!person || person.id === 'new') return;
 
     this.isLoadingUser.set(true);
     try {
+      if (person.userId) {
+        try {
+
+          await firstValueFrom(
+            this.userService.updateUser(person.userId, { isActive: false }).pipe(
+              catchError(error => this.httpErrorService.handleError(error, 'deactivating user'))
+            )
+          );
+
+        } catch (userError) {
+          this.feedbackService.showError('Failed to deactivate user');
+        }
+      }
+
       await firstValueFrom(
         this.personService.removeUserAssociation(person.id).pipe(
           catchError(error => this.httpErrorService.handleError(error, 'removing user association'))
@@ -322,12 +367,14 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       );
 
       this.currentUser.set(null);
-      this.feedbackService.showSuccess('User association removed successfully.');
+      this.formBuilders.resetForm(this.userForm);
+      this.feedbackService.showSuccess('User association removed and user account deactivated successfully.');
       this.scrollService.scrollToTop();
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while removing user association.');
     } finally {
       this.isLoadingUser.set(false);
+      this.updateTabs();
     }
   }
 
@@ -389,8 +436,60 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   editUser(): void {
     const user = this.currentUser();
     if (!user) return;
-
     this.router.navigate(['/admin/users', user.id]);
+  }
+
+  onUserFormSubmitted(): void {
+    if (this.userForm.invalid) {
+      this.userForm.markAllAsTouched();
+      this.feedbackService.showError('Please fix the validation errors before saving.');
+      return;
+    }
+    this.updateUserInfo();
+  }
+
+  private async updateUserInfo(): Promise<void> {
+    try {
+      const user = this.currentUser();
+      if (!user) {
+        this.feedbackService.showError('No user associated with this person.');
+        return;
+      }
+
+      this.isLoadingUser.set(true);
+
+      const formValue = this.userForm.value;
+      const changes = this.formBuilders.detectUserChanges(formValue, user, {
+        includeRoles: true,
+        includePassword: true
+      });
+
+      if (Object.keys(changes).length === 0) {
+        this.feedbackService.showWarning('No changes detected. Nothing to save.');
+        return;
+      }
+
+      const updatedUser = await firstValueFrom(
+        this.userService.updateUser(user.id, changes).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'updating user information'))
+        )
+      );
+
+      if (updatedUser?.id) {
+        this.currentUser.set(updatedUser);
+        this.formBuilders.patchForm(this.userForm, updatedUser);
+        this.feedbackService.showSuccess('User information updated successfully!');
+        this.scrollService.scrollToTop();
+        this.updateTabs();
+      }
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while updating user information.');
+      if (this.currentUser()) {
+        this.formBuilders.patchForm(this.userForm, this.currentUser()!);
+      }
+    } finally {
+      this.isLoadingUser.set(false);
+    }
   }
 
   ngOnDestroy(): void {
@@ -424,6 +523,9 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   private handlePersonUpdateSuccess(person: Person): void {
     this.currentPerson.set(person);
     this.setFormValues(person);
+    if (person.userId && this.currentUser()) {
+      this.formBuilders.patchForm(this.userForm, this.currentUser());
+    }
     this.wasSaved.set(true);
     this.scrollService.scrollToTop();
   }
@@ -450,6 +552,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
     this.currentEmployee.set(createdEmployee);
     this.setEmployeeFormValues(createdEmployee);
+    this.updateTabs();
     this.feedbackService.showSuccess('Employment information created successfully!');
     this.scrollService.scrollToTop();
   }
@@ -466,8 +569,11 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
     this.currentEmployee.set(updatedEmployee);
     this.setEmployeeFormValues(updatedEmployee);
+    this.updateTabs();
     this.feedbackService.showSuccess('Employment information updated successfully!');
     this.scrollService.scrollToTop();
   }
+
+
 
 }

@@ -231,7 +231,10 @@ export const ICON_MAP = {
   'coins': faCoins,
   'dashboard': faChartBar,
   'forward': faForward,
-  'signal': faSignal
+  'signal': faSignal,
+  'user-profile': faUser,
+  'user-account': faUserCog,
+  'user-management': faUserShield
 } as const;
 
 export type IconType = keyof typeof ICON_MAP;

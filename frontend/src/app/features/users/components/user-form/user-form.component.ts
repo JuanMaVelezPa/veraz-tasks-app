@@ -6,11 +6,13 @@ import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { ScrollService } from '@shared/services/scroll.service';
 import { UserRoleSelectorComponent } from '../user-role-selector/user-role-selector.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserRoleSelectorComponent, IconComponent],
+  imports: [CommonModule, ReactiveFormsModule, UserRoleSelectorComponent,
+    IconComponent, LoadingComponent],
   templateUrl: './user-form.component.html'
 })
 export class UserFormComponent {
@@ -31,12 +33,10 @@ export class UserFormComponent {
   showPasswordSection = signal(false);
 
   private editModeEffect = effect(() => {
-    // En modo creación, mostrar la sección de contraseña por defecto
-    // En modo edición, ocultarla por defecto
     this.showPasswordSection.set(!this.isEditMode());
   });
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.userForm().invalid) {
       this.userForm().markAllAsTouched();
       return;
@@ -45,17 +45,15 @@ export class UserFormComponent {
     this.scrollService.scrollToTop();
   }
 
-  togglePasswordSection() {
+  togglePasswordSection(): void {
     this.showPasswordSection.update(current => !current);
   }
 
   isPasswordRequired(): boolean {
-    // En modo creación, la contraseña siempre es requerida
-    // En modo edición, solo es requerida si la sección está abierta
     return !this.isEditMode() || this.showPasswordSection();
   }
 
-  onRoleSelected(roleName: string) {
+  onRoleSelected(roleName: string): void {
     this.roleSelected.emit(roleName);
   }
 

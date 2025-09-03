@@ -1,0 +1,94 @@
+<div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
+  <div class="card-body p-4 sm:p-6">
+    <div class="flex items-center gap-3 mb-6">
+      <div class="avatar placeholder">
+        <div class="bg-primary/10 text-primary rounded-full w-10">
+          <shared-icon
+            type="user-secret"
+            size="1x"
+          />
+        </div>
+      </div>
+      <div>
+        <h2 class="text-xl font-bold">User Management</h2>
+        <p class="text-base-content/70 text-sm">Manage system access and user account information</p>
+      </div>
+    </div>
+
+    @if (!isEditMode()) {
+    <div class="text-center py-12">
+      <div class="avatar placeholder">
+        <div class="bg-info/10 text-info rounded-full w-16">
+          <shared-icon
+            type="user-secret"
+            size="2xl"
+          />
+        </div>
+      </div>
+      <h3 class="text-lg font-semibold mb-2">User Account Management</h3>
+      <p class="text-base-content/70 mb-4">
+        Save the person first to manage user accounts.
+      </p>
+      <div class="badge badge-info badge-lg">Save person first</div>
+    </div>
+    } @else {
+    @if (isLoadingUser()) {
+    <shared-loading />
+    } @else if (currentUser()) {
+    <app-user-form
+      [userForm]="userForm()"
+      [user]="currentUser()"
+      [isEditMode]="isEditMode()"
+      [isLoading]="isLoadingUser()"
+      [isReadOnly]="isReadOnly()"
+      (formSubmitted)="formSubmitted.emit()"
+      (roleSelected)="roleSelected.emit($event)"
+    />
+
+    @if (!isReadOnly()) {
+    <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t">
+      <button
+        class="btn btn-warning btn-sm"
+        (click)="removeUserAssociation.emit()"
+      >
+        <shared-icon type="close" />
+        Remove Association
+      </button>
+    </div>
+    }
+
+    } @else {
+    <div class="text-center py-12">
+      <div class="avatar placeholder">
+        <div class="bg-warning/10 text-warning rounded-full w-16">
+          <shared-icon
+            type="user-secret"
+            size="2xl"
+          />
+        </div>
+      </div>
+      <h3 class="text-lg font-semibold mb-2">No User Account Associated</h3>
+      <p class="text-base-content/70 mb-6">
+        No user account associated. Link an existing user or create a new one.
+      </p>
+      <div class="flex flex-wrap gap-3 justify-center">
+        <button
+          class="btn btn-primary btn-sm"
+          (click)="linkExistingUser.emit()"
+        >
+          <shared-icon type="user-plus" />
+          Link Existing User
+        </button>
+        <button
+          class="btn btn-outline btn-sm"
+          (click)="createNewUser.emit()"
+        >
+          <shared-icon type="add" />
+          Create New User
+        </button>
+      </div>
+    </div>
+    }
+    }
+  </div>
+</div>

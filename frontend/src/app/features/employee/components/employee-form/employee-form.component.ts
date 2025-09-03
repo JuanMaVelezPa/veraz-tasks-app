@@ -6,11 +6,13 @@ import { EmployeeParams } from '@employee/interfaces/employee-params.interface';
 import { EmployeeParamsService } from '@employee/services/employee-params.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { ScrollService } from '@shared/services/scroll.service';
+import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, IconComponent, CurrencyPipe],
+  imports: [CommonModule, ReactiveFormsModule, IconComponent
+    , CurrencyPipe, LoadingComponent],
   templateUrl: './employee-form.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
