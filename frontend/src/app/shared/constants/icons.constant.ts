@@ -1,4 +1,3 @@
-// Import FontAwesome icons for centralized management
 import {
   faArrowLeft,
   faTrash,
@@ -74,7 +73,6 @@ import {
 
 import { faLinkedin } from '@fortawesome/free-brands-svg-icons';
 
-// Re-export for external use
 export {
   faArrowLeft,
   faTrash,
@@ -149,15 +147,12 @@ export {
   faSignal
 };
 
-// Icon mapping for easy access
 export const ICON_MAP = {
-  // Navigation
   back: faArrowLeft,
   home: faHome,
   menu: faBars,
   close: faTimes,
 
-  // Actions
   edit: faEdit,
   delete: faTrash,
   add: faPlus,
@@ -168,14 +163,12 @@ export const ICON_MAP = {
   sort: faSort,
   view: faEye,
 
-  // Status
   check: faCheck,
   warning: faExclamationTriangle,
   error: faExclamationTriangle,
   info: faInfoCircle,
   success: faCheck,
 
-  // User/Auth
   user: faUser,
   users: faUsers,
   logout: faSignOutAlt,
@@ -183,14 +176,12 @@ export const ICON_MAP = {
   eye: faEye,
   'eye-slash': faEyeSlash,
 
-  // Data
   calendar: faCalendar,
   clock: faClock,
   location: faMapMarkerAlt,
   email: faEnvelope,
   phone: faPhone,
 
-  // UI
   'chevron-down': faChevronDown,
   'chevron-up': faChevronUp,
   'chevron-left': faChevronLeft,
@@ -198,16 +189,13 @@ export const ICON_MAP = {
   'arrow-left': faArrowLeft,
   'arrow-right': faArrowRight,
 
-  // Theme
   sun: faSun,
   moon: faMoon,
 
-  // Refresh/Update
   refresh: faSync,
   sync: faSync,
   update: faSync,
 
-  // Admin
   settings: faCog,
   'user-cog': faUserCog,
   'user-edit': faUserEdit,
@@ -246,5 +234,4 @@ export const ICON_MAP = {
   'signal': faSignal
 } as const;
 
-// Type for icon names
 export type IconType = keyof typeof ICON_MAP;

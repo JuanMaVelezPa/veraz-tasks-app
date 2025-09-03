@@ -1,16 +1,18 @@
 import { Component, input, output, signal, computed, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, CurrencyPipe } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
-import { Employee, EmployeeCreateRequest, EmployeeUpdateRequest } from '@employee/interfaces/employee.interface';
+import { Employee } from '@employee/interfaces/employee.interface';
+import { EmployeeParams } from '@employee/interfaces/employee-params.interface';
 import { EmployeeParamsService } from '@employee/services/employee-params.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
+import { ScrollService } from '@shared/services/scroll.service';
 
 @Component({
   selector: 'app-employee-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, IconComponent, CurrencyPipe],
   templateUrl: './employee-form.component.html',
-  changeDetection: ChangeDetectionStrategy.OnPush // Optimización clave
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EmployeeFormComponent implements OnInit {
   // Inputs
@@ -24,20 +26,18 @@ export class EmployeeFormComponent implements OnInit {
   formSubmitted = output<void>();
   formCancelled = output<void>();
 
-  // Computed values
+  // Computed properties
   submitButtonText = computed(() => this.isEditMode() ? 'Update Employee' : 'Create Employee');
   submitButtonIcon = computed(() => this.isEditMode() ? 'save' : 'add');
 
-  // Employee params service con inject para mejor performance
   private employeeParamsService = inject(EmployeeParamsService);
-
-  // Cache para mejorar performance
+  private scrollService = inject(ScrollService);
   private paramCache = new Map<string, any>();
 
-  // Employee params for form options - signal estático
+  // Data
   employeeParams = signal(this.employeeParamsService.getEmployeeParams());
 
-  // Computed signals optimizados para el template
+  // Computed param arrays
   employmentTypes = computed(() => this.employeeParams().employmentTypes);
   employeeStatuses = computed(() => this.employeeParams().employeeStatuses);
   jobLevels = computed(() => this.employeeParams().jobLevels);
@@ -46,107 +46,74 @@ export class EmployeeFormComponent implements OnInit {
   workShifts = computed(() => this.employeeParams().workShifts);
   departments = computed(() => this.employeeParams().departments);
 
-  ngOnInit() {
-    // Cargar parámetros una sola vez
+  ngOnInit(): void {
     this.employeeParams.set(this.employeeParamsService.getEmployeeParams());
   }
 
-  onSubmit() {
+  // Form actions
+  submitForm(): void {
     if (this.employeeForm().valid && !this.isLoading()) {
       this.formSubmitted.emit();
+      this.scrollService.scrollToTop();
     }
   }
 
-  onCancel() {
+  cancelForm(): void {
     this.formCancelled.emit();
   }
 
-  getFieldError(fieldName: string): string | null {
-    const field = this.employeeForm().get(fieldName);
-    if (field?.invalid && field?.touched) {
-      if (field.errors?.['required']) {
-        return 'This field is required';
-      }
-      if (field.errors?.['minlength']) {
-        return `Minimum length is ${field.errors['minlength'].requiredLength} characters`;
-      }
-      if (field.errors?.['maxlength']) {
-        return `Maximum length is ${field.errors['maxlength'].requiredLength} characters`;
-      }
-      if (field.errors?.['pattern']) {
-        return 'Invalid format';
-      }
-      if (field.errors?.['email']) {
-        return 'Please enter a valid email address';
-      }
-    }
-    return null;
-  }
-
-  // Métodos optimizados con cache
-  getEmploymentTypeName(code: string): string {
-    return this.getFromCache(`employmentType_${code}`, () => {
-      const type = this.employeeParams().employmentTypes.find(t => t.code === code);
-      return type?.name || code;
+  // Generic method for getting display names
+  getDisplayName(code: string, paramType: keyof EmployeeParams): string {
+    const cacheKey = `${String(paramType)}_${code}`;
+    return this.getCachedValue(cacheKey, () => {
+      const items = this.employeeParams()[paramType] as any[];
+      const item = items.find(item => item.code === code);
+      return item?.name || code;
     });
   }
 
-  getStatusName(code: string): string {
-    return this.getFromCache(`status_${code}`, () => {
-      const status = this.employeeParams().employeeStatuses.find(s => s.code === code);
-      return status?.name || code;
-    });
+  // Specific methods using the generic approach
+  getEmploymentTypeDisplayName(typeCode: string): string {
+    return this.getDisplayName(typeCode, 'employmentTypes');
   }
 
-  getJobLevelName(code: string): string {
-    return this.getFromCache(`jobLevel_${code}`, () => {
-      const level = this.employeeParams().jobLevels.find(l => l.code === code);
-      return level?.name || code;
-    });
+  getEmployeeStatusDisplayName(statusCode: string): string {
+    return this.getDisplayName(statusCode, 'employeeStatuses');
   }
 
-  getSalaryTypeName(code: string): string {
-    return this.getFromCache(`salaryType_${code}`, () => {
-      const type = this.employeeParams().salaryTypes.find(t => t.code === code);
-      return type?.name || code;
-    });
+  getJobLevelDisplayName(levelCode: string): string {
+    return this.getDisplayName(levelCode, 'jobLevels');
   }
 
-  getCurrencyName(code: string): string {
-    return this.getFromCache(`currency_${code}`, () => {
-      const currency = this.employeeParams().currencies.find(c => c.code === code);
-      return currency?.name || code;
-    });
+  getSalaryTypeDisplayName(typeCode: string): string {
+    return this.getDisplayName(typeCode, 'salaryTypes');
   }
 
-  getWorkShiftName(code: string): string {
-    return this.getFromCache(`workShift_${code}`, () => {
-      const shift = this.employeeParams().workShifts.find(s => s.code === code);
-      return shift?.name || code;
-    });
+  getCurrencyDisplayName(currencyCode: string): string {
+    return this.getDisplayName(currencyCode, 'currencies');
   }
 
-  getDepartmentName(code: string): string {
-    return this.getFromCache(`department_${code}`, () => {
-      const dept = this.employeeParams().departments.find(d => d.code === code);
-      return dept?.name || code;
-    });
+  getWorkShiftDisplayName(shiftCode: string): string {
+    return this.getDisplayName(shiftCode, 'workShifts');
   }
 
-  getCurrencySymbol(code: string): string {
-    return this.getFromCache(`currencySymbol_${code}`, () => {
-      const currency = this.employeeParams().currencies.find(c => c.code === code);
+  getDepartmentDisplayName(departmentCode: string): string {
+    return this.getDisplayName(departmentCode, 'departments');
+  }
+
+  getCurrencySymbol(currencyCode: string): string {
+    const cacheKey = `currencySymbol_${currencyCode}`;
+    return this.getCachedValue(cacheKey, () => {
+      const currency = this.employeeParams().currencies.find(c => c.code === currencyCode);
       return currency?.symbol || '$';
     });
   }
 
-  // Método helper para cache
-  private getFromCache<T>(key: string, factory: () => T): T {
-    if (this.paramCache.has(key)) {
-      return this.paramCache.get(key);
+  // Private helper methods
+  private getCachedValue<T>(cacheKey: string, valueFactory: () => T): T {
+    if (!this.paramCache.has(cacheKey)) {
+      this.paramCache.set(cacheKey, valueFactory());
     }
-    const value = factory();
-    this.paramCache.set(key, value);
-    return value;
+    return this.paramCache.get(cacheKey);
   }
 }

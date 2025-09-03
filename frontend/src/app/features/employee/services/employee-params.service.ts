@@ -60,20 +60,15 @@ export class EmployeeParamsService {
     { id: '4', code: 'FLEXIBLE', name: 'Flexible', isActive: true }
   ]);
 
-      private departments = signal<Department[]>([
-    // Core Departments
+  private departments = signal<Department[]>([
     { id: '1', code: 'ADMIN', name: 'Administration', description: 'Administrative management and HR', isActive: true },
     { id: '2', code: 'MANAGEMENT', name: 'Management', description: 'Strategic direction and management', isActive: true },
     { id: '3', code: 'FINANCE', name: 'Finance', description: 'Financial and accounting management', isActive: true },
-
-    // Main Construction Services
     { id: '4', code: 'CONSTRUCTION', name: 'Construction', description: 'General construction and civil works', isActive: true },
     { id: '5', code: 'PLUMBING', name: 'Plumbing', description: 'Plumbing and hydraulic installations', isActive: true },
     { id: '6', code: 'ELECTRICAL', name: 'Electrical', description: 'Electrical installations and systems', isActive: true },
     { id: '7', code: 'MAINTENANCE', name: 'Maintenance', description: 'General maintenance and repairs', isActive: true },
     { id: '8', code: 'DEMOLITION', name: 'Demolition', description: 'Demolition and excavation works', isActive: true },
-
-    // Support Services
     { id: '9', code: 'SAFETY', name: 'Safety', description: 'Safety and quality control', isActive: true },
     { id: '10', code: 'LOGISTICS', name: 'Logistics', description: 'Materials and equipment management', isActive: true },
     { id: '11', code: 'SALES', name: 'Sales', description: 'Sales and customer service', isActive: true }
@@ -120,62 +115,70 @@ export class EmployeeParamsService {
   }
 
   getEmploymentTypeById(id: string): EmploymentType | undefined {
-    return this.employmentTypes().find(type => type.id === id);
+    return this.findById(this.employmentTypes(), id);
   }
 
   getEmployeeStatusById(id: string): EmployeeStatus | undefined {
-    return this.employeeStatuses().find(status => status.id === id);
+    return this.findById(this.employeeStatuses(), id);
   }
 
   getJobLevelById(id: string): JobLevel | undefined {
-    return this.jobLevels().find(level => level.id === id);
+    return this.findById(this.jobLevels(), id);
   }
 
   getSalaryTypeById(id: string): SalaryType | undefined {
-    return this.salaryTypes().find(type => type.id === id);
+    return this.findById(this.salaryTypes(), id);
   }
 
   getCurrencyById(id: string): Currency | undefined {
-    return this.currencies().find(currency => currency.id === id);
+    return this.findById(this.currencies(), id);
   }
 
   getWorkShiftById(id: string): WorkShift | undefined {
-    return this.workShifts().find(shift => shift.id === id);
-  }
-
-  getEmploymentTypeByCode(code: string): EmploymentType | undefined {
-    return this.employmentTypes().find(type => type.code === code);
-  }
-
-  getEmployeeStatusByCode(code: string): EmployeeStatus | undefined {
-    return this.employeeStatuses().find(status => status.code === code);
-  }
-
-  getJobLevelByCode(code: string): JobLevel | undefined {
-    return this.jobLevels().find(level => level.code === code);
-  }
-
-  getSalaryTypeByCode(code: string): SalaryType | undefined {
-    return this.salaryTypes().find(type => type.code === code);
-  }
-
-  getCurrencyByCode(code: string): Currency | undefined {
-    return this.currencies().find(currency => currency.code === code);
-  }
-
-  getWorkShiftByCode(code: string): WorkShift | undefined {
-    return this.workShifts().find(shift => shift.code === code);
+    return this.findById(this.workShifts(), id);
   }
 
   getDepartmentById(id: string): Department | undefined {
-    return this.departments().find(dept => dept.id === id);
+    return this.findById(this.departments(), id);
+  }
+
+  getEmploymentTypeByCode(code: string): EmploymentType | undefined {
+    return this.findByCode(this.employmentTypes(), code);
+  }
+
+  getEmployeeStatusByCode(code: string): EmployeeStatus | undefined {
+    return this.findByCode(this.employeeStatuses(), code);
+  }
+
+  getJobLevelByCode(code: string): JobLevel | undefined {
+    return this.findByCode(this.jobLevels(), code);
+  }
+
+  getSalaryTypeByCode(code: string): SalaryType | undefined {
+    return this.findByCode(this.salaryTypes(), code);
+  }
+
+  getCurrencyByCode(code: string): Currency | undefined {
+    return this.findByCode(this.currencies(), code);
+  }
+
+  getWorkShiftByCode(code: string): WorkShift | undefined {
+    return this.findByCode(this.workShifts(), code);
   }
 
   getDepartmentByCode(code: string): Department | undefined {
-    return this.departments().find(dept => dept.code === code);
+    return this.findByCode(this.departments(), code);
   }
 
   getDepartmentByName(name: string): Department | undefined {
     return this.departments().find(dept => dept.name === name);
+  }
+
+  private findById<T extends BaseParamOption>(items: T[], id: string): T | undefined {
+    return items.find(item => item.id === id);
+  }
+
+  private findByCode<T extends BaseParamOption>(items: T[], code: string): T | undefined {
+    return items.find(item => item.code === code);
   }
 }

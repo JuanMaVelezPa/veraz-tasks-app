@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.veraz.tasks.backend.person.model.Person;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -69,7 +70,7 @@ public class User implements UserDetails {
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
-    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = false)
     private Person person;
 
     public User(String username, String email, String password, Role role) {
@@ -78,6 +79,7 @@ public class User implements UserDetails {
         this.password = password;
         this.roles = new HashSet<>();
         this.roles.add(role);
+        this.isActive = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
@@ -97,7 +99,7 @@ public class User implements UserDetails {
             this.username = this.username.toLowerCase().trim();
         }
         if (this.isActive == null) {
-            this.isActive = false;
+            this.isActive = true;
         }
     }
 

@@ -1,4 +1,4 @@
-import { Component, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, signal, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { PersonTableComponent } from '@person/components/person-table/person-table.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
@@ -11,6 +11,8 @@ import { IconComponent } from '@shared/components/icon/icon.component';
   templateUrl: './persons-admin-page.component.html',
 })
 export class PersonsAdminPageComponent implements OnInit, OnDestroy {
+  @ViewChild('personTable') personTable!: PersonTableComponent;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private feedbackService = inject(FeedbackMessageService);
@@ -22,6 +24,14 @@ export class PersonsAdminPageComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.feedbackService.clearMessage();
     this.checkSelectionMode();
+
+    // Listen for navigation events to refresh table when returning from person/employee forms
+    this.route.queryParams.subscribe(() => {
+      // Refresh table when query params change (e.g., returning from forms)
+      setTimeout(() => {
+        this.refreshPersonTable();
+      }, 100);
+    });
   }
 
   ngOnDestroy() {
@@ -58,6 +68,12 @@ export class PersonsAdminPageComponent implements OnInit, OnDestroy {
       });
     } else {
       this.router.navigate(['/admin/persons/new']);
+    }
+  }
+
+  refreshPersonTable(): void {
+    if (this.personTable) {
+      this.personTable.refreshData();
     }
   }
 }

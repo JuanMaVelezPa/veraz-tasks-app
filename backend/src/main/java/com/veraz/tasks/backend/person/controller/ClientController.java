@@ -65,7 +65,7 @@ public class ClientController
         PaginatedResponseDTO<ClientResponseDTO> response = clientService.findAll(pageable);
 
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Clients"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Clients"),
                 response, null));
     }
 
@@ -82,12 +82,12 @@ public class ClientController
 
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Client"),
+                    MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Client"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
-                            MessageUtils.getEntityNotFound("Client"), null, null));
+                            MessageUtils.getEntityNotFoundMessage("Client"), null, null));
         }
     }
 
@@ -97,13 +97,13 @@ public class ClientController
             @ApiResponse(responseCode = "201", description = "Created"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    @PreAuthorize("@permissionService.canCreateClient(#clientRequestDTO.personId)")
+    @PreAuthorize("@permissionService.canCreateClient(#createRequest.personId)")
     public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> create(
-            @Valid @RequestBody ClientCreateRequestDTO clientRequestDTO) {
-        ClientResponseDTO response = clientService.create(clientRequestDTO);
+            @Valid @RequestBody ClientCreateRequestDTO createRequest) {
+        ClientResponseDTO response = clientService.create(createRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponseDTO<>(true, HttpStatus.CREATED,
-                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "Client"),
+                        MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_CREATED_SUCCESS, "Client"),
                         response, null));
     }
 
@@ -116,10 +116,10 @@ public class ClientController
     })
     @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isResourceOwner(#id)")
     public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> update(@PathVariable UUID id,
-            @Valid @RequestBody ClientUpdateRequestDTO clientRequest) {
-        ClientResponseDTO response = clientService.update(id, clientRequest);
+            @Valid @RequestBody ClientUpdateRequestDTO updateRequest) {
+        ClientResponseDTO response = clientService.update(id, updateRequest);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Client"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_UPDATED_SUCCESS, "Client"),
                 response, null));
     }
 
@@ -133,7 +133,7 @@ public class ClientController
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
         clientService.deleteById(id);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Client"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_DELETED_SUCCESS, "Client"),
                 null, null));
     }
 }

@@ -1,40 +1,42 @@
 <div class="form-control">
-  <div class="mb-2">
-    <span class="text-sm font-semibold">Role</span>
-    <span class="text-error">*</span>
-  </div>
+  <label class="label">
+    <span class="label-text font-medium">Role *</span>
+  </label>
 
   @if (isLoadingRoles()) {
-    <div class="text-center py-2">
-      <div class="loading loading-spinner loading-xs"></div>
-      <span class="text-xs text-gray-500">Loading roles...</span>
-    </div>
+  <div class="text-center py-2">
+    <div class="loading loading-spinner loading-xs"></div>
+    <span class="text-xs text-gray-500">Loading roles...</span>
+  </div>
   } @else if (availableRoles().length > 0) {
-    <select
-      class="select select-bordered w-full"
-      [value]="selectedRole()"
-      (change)="onRoleChange($event)"
+  <select
+    class="select select-bordered w-full"
+    [value]="selectedRole()"
+    (change)="onRoleChange($event)"
+  >
+    <option
+      value=""
+      disabled
+    >Select a role</option>
+    @for (role of availableRoles(); track role.name) {
+    <option
+      [value]="role.name"
+      [title]="role.description || ''"
+      [selected]="role.name === selectedRole()"
     >
-      <option value="" disabled>Select a role</option>
-      @for (role of availableRoles(); track role.name) {
-        <option
-          [value]="role.name"
-          [title]="role.description || ''"
-          [selected]="role.name === selectedRole()"
-        >
-          {{ role.name | titlecase }}
-        </option>
-      }
-    </select>
-
-    @if (selectedRole() && getSelectedRoleDescription()) {
-      <div class="text-xs text-base-content/70 mt-1">
-        {{ getSelectedRoleDescription() }}
-      </div>
+      {{ role.name | titlecase }}
+    </option>
     }
+  </select>
+
+  @if (selectedRole() && getSelectedRoleDescription()) {
+  <label class="label">
+    <span class="label-text-alt text-base-content/70">{{ getSelectedRoleDescription() }}</span>
+  </label>
+  }
   } @else {
-    <div class="text-center py-2">
-      <span class="text-xs text-gray-500">No available roles</span>
-    </div>
+  <div class="text-center py-2">
+    <span class="text-xs text-gray-500">No available roles</span>
+  </div>
   }
 </div>

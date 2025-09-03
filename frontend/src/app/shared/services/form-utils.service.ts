@@ -3,67 +3,70 @@ import { AbstractControl, FormArray, FormGroup, ValidationErrors, Validators } f
 import { Observable, of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
-async function sleep(seconds: number = 1): Promise<boolean> {
-  return new Promise(resolve => setTimeout(() => {
-    resolve(true);
-  }, seconds * 1000));
-}
+const DELAY_SECONDS = 1;
+const MIN_USERNAME_LENGTH = 3;
+const MAX_USERNAME_LENGTH = 20;
+const RESERVED_WORDS = [
+  'admin', 'user', 'strider', 'root', 'test', 'guest', 'superadmin',
+  'super', 'manager', 'superuser', 'super-admin', 'super-user',
+  'super-manager', 'veraz', 'employee', 'abc123', '123abc', 'asdf', 'asdf123'
+];
 
 @Injectable({
   providedIn: 'root'
 })
 export class FormUtilsService {
 
-  static namePattern = '([a-zA-Z]+) ([a-zA-Z]+)';
-  static emailPattern = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$';
-  static notOnlySpacesPattern = '^[a-zA-Z0-9]+$';
-  static slugPattern = '^[a-z0-9_]+(?:-[a-z0-9_]+)*$';
-  static usernamePattern = '^[a-zA-Z0-9_-]+$';
+  static readonly NAME_PATTERN = '([a-zA-Z]+) ([a-zA-Z]+)';
+  static readonly EMAIL_PATTERN = '^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,4}$';
+  static readonly NO_SPACES_PATTERN = '^[a-zA-Z0-9]+$';
+  static readonly SLUG_PATTERN = '^[a-z0-9_]+(?:-[a-z0-9_]+)*$';
+  static readonly USERNAME_PATTERN = '^[a-zA-Z0-9_-]+$';
 
-  constructor() { }
-
-  isValidField(form: FormGroup, fieldName: string): boolean | null {
-    const control = form.controls[fieldName];
-    return control.errors && control.touched;
+  hasFieldError(form: FormGroup, fieldName: string): boolean | null {
+    const field = form.controls[fieldName];
+    return field.errors && field.touched;
   }
 
-  getFieldError(form: FormGroup, fieldName: string): string | null {
-    if (!form.controls[fieldName]) return null;
-    const errors = form.controls[fieldName].errors ?? {};
-    return FormUtilsService.getTextError(errors);
+  getFieldErrorMessage(form: FormGroup, fieldName: string): string | null {
+    const field = form.controls[fieldName];
+    if (!field) return null;
+
+    const errors = field.errors ?? {};
+    return FormUtilsService.getErrorMessage(errors);
   }
 
-  isValidFieldInArray(formArray: FormArray, index: number): boolean | null {
-    return formArray.controls[index].errors && formArray.controls[index].touched;
+  hasArrayFieldError(formArray: FormArray, index: number): boolean | null {
+    const field = formArray.controls[index];
+    return field.errors && field.touched;
   }
 
-  getFieldInArrayError(formArray: FormArray, index: number): string | null {
-    if (!formArray.controls[index]) return null;
-    const errors = formArray.controls[index].errors ?? {};
-    return FormUtilsService.getTextError(errors);
+  getArrayFieldErrorMessage(formArray: FormArray, index: number): string | null {
+    const field = formArray.controls[index];
+    if (!field) return null;
+
+    const errors = field.errors ?? {};
+    return FormUtilsService.getErrorMessage(errors);
   }
 
-  usernameOrEmailValidator(control: AbstractControl): ValidationErrors | null {
+  validateUsernameOrEmail(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
+    if (!value) return null;
+
     const errors: ValidationErrors = {};
 
-    if (!value) { return null; }
-
     if (value.includes('@')) {
-      const emailPatternError = Validators.pattern(FormUtilsService.emailPattern)(control);
-      if (emailPatternError) {
-        errors['pattern'] = emailPatternError['pattern'];
+      const emailError = Validators.pattern(FormUtilsService.EMAIL_PATTERN)(control);
+      if (emailError) {
+        errors['pattern'] = emailError['pattern'];
       }
     } else {
-
-      const minLengthRequired = 3;
-      const minLengthError = Validators.minLength(minLengthRequired)(control);
+      const minLengthError = Validators.minLength(MIN_USERNAME_LENGTH)(control);
       if (minLengthError) {
         errors['minlength'] = minLengthError['minlength'];
       }
 
-      const maxLengthRequired = 20;
-      const maxLengthError = Validators.maxLength(maxLengthRequired)(control);
+      const maxLengthError = Validators.maxLength(MAX_USERNAME_LENGTH)(control);
       if (maxLengthError) {
         errors['maxlength'] = maxLengthError['maxlength'];
       }
@@ -72,122 +75,118 @@ export class FormUtilsService {
     return Object.keys(errors).length ? errors : null;
   }
 
-  usernameValidator(control: AbstractControl): ValidationErrors | null {
+  validateUsername(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
+    if (!value) return null;
+
     const errors: ValidationErrors = {};
 
-    if (!value) { return null; }
-
-    const minLengthRequired = 3;
-    const minLengthError = Validators.minLength(minLengthRequired)(control);
+    const minLengthError = Validators.minLength(MIN_USERNAME_LENGTH)(control);
     if (minLengthError) {
       errors['minlength'] = minLengthError['minlength'];
     }
 
-    const maxLengthRequired = 20;
-    const maxLengthError = Validators.maxLength(maxLengthRequired)(control);
+    const maxLengthError = Validators.maxLength(MAX_USERNAME_LENGTH)(control);
     if (maxLengthError) {
       errors['maxlength'] = maxLengthError['maxlength'];
     }
 
-    const patternError = Validators.pattern(FormUtilsService.usernamePattern)(control);
+    const patternError = Validators.pattern(FormUtilsService.USERNAME_PATTERN)(control);
     if (patternError) {
       errors['pattern'] = patternError['pattern'];
     }
 
-    const reservedWordsError = FormUtilsService.notReservedWords(control);
-    if (reservedWordsError) {
-      errors['reservedWordUsed'] = reservedWordsError['reservedWordUsed'];
+    const reservedWordError = FormUtilsService.checkReservedWords(control);
+    if (reservedWordError) {
+      errors['reservedWordUsed'] = reservedWordError['reservedWordUsed'];
     }
 
     return Object.keys(errors).length ? errors : null;
   }
 
-  confirmPasswordValidator(passwordField: string) {
+  validatePasswordConfirmation(passwordFieldName: string) {
     return (control: AbstractControl): ValidationErrors | null => {
-      const password = control.parent?.get(passwordField)?.value;
+      const password = control.parent?.get(passwordFieldName)?.value;
       const confirmPassword = control.value;
 
       return password === confirmPassword ? null : { passwordMismatch: true };
     };
   }
 
-  static isFieldOneEqualFieldTwo(field1: string, field2: string) {
+  static validateFieldEquality(field1Name: string, field2Name: string) {
     return (formGroup: AbstractControl) => {
-      const field1Value = formGroup.get(field1)?.value;
-      const field2Value = formGroup.get(field2)?.value;
+      const field1Value = formGroup.get(field1Name)?.value;
+      const field2Value = formGroup.get(field2Name)?.value;
+
       if (!field1Value || !field2Value) return null;
       return field1Value === field2Value ? null : { fieldNotMatch: true };
     }
   }
 
-  static notReservedWords(control: AbstractControl): ValidationErrors | null {
+  static checkReservedWords(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     if (!value) return null;
-    const reservedWords = ['admin', 'user', 'strider', 'root', 'test'
-      , 'guest', 'superadmin', 'super', 'manager', 'superuser', 'super-admin'
-      , 'super-user', 'super-manager', 'veraz', 'employee', 'abc123', '123abc'
-      , 'asdf', 'asdf123']
+
     const lowerCaseValue = value.toLowerCase();
 
-    for (const word of reservedWords) {
-      if (lowerCaseValue.includes(word.toLowerCase())) {
-        return { 'reservedWordUsed': { word: word } };
+    for (const reservedWord of RESERVED_WORDS) {
+      if (lowerCaseValue.includes(reservedWord.toLowerCase())) {
+        return { 'reservedWordUsed': { word: reservedWord } };
       }
     }
     return null;
   }
 
   static async validateCredentials(control: AbstractControl): Promise<ValidationErrors | null> {
+    await this.delay(DELAY_SECONDS);
 
-    await sleep(1);
-
-    const formValue = control.value;
-    // Validation simulation - here would go the real server call
-    if (formValue === 'test@test.com') {
+    const value = control.value;
+    if (value === 'test@test.com') {
       return { invalidCredentials: true };
     }
     return null;
   }
 
-  markFormGroupTouched(formGroup: FormGroup) {
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
+  markFormAsTouched(form: FormGroup) {
+    Object.keys(form.controls).forEach(key => {
+      const control = form.get(key);
       control?.markAsTouched();
     });
   }
 
-  resetForm(formGroup: FormGroup) {
-    formGroup.reset();
+  resetForm(form: FormGroup) {
+    form.reset();
   }
 
-  hasFormErrors(formGroup: FormGroup): boolean {
-    return formGroup.invalid && formGroup.touched;
+  hasFormErrors(form: FormGroup): boolean {
+    return form.invalid && form.touched;
   }
 
-  getFormErrors(formGroup: FormGroup): { [key: string]: string } {
-    const errors: { [key: string]: string } = {};
-    Object.keys(formGroup.controls).forEach(key => {
-      const control = formGroup.get(key);
+  getFormErrorMessages(form: FormGroup): { [key: string]: string } {
+    const errorMessages: { [key: string]: string } = {};
+
+    Object.keys(form.controls).forEach(key => {
+      const control = form.get(key);
       if (control?.errors) {
-        errors[key] = FormUtilsService.getTextError(control.errors) || '';
+        errorMessages[key] = FormUtilsService.getErrorMessage(control.errors) || '';
       }
     });
-    return errors;
+
+    return errorMessages;
   }
 
-  validateUsernameAvailability(username: string): Observable<boolean> {
+  checkUsernameAvailability(username: string): Observable<boolean> {
     return of(true).pipe(delay(500));
   }
 
-  static toTitleCase(str: string): string {
-    if (!str) return str;
-    return str.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+  static toTitleCase(text: string): string {
+    if (!text) return text;
+    return text.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
-  static getTextError(errors: ValidationErrors): string | null {
-    for (const key of Object.keys(errors)) {
-      switch (key) {
+  static getErrorMessage(errors: ValidationErrors): string | null {
+    for (const errorType of Object.keys(errors)) {
+      switch (errorType) {
         case 'required':
           return 'This field is required.';
         case 'minlength':
@@ -203,26 +202,32 @@ export class FormUtilsService {
         case 'fieldNotMatch':
           return 'Passwords do not match';
         case 'pattern':
-          if (errors['pattern']?.requiredPattern === FormUtilsService.namePattern) {
-            return 'Name must be in the format of first and last name.';
-          }
-          if (errors['pattern']?.requiredPattern === FormUtilsService.emailPattern) {
-            return 'Invalid email.';
-          }
-          if (errors['pattern']?.requiredPattern === FormUtilsService.notOnlySpacesPattern) {
-            return 'Name cannot contain spaces.';
-          }
-          if (errors['pattern']?.requiredPattern === FormUtilsService.slugPattern) {
-            return 'Slug cannot contain spaces.';
-          }
-          if (errors['pattern']?.requiredPattern === FormUtilsService.usernamePattern) {
-            return 'Username can only contain letters, numbers, hyphens and underscores.';
-          }
-          return `The format is not correct`;
+          return this.getPatternErrorMessage(errors['pattern']?.requiredPattern);
         default:
-          return `Uncontrolled validation error: ${key}`;
+          return `Uncontrolled validation error: ${errorType}`;
       }
     }
     return null;
+  }
+
+  private static getPatternErrorMessage(pattern: string): string {
+    switch (pattern) {
+      case FormUtilsService.NAME_PATTERN:
+        return 'Name must be in the format of first and last name.';
+      case FormUtilsService.EMAIL_PATTERN:
+        return 'Invalid email.';
+      case FormUtilsService.NO_SPACES_PATTERN:
+        return 'Name cannot contain spaces.';
+      case FormUtilsService.SLUG_PATTERN:
+        return 'Slug cannot contain spaces.';
+      case FormUtilsService.USERNAME_PATTERN:
+        return 'Username can only contain letters, numbers, hyphens and underscores.';
+      default:
+        return 'The format is not correct';
+    }
+  }
+
+  private static delay(seconds: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, seconds * 1000));
   }
 }

@@ -2,38 +2,49 @@
   <!-- Feedback Messages -->
   <shared-feedback-message />
 
-  <!-- Header with Status -->
-  <div class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-2xl font-bold">{{ isEditMode() ? 'Edit' : 'Create' }} User</h1>
-      <p class="text-sm text-base-content/70">User management information</p>
-    </div>
-
-    <div class="flex items-center gap-4">
-      <!-- Action Buttons -->
-      <div class="flex gap-2">
-        <button
-          class="btn btn-outline btn-sm"
-          (click)="goBack()"
-          title="Back"
-        >
-          <shared-icon type="back" />
-        </button>
-
-        @if (isEditMode()) {
-        <button
-          class="btn btn-error btn-sm"
-          (click)="showDeleteConfirmation()"
-          [disabled]="isLoading()"
-        >
-          <shared-icon type="delete" />
-        </button>
-        }
+  <!-- Person Association Banner - Solo cuando sea necesario -->
+  @if (!isEditMode() && targetPersonId()) {
+  <div class="bg-info/10 border border-info/20 rounded-lg p-4 mb-6">
+    <div class="flex items-center gap-3">
+      <shared-icon type="info" class="text-info" />
+      <div>
+        <h3 class="font-semibold text-info">Auto-Association Mode</h3>
+        <p class="text-sm text-info/80">
+          User will be automatically associated with person after creation.
+        </p>
       </div>
     </div>
   </div>
+  }
 
-  <!-- Main Content - Full Width -->
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 class="text-2xl font-bold">{{ isEditMode() ? 'Edit' : 'Create' }} User</h1>
+    </div>
+
+    <div class="flex items-center gap-4">
+      <button
+        class="btn btn-outline btn-sm"
+        (click)="goBack()"
+        title="Back"
+      >
+        <shared-icon type="back" />
+      </button>
+
+      @if (isEditMode()) {
+      <button
+        class="btn btn-error btn-sm"
+        (click)="showDeleteConfirmation()"
+        [disabled]="isLoading()"
+      >
+        <shared-icon type="delete" />
+      </button>
+      }
+    </div>
+  </div>
+
+  <!-- Main Content -->
   <div class="card bg-base-100 shadow-lg">
     <div class="card-body p-6">
       <app-user-form
@@ -41,7 +52,7 @@
         [user]="user()"
         [isEditMode]="isEditMode()"
         [isLoading]="isLoading()"
-        (formSubmitted)="onSubmit()"
+        (formSubmitted)="submitForm()"
         (roleSelected)="onRoleSelected($event)"
       />
     </div>
@@ -53,10 +64,10 @@
     <div class="modal-box">
       <h3 class="font-bold text-lg text-error">Delete User</h3>
       <p class="py-4">
-        Are you sure you want to delete the user <strong>{{ currentUser()!.username }}</strong>?
+        Are you sure you want to delete <strong>{{ currentUser()!.username }}</strong>?
       </p>
       <p class="text-sm text-gray-500 mb-4">
-        This action cannot be undone. The user will be permanently removed from the system.
+        This action cannot be undone.
       </p>
       <div class="modal-action">
         <button
@@ -76,14 +87,11 @@
           } @else {
           <shared-icon type="delete" />
           }
-          Delete User
+          Delete
         </button>
       </div>
     </div>
-    <form
-      method="dialog"
-      class="modal-backdrop"
-    >
+    <form method="dialog" class="modal-backdrop">
       <button (click)="cancelDelete()">close</button>
     </form>
   </dialog>

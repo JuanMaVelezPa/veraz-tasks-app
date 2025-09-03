@@ -11,15 +11,12 @@ export class HttpErrorService {
   private feedbackService = inject(FeedbackMessageService);
 
   handleError(error: HttpErrorResponse, context: string): Observable<never> {
-    let errorMessage: string;
-
-    if (error.error?.message) {
-      errorMessage = error.error.message;
-    } else {
-      errorMessage = this.getGeneralErrorMessageByStatus(error.status);
-    }
-
+    const errorMessage = this.extractErrorMessage(error);
     return this.createCustomError(errorMessage, error.status, error, context, error.error);
+  }
+
+  private extractErrorMessage(error: HttpErrorResponse): string {
+    return error.error?.message || this.getErrorMessageByStatus(error.status);
   }
 
   private createCustomError(
@@ -40,38 +37,36 @@ export class HttpErrorService {
     return throwError(() => customError);
   }
 
-  private getGeneralErrorMessageByStatus(status: number): string {
-    switch (status) {
-      case 400:
-        return 'Invalid request data.';
-      case 401:
-        return 'Unauthorized. Please sign in again.';
-      case 403:
-        return 'Access denied. You do not have permission for this action.';
-      case 404:
-        return 'Resource not found.';
-      case 409:
-        return 'Conflict with the provided data.';
-      case 422:
-        return 'Validation error. Please check the data format.';
-      case 429:
-        return 'Too many requests. Please wait a moment before trying again.';
-      case 500:
-        return 'Server error. Please try again later.';
-      case 502:
-      case 503:
-      case 504:
-        return 'Service temporarily unavailable. Please try again later.';
-      case 0:
-        return 'Connection error. Please check your internet connection.';
-      default:
-        if (status >= 500) {
-          return 'Server error. Please try again later.';
-        } else if (status >= 400) {
-          return 'Request error. Please verify the provided data.';
-        } else {
-          return `Error ${status}: Unexpected error occurred.`;
-        }
+  private getErrorMessageByStatus(status: number): string {
+    const errorMessages: Record<number, string> = {
+      400: 'Invalid request data.',
+      401: 'Unauthorized. Please sign in again.',
+      403: 'Access denied. You do not have permission for this action.',
+      404: 'Resource not found.',
+      409: 'Conflict with the provided data.',
+      422: 'Validation error. Please check the data format.',
+      429: 'Too many requests. Please wait a moment before trying again.',
+      500: 'Server error. Please try again later.',
+      502: 'Service temporarily unavailable. Please try again later.',
+      503: 'Service temporarily unavailable. Please try again later.',
+      504: 'Service temporarily unavailable. Please try again later.',
+      0: 'Connection error. Please check your internet connection.'
+    };
+
+    if (errorMessages[status]) {
+      return errorMessages[status];
+    }
+
+    return this.getGenericErrorMessage(status);
+  }
+
+  private getGenericErrorMessage(status: number): string {
+    if (status >= 500) {
+      return 'Server error. Please try again later.';
+    } else if (status >= 400) {
+      return 'Request error. Please verify the provided data.';
+    } else {
+      return `Error ${status}: Unexpected error occurred.`;
     }
   }
 }

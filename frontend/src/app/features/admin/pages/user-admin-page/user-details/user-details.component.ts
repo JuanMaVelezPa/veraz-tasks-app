@@ -4,7 +4,7 @@ import { Person } from '@person/interfaces/person.interface';
 import { ReactiveFormsModule } from '@angular/forms';
 import { UserService } from '@users/services/user.service';
 import { PersonService } from '@person/services/person.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
 import { CommonModule } from '@angular/common';
@@ -13,7 +13,6 @@ import { FeedbackMessageService } from '@shared/services/feedback-message.servic
 import { NavigationHistoryService } from '@shared/services/navigation-history.service';
 import { PersonAssociationService } from '@person/services/person-association.service';
 import { UserFormComponent } from '@users/components/user-form/user-form.component';
-
 import { AuthService } from '@auth/services/auth.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom, catchError } from 'rxjs';
@@ -24,202 +23,67 @@ import { firstValueFrom, catchError } from 'rxjs';
   templateUrl: './user-details.component.html',
 })
 export class UserDetailsComponent implements OnInit, OnDestroy {
-
   user = input.required<User>();
 
-  formBuilders = inject(FormBuildersManagerService);
-  router = inject(Router);
+  // Services
+  private readonly formBuilders = inject(FormBuildersManagerService);
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+  private readonly userService = inject(UserService);
+  private readonly personService = inject(PersonService);
+  private readonly httpErrorService = inject(HttpErrorService);
+  private readonly feedbackService = inject(FeedbackMessageService);
+  private readonly navigationHistory = inject(NavigationHistoryService);
+  private readonly personAssociationService = inject(PersonAssociationService);
+  private readonly authService = inject(AuthService);
+  private readonly cdr = inject(ChangeDetectorRef);
 
-  userService = inject(UserService);
-  personService = inject(PersonService);
+  // State signals
+  readonly wasSaved = signal(false);
+  readonly isLoading = signal(false);
+  readonly isEditMode = signal(false);
+  readonly showDeleteModal = signal(false);
+  readonly currentUser = signal<User | null>(null);
+  readonly personalProfile = signal<Person | null>(null);
+  readonly isLoadingPerson = signal(false);
+  readonly targetPersonId = signal<string | null>(null);
+  readonly returnUrl = signal<string | null>(null);
 
-  httpErrorService = inject(HttpErrorService);
-  feedbackService = inject(FeedbackMessageService);
-  navigationHistory = inject(NavigationHistoryService);
-  personAssociationService = inject(PersonAssociationService);
-  authService = inject(AuthService);
-  private cdr = inject(ChangeDetectorRef);
-
-  wasSaved = signal(false);
-  isLoading = signal(false);
-  isEditMode = signal(false);
-  showDeleteModal = signal(false);
-  currentUser = signal<User | null>(null);
-
-  // Person related signals
-  personalProfile = signal<Person | null>(null);
-  isLoadingPerson = signal(false);
-
+  // Form
   userForm = this.formBuilders.buildUserForm({ isEditMode: false });
 
-  ngOnInit() {
+  ngOnInit(): void {
+    this.initializeComponent();
+  }
+
+  ngOnDestroy(): void {
     this.feedbackService.clearMessage();
-    const user = this.user();
-    this.currentUser.set(user);
-    this.isEditMode.set(user.id !== 'new');
-
-    // Recreate form with correct edit mode
-    this.userForm = this.formBuilders.buildUserForm({
-      isEditMode: this.isEditMode()
-    });
-
-    this.setFormValues(user);
-    this.setPasswordValidations();
-    if (user.id !== 'new') {
-      this.loadPersonalProfile();
-    }
   }
 
-  private setFormValues(user: Partial<User>) {
-    this.formBuilders.patchForm(this.userForm, user);
-    this.cdr.detectChanges();
-  }
-
-  private setPasswordValidations() {
-    // No need to recreate the form, just update password validations if needed
-    // The form is already built with the correct isEditMode in the constructor
-  }
-
-  async onSubmit() {
-    this.feedbackService.clearMessage();
-
+  // Public methods
+  async submitForm(): Promise<void> {
     if (this.userForm.invalid) {
       this.userForm.markAllAsTouched();
       this.feedbackService.showError('Please fix the validation errors before saving.');
       return;
     }
 
-    this.isLoading.set(true);
+    if (this.isEditMode() && !this.validatePasswordFields()) {
+      return;
+    }
 
+    this.isLoading.set(true);
     try {
-      if (this.isEditMode()) {
-        await this.updateUser();
-      } else {
-        await this.createUser();
-      }
+      await (this.isEditMode() ? this.updateUser() : this.createUser());
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while saving the user.');
-      // Reset form to original values after error
-      this.setFormValues(this.currentUser()!);
+      this.resetFormToOriginalValues();
     } finally {
       this.isLoading.set(false);
     }
   }
 
-  private async createUser() {
-    const formValue = this.userForm.value;
-    const userData = {
-      ...this.formBuilders.prepareUserFormData(formValue),
-      roles: formValue.selectedRole ? [formValue.selectedRole] : []
-    };
-
-    try {
-      const createdUser = await firstValueFrom(
-        this.userService.createUser(userData).pipe(
-          catchError(error => this.httpErrorService.handleError(error, 'creating user'))
-        )
-      );
-
-      if (createdUser?.id) {
-        this.currentUser.set(createdUser);
-        this.wasSaved.set(true);
-        this.feedbackService.showSuccess('User created successfully!');
-        // Use setTimeout to ensure the message is shown before navigation
-        setTimeout(() => {
-          this.router.navigate(['/admin/users']);
-        }, 500);
-      }
-    } catch (error: any) {
-      this.feedbackService.showError(error.message || 'An error occurred while creating the user.');
-      // Reset form to original values after error
-      this.setFormValues(this.currentUser()!);
-      throw error;
-    }
-  }
-
-  private async updateUser() {
-    const originalUser = this.currentUser();
-    if (!originalUser) { return; }
-
-    // Validate password fields
-    if (!this.validatePasswordFields()) {
-      return;
-    }
-
-    const formValue = this.userForm.value;
-    const changes = this.formBuilders.detectUserChanges(formValue, originalUser, {
-      includeRoles: true,
-      includePassword: true
-    });
-
-    if (Object.keys(changes).length === 0) {
-      this.feedbackService.showWarning('No changes detected. Nothing to save.');
-      return;
-    }
-
-    // Check if username or email changed
-    const hasLoginChanges = changes.username || changes.email;
-    const isCurrentUser = this.authService.user()?.id === originalUser.id;
-
-    try {
-      const updatedUser: User = await firstValueFrom(
-        this.userService.updateUser(originalUser.id, changes).pipe(
-          catchError(error => this.httpErrorService.handleError(error, 'updating user'))
-        )
-      );
-
-      if (updatedUser?.id) {
-        this.currentUser.set(updatedUser);
-
-        // Update auth state if it's the current user
-        if (isCurrentUser) {
-          await firstValueFrom(this.authService.updateCurrentUserAndRefreshIfNeeded(updatedUser));
-          this.feedbackService.showSuccess('User updated successfully!');
-        } else {
-          this.feedbackService.showSuccess('User updated successfully!');
-        }
-
-        // Reload personal profile if user data changed (username/email might affect profile)
-        await this.loadPersonalProfile();
-
-        this.formBuilders.patchForm(this.userForm, {
-          password: '',
-          confirmPassword: ''
-        });
-
-        this.wasSaved.set(true);
-      }
-    } catch (error: any) {
-      this.feedbackService.showError(error.message || 'An error occurred while updating the user.');
-      // Reset form to original values after error
-      this.setFormValues(this.currentUser()!);
-    }
-  }
-
-  private validatePasswordFields(): boolean {
-    const passwordValue = this.userForm.get('password')?.value?.trim();
-    const confirmPasswordValue = this.userForm.get('confirmPassword')?.value?.trim();
-
-    // If either password field has a value, both must have values
-    if (passwordValue || confirmPasswordValue) {
-      if (!passwordValue) {
-        this.feedbackService.showError('If you enter password confirmation, you must also enter the new password');
-        return false;
-      }
-      if (!confirmPasswordValue) {
-        this.feedbackService.showError('If you enter a new password, you must also confirm it');
-        return false;
-      }
-      if (passwordValue !== confirmPasswordValue) {
-        this.feedbackService.showError('Passwords do not match');
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  async deleteUser() {
+  async deleteUser(): Promise<void> {
     const user = this.currentUser();
     if (!user || user.id === 'new') return;
 
@@ -227,13 +91,12 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
 
     try {
-      const response = await firstValueFrom(
+      await firstValueFrom(
         this.userService.deleteUser(user.id).pipe(
           catchError(error => this.httpErrorService.handleError(error, 'deleting user'))
         )
       );
 
-      // For delete operations, response will be true if successful
       this.feedbackService.showSuccess('User deleted successfully!');
       this.router.navigate(['/admin/users']);
     } catch (error: any) {
@@ -244,38 +107,161 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  showDeleteConfirmation() {
+  showDeleteConfirmation(): void {
     this.showDeleteModal.set(true);
   }
 
-  cancelDelete() {
+  cancelDelete(): void {
     this.showDeleteModal.set(false);
   }
 
-  goBack() {
+  goBack(): void {
     this.feedbackService.clearMessage();
     this.navigationHistory.goBack('/admin/users');
   }
 
-  onRoleSelected(roleName: string) {
-    const control = this.userForm.get('selectedRole');
-    control?.setValue(roleName);
+  onRoleSelected(roleName: string): void {
+    this.userForm.get('selectedRole')?.setValue(roleName);
   }
 
-  private async loadPersonalProfile() {
-    const user = this.currentUser();
-    if (!user || user.id === 'new') {
+  removePersonalProfile(): void {
+    const person = this.personalProfile();
+    if (!person) return;
+    this.performRemoval();
+  }
+
+  linkExistingPerson(): void {
+    this.router.navigate(['/admin/persons'], {
+      queryParams: { mode: 'select', userId: this.currentUser()?.id }
+    });
+  }
+
+  createNewPerson(): void {
+    this.router.navigate(['/admin/persons/new'], {
+      queryParams: { userId: this.currentUser()?.id }
+    });
+  }
+
+  goToPersonManagement(): void {
+    this.router.navigate(['/admin/users', this.currentUser()?.id, 'person']);
+  }
+
+  toggleUserStatus(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.formBuilders.patchForm(this.userForm, { isActive: target.checked });
+  }
+
+  // Private methods
+  private initializeComponent(): void {
+    this.feedbackService.clearMessage();
+    const user = this.user();
+
+    this.currentUser.set(user);
+    this.isEditMode.set(user.id !== 'new');
+    this.capturePersonAssociationParams();
+    this.setupForm();
+    this.setFormValues(user);
+    this.setPasswordValidations();
+
+    if (user.id !== 'new') {
+      this.loadPersonalProfile();
+    }
+  }
+
+  private capturePersonAssociationParams(): void {
+    const personId = this.route.snapshot.queryParamMap.get('personId');
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    if (personId) {
+      this.targetPersonId.set(personId);
+      this.returnUrl.set(returnUrl);
+    }
+  }
+
+  private setupForm(): void {
+    this.userForm = this.formBuilders.buildUserForm({
+      isEditMode: this.isEditMode()
+    });
+  }
+
+  private setFormValues(user: Partial<User>): void {
+    this.formBuilders.patchForm(this.userForm, user);
+    this.cdr.detectChanges();
+  }
+
+  private setPasswordValidations(): void {
+    // Password validations are handled in the form builder
+  }
+
+  private async createUser(): Promise<void> {
+    const userData = this.prepareUserData(this.userForm.value);
+    const createdUser = await firstValueFrom(
+      this.userService.createUser(userData).pipe(
+        catchError(error => this.httpErrorService.handleError(error, 'creating user'))
+      )
+    );
+
+    if (createdUser?.id) {
+      await this.handleUserCreationSuccess(createdUser);
+    }
+  }
+
+  private async updateUser(): Promise<void> {
+    const originalUser = this.currentUser();
+    if (!originalUser) return;
+
+    const userData = this.prepareUserData(this.userForm.value);
+    const changes = this.formBuilders.detectUserChanges(userData, originalUser, {
+      includeRoles: true,
+      includePassword: true
+    });
+
+    if (Object.keys(changes).length === 0) {
+      this.feedbackService.showWarning('No changes detected.');
       return;
     }
 
-    this.isLoadingPerson.set(true);
+    const updatedUser = await firstValueFrom(
+      this.userService.updateUser(originalUser.id, changes).pipe(
+        catchError(error => this.httpErrorService.handleError(error, 'updating user'))
+      )
+    );
 
+    if (updatedUser?.id) {
+      this.handleUserUpdateSuccess(updatedUser);
+    }
+  }
+
+  private validatePasswordFields(): boolean {
+    const password = this.userForm.get('password')?.value?.trim();
+    const confirmPassword = this.userForm.get('confirmPassword')?.value?.trim();
+
+    if (password || confirmPassword) {
+      if (!password) {
+        this.feedbackService.showError('If you enter password confirmation, you must also enter the new password');
+        return false;
+      }
+      if (!confirmPassword) {
+        this.feedbackService.showError('If you enter a new password, you must also confirm it');
+        return false;
+      }
+      if (password !== confirmPassword) {
+        this.feedbackService.showError('Passwords do not match');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private async loadPersonalProfile(): Promise<void> {
+    const user = this.currentUser();
+    if (!user || user.id === 'new') return;
+
+    this.isLoadingPerson.set(true);
     try {
       const searchOptions = { page: 0, size: 1000, sort: 'id', order: 'asc' as const, search: '' };
-      const personsResponse = await firstValueFrom(
-        this.personService.getPersons(searchOptions)
-      );
-
+      const personsResponse = await firstValueFrom(this.personService.getPersons(searchOptions));
       const personalProfile = personsResponse.data.find(person => person.userId === user.id);
       this.personalProfile.set(personalProfile || null);
     } catch (error) {
@@ -285,15 +271,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  removePersonalProfile() {
-    const person = this.personalProfile();
-    const user = this.currentUser();
-    if (!person || !user) return;
-
-    this.performRemoval();
-  }
-
-  private async performRemoval() {
+  private async performRemoval(): Promise<void> {
     const person = this.personalProfile();
     if (!person) return;
 
@@ -306,37 +284,76 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  linkExistingPerson() {
-    this.router.navigate(['/admin/persons'], {
-      queryParams: {
-        mode: 'select',
-        userId: this.currentUser()?.id
+  private prepareUserData(formValue: any): any {
+    const processedData = this.formBuilders.prepareUserFormData(formValue);
+    processedData.roles = formValue.selectedRole ? [formValue.selectedRole] : [];
+
+    if (this.isEditMode()) {
+      if (formValue.password?.trim()) {
+        processedData.password = formValue.password.trim();
+      } else {
+        delete processedData.password;
       }
-    });
+      delete processedData.confirmPassword;
+    }
+
+    return processedData;
   }
 
-  createNewPerson() {
-    this.router.navigate(['/admin/persons/new'], {
-      queryParams: {
-        userId: this.currentUser()?.id
+  private async handleUserCreationSuccess(createdUser: User): Promise<void> {
+    this.currentUser.set(createdUser);
+    this.wasSaved.set(true);
+    this.feedbackService.showSuccess('User created successfully!');
+
+    const personId = this.targetPersonId();
+    if (personId && createdUser.id) {
+      await this.associateUserWithPerson(personId, createdUser.id);
+    } else {
+      this.navigateAfterDelay(['/admin/users'], 500);
+    }
+  }
+
+  private async associateUserWithPerson(personId: string, userId: string): Promise<void> {
+    try {
+      this.isLoading.set(true);
+      this.feedbackService.showSuccess('Associating user with person...');
+
+      await firstValueFrom(this.personService.associateUser(personId, userId));
+      this.feedbackService.showSuccess('User created and associated with person successfully!');
+
+      const returnUrl = this.returnUrl();
+      if (returnUrl) {
+        this.navigateAfterDelay(returnUrl, 1000);
+      } else {
+        this.navigateAfterDelay(['/admin/users'], 1000);
       }
-    });
+    } catch (error: any) {
+      console.error('Error associating user with person:', error);
+      this.feedbackService.showWarning('User created successfully, but failed to associate with person. You can associate manually later.');
+      this.navigateAfterDelay(['/admin/users'], 1000);
+    } finally {
+      this.isLoading.set(false);
+    }
   }
 
-  goToPersonManagement() {
-    this.router.navigate(['/admin/users', this.currentUser()?.id, 'person']);
+  private navigateAfterDelay(route: string | string[], delay: number): void {
+    setTimeout(() => {
+      if (typeof route === 'string') {
+        this.router.navigateByUrl(route);
+      } else {
+        this.router.navigate(route);
+      }
+    }, delay);
   }
 
-  toggleUserStatus(event: Event) {
-    const target = event.target as HTMLInputElement;
-    const isActive = target.checked;
-
-    this.formBuilders.patchForm(this.userForm, {
-      isActive: isActive
-    });
+  private handleUserUpdateSuccess(updatedUser: User): void {
+    this.currentUser.set(updatedUser);
+    this.setFormValues(updatedUser);
+    this.wasSaved.set(true);
+    this.feedbackService.showSuccess('User updated successfully!');
   }
 
-  ngOnDestroy() {
-    this.feedbackService.clearMessage();
+  private resetFormToOriginalValues(): void {
+    this.setFormValues(this.currentUser()!);
   }
 }

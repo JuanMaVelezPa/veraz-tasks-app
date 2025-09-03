@@ -19,13 +19,13 @@ export class UserFormBuilderService extends BaseFormBuilderService {
   protected readonly fieldConfigs: { [key: string]: FieldConfig } = {
     username: {
       name: 'username',
-      validators: [Validators.required, this.formUtils.usernameValidator],
+      validators: [Validators.required, this.formUtils.validateUsername],
       defaultValue: '',
       isRequired: true
     },
     email: {
       name: 'email',
-      validators: [Validators.required, Validators.pattern(FormUtilsService.emailPattern)],
+      validators: [Validators.required, Validators.pattern(FormUtilsService.EMAIL_PATTERN)],
       defaultValue: '',
       isRequired: true
     },
@@ -63,6 +63,16 @@ export class UserFormBuilderService extends BaseFormBuilderService {
       customValidators = []
     } = config;
 
+    const formConfig = this.buildUserFormConfig(isEditMode, isReadOnly);
+    const form = this.fb.nonNullable.group(formConfig);
+
+    this.addPasswordValidation(form, includePasswordValidation, isEditMode);
+    this.addUserCustomValidators(form, customValidators);
+
+    return form;
+  }
+
+  private buildUserFormConfig(isEditMode: boolean, isReadOnly: boolean): { [key: string]: any[] } {
     const formConfig: { [key: string]: any[] } = {};
 
     Object.keys(this.fieldConfigs).forEach(fieldName => {
@@ -70,12 +80,8 @@ export class UserFormBuilderService extends BaseFormBuilderService {
       if (fieldConfig) {
         let validators = [...fieldConfig.validators];
 
-        if (fieldName === 'password' || fieldName === 'confirmPassword') {
-          if (isEditMode) {
-            validators = [this.passwordUtils.passwordValidator];
-          } else {
-            validators = [Validators.required, this.passwordUtils.passwordValidator];
-          }
+        if (this.isPasswordField(fieldName)) {
+          validators = this.getPasswordValidators(fieldName, isEditMode);
         }
 
         if (isReadOnly) {
@@ -86,19 +92,59 @@ export class UserFormBuilderService extends BaseFormBuilderService {
       }
     });
 
-    const form = this.fb.nonNullable.group(formConfig);
+    return formConfig;
+  }
 
-    if (includePasswordValidation) {
-      form.addValidators(FormUtilsService.isFieldOneEqualFieldTwo('password', 'confirmPassword'));
+  private isPasswordField(fieldName: string): boolean {
+    return fieldName === 'password' || fieldName === 'confirmPassword';
+  }
+
+  private getPasswordValidators(fieldName: string, isEditMode: boolean): any[] {
+    if (isEditMode) {
+      // In edit mode, passwords are optional
+      return [this.passwordUtils.passwordValidator];
     }
+    // In creation mode, passwords are required
+    return [Validators.required, this.passwordUtils.passwordValidator];
+  }
 
+  private addPasswordValidation(form: FormGroup, includePasswordValidation: boolean, isEditMode: boolean): void {
+    if (includePasswordValidation) {
+      if (!isEditMode) {
+        // In creation mode, always validate password equality
+        form.addValidators(FormUtilsService.validateFieldEquality('password', 'confirmPassword'));
+      } else {
+        // In edit mode, validate equality only if both fields have values
+        const passwordControl = form.get('password');
+        const confirmPasswordControl = form.get('confirmPassword');
+
+        if (passwordControl && confirmPasswordControl) {
+          const validatePasswordMatch = () => {
+            const password = passwordControl.value;
+            const confirmPassword = confirmPasswordControl.value;
+
+            if (password && confirmPassword && password !== confirmPassword) {
+              form.setErrors({ ...form.errors, ['fieldNotMatch']: true });
+            } else {
+              const errors = { ...form.errors };
+              delete errors['fieldNotMatch'];
+              form.setErrors(Object.keys(errors).length > 0 ? errors : null);
+            }
+          };
+
+          passwordControl.valueChanges.subscribe(validatePasswordMatch);
+          confirmPasswordControl.valueChanges.subscribe(validatePasswordMatch);
+        }
+      }
+    }
+  }
+
+  private addUserCustomValidators(form: FormGroup, customValidators: any[]): void {
     if (customValidators.length > 0) {
       customValidators.forEach(validator => {
         form.addValidators(validator);
       });
     }
-
-    return form;
   }
 
   detectUserChanges(formValue: any, originalUser: any, options: {
@@ -107,50 +153,69 @@ export class UserFormBuilderService extends BaseFormBuilderService {
   } = {}): any {
     const { includeRoles = true, includePassword = true } = options;
 
+    // Create a clean comparison object without selectedRole
     const comparisonValue = { ...formValue };
-
-    if (includeRoles && originalUser.roles) {
-      const currentRole = originalUser.roles.length > 0 ? originalUser.roles[0] : '';
-      comparisonValue.selectedRole = currentRole;
-    }
+    delete comparisonValue.selectedRole; // Remove selectedRole from comparison
 
     const changes = this.detectChanges(comparisonValue, originalUser, {
       trimStrings: true,
       toLowerCase: ['username', 'email']
     });
 
-    if (includeRoles && formValue.selectedRole !== originalUser.roles?.[0]) {
-      changes.roles = formValue.selectedRole ? [formValue.selectedRole] : [];
-    }
-
-    if (includePassword && formValue.password?.trim()) {
-      changes.password = formValue.password.trim();
-    }
+    this.addRoleChanges(changes, formValue, originalUser, includeRoles);
+    this.addPasswordChanges(changes, formValue, includePassword);
 
     return changes;
   }
 
+  private addRoleChanges(changes: any, formValue: any, originalUser: any, includeRoles: boolean): void {
+    if (includeRoles) {
+      const formRole = formValue.selectedRole?.trim();
+      const originalRole = originalUser.roles?.[0]?.trim();
+
+      // Only add role change if roles are actually different
+      if (formRole !== originalRole) {
+        changes.roles = formRole ? [formRole] : [];
+      } else {
+        // Remove roles from changes if it was incorrectly added by detectChanges
+        if (changes.roles) {
+          delete changes.roles;
+        }
+      }
+    }
+  }
+
+  private addPasswordChanges(changes: any, formValue: any, includePassword: boolean): void {
+    if (includePassword && formValue.password?.trim()) {
+      changes.password = formValue.password.trim();
+    }
+  }
+
   prepareUserFormData(formValue: any): any {
-    return this.prepareFormData(formValue, {
+    return super.prepareFormData(formValue, {
       trimStrings: true,
       toLowerCase: ['username', 'email']
     });
   }
 
-    override patchForm(form: FormGroup, data: any): void {
+  override patchForm(form: FormGroup, data: any): void {
     if (!data) return;
 
+    const patchData = this.preparePatchData(data);
+    super.patchForm(form, patchData);
+  }
+
+  private preparePatchData(data: any): any {
     const patchData = { ...data };
 
-    // Handle roles array conversion to selectedRole
     if (data.roles && Array.isArray(data.roles)) {
       patchData.selectedRole = data.roles.length > 0 ? data.roles[0] : '';
     }
 
-    // Ensure password fields are empty for security
+    // Clear password fields when patching
     patchData.password = '';
     patchData.confirmPassword = '';
 
-    super.patchForm(form, patchData);
+    return patchData;
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { catchError, Observable, of, throwError } from 'rxjs';
 import { Employee, EmployeeCreateRequest, EmployeeUpdateRequest } from '@employee/interfaces/employee.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
@@ -51,6 +51,20 @@ export class EmployeeApiService {
   }
 
   getEmployeeByPersonId(personId: string): Observable<ApiResponse<Employee | null>> {
-    return this.http.get<ApiResponse<Employee>>(`${this.baseUrl}/by-person/${personId}`);
+    return this.http.get<ApiResponse<Employee | null>>(`${this.baseUrl}/by-person/${personId}`)
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.status === 404) {
+            return of({
+              data: null,
+              status: error.status,
+              message: error.message,
+              success: false,
+              errors: []
+            });
+          }
+          return throwError(() => error);
+        })
+      );
   }
 }

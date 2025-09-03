@@ -6,6 +6,7 @@ import { SearchOptions } from '@shared/interfaces/search.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { CacheService } from '@shared/services/cache.service';
+import { UserService } from '@users/services/user.service';
 
 const emptyPerson: Person = {
   id: 'new',
@@ -38,9 +39,10 @@ const emptyPagination: PaginatedResponseDTO<Person> = {
 export class PersonService {
   private personApiService = inject(PersonApiService);
   private cacheService = inject(CacheService);
+  private userService = inject(UserService);
 
   getPersons(options: SearchOptions): Observable<PaginatedResponseDTO<Person>> {
-    const cacheKey = this.generateCacheKey(options);
+    const cacheKey = this.buildCacheKey(options);
     const cached = this.cacheService.get<PaginatedResponseDTO<Person>>(cacheKey);
 
     if (cached) {
@@ -49,7 +51,7 @@ export class PersonService {
 
     return this.personApiService.getPersons(options)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'persons')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'persons')),
         tap(response => this.cacheService.set(cacheKey, response)),
         catchError(() => of(emptyPagination))
       );
@@ -67,7 +69,7 @@ export class PersonService {
 
     return this.personApiService.getPersonById(id)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
         tap((person) => this.cacheService.set(cacheKey, person)),
         catchError((error) => {
           console.error('PersonService - getPersonById - Error:', error);
@@ -79,76 +81,68 @@ export class PersonService {
   createPerson(personData: PersonCreateRequest): Observable<Person> {
     return this.personApiService.createPerson(personData)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person: Person) => this.cacheService.clearPattern('persons:')),
-        catchError((error) => this.handleError(error, 'creating person'))
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
+        tap(() => this.clearPersonsCache()),
+        catchError((error) => this.propagateError(error, 'creating person'))
       );
   }
 
   updatePerson(id: string, personData: PersonUpdateRequest): Observable<Person> {
     return this.personApiService.updatePerson(id, personData)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person: Person) => {
-          this.cacheService.set(`person:${person.id}`, person);
-          this.cacheService.clearPattern('persons:');
-        }),
-        catchError((error) => this.handleError(error, 'updating person'))
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
+        tap((person: Person) => this.updatePersonCache(person)),
+        catchError((error) => this.propagateError(error, 'updating person'))
       );
   }
 
   deletePerson(id: string): Observable<boolean> {
     return this.personApiService.deletePerson(id)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'void')),
-        tap(() => {
-          this.cacheService.delete(`person:${id}`);
-          this.cacheService.clearPattern('persons:');
-        }),
-        catchError((error) => this.handleError(error, 'deleting person'))
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'void')),
+        tap(() => this.clearPersonCache(id)),
+        catchError((error) => this.propagateError(error, 'deleting person'))
       );
   }
 
   removeUserAssociation(personId: string): Observable<Person> {
     return this.personApiService.removeUserAssociation(personId)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
-        tap((person) => {
-          this.cacheService.set(`person:${person.id}`, person);
-          this.cacheService.clearPattern('persons:');
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
+        tap((person: Person) => {
+          this.updatePersonCache(person);
+          this.userService.clearAvailableUsersCache();
         }),
-        catchError((error) => this.handleError(error, 'removing user association'))
+        catchError((error) => this.propagateError(error, 'removing user association'))
       );
   }
 
   associateUser(personId: string, userId: string): Observable<Person> {
     return this.personApiService.associateUser(personId, userId)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'person')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
         tap((person: Person) => {
-          this.cacheService.set(`person:${person.id}`, person);
-          this.cacheService.clearPattern('persons:');
+          this.updatePersonCache(person);
+          this.userService.clearAvailableUsersCache();
         }),
-        catchError((error) => this.handleError(error, 'associating user'))
+        catchError((error) => this.propagateError(error, 'associating user'))
       );
   }
 
-  private generateCacheKey(options: SearchOptions): string {
+  private buildCacheKey(options: SearchOptions): string {
     const { page, size, search, sort, order } = options;
     return `persons:${page}:${size}:${search || ''}:${sort || ''}:${order || ''}`;
   }
 
-  private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
+  private extractDataFromResponse(apiResponse: ApiResponse<any>, type: string): any {
     if (!apiResponse.success) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
 
-    // For delete operations, data can be null/undefined, which is valid
     if (type === 'boolean' || type === 'void') {
-      return true; // Return true for successful delete operations
+      return true;
     }
 
-    // For other operations, data should exist
     if (!apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
@@ -156,8 +150,21 @@ export class PersonService {
     return apiResponse.data;
   }
 
-  private handleError(error: any, operation: string): Observable<never> {
-    // Propagar el error original para que HttpErrorService pueda manejarlo correctamente
+  private propagateError(error: any, operation: string): Observable<never> {
     return throwError(() => error);
+  }
+
+  private updatePersonCache(person: Person): void {
+    this.cacheService.set(`person:${person.id}`, person);
+    this.clearPersonsCache();
+  }
+
+  private clearPersonCache(personId: string): void {
+    this.cacheService.delete(`person:${personId}`);
+    this.clearPersonsCache();
+  }
+
+  clearPersonsCache(): void {
+    this.cacheService.clearPattern('persons:');
   }
 }

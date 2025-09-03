@@ -49,12 +49,16 @@ export class PreferencesService {
   }
 
   resetPreferences(): void {
-    this.preferences.set({
+    this.preferences.set(this.getDefaultPreferences());
+    this.savePreferences();
+  }
+
+  private getDefaultPreferences(): TablePreferences {
+    return {
       sortField: 'firstName',
       sortOrder: 'asc',
       showLastNameFirst: false
-    });
-    this.savePreferences();
+    };
   }
 
   private loadPreferences(): void {
@@ -65,24 +69,35 @@ export class PreferencesService {
         return;
       }
 
-      const stored = localStorage.getItem(this.CACHE_KEY);
+      const stored = this.loadFromLocalStorage();
       if (stored) {
-        const parsed = JSON.parse(stored);
-        this.preferences.set(parsed);
-        this.cacheService.setPreferences(this.CACHE_KEY, parsed);
+        this.preferences.set(stored);
+        this.cacheService.setPreferences(this.CACHE_KEY, stored);
       }
     } catch (error) {
       console.warn('Failed to load preferences:', error);
     }
   }
 
+  private loadFromLocalStorage(): TablePreferences | null {
+    const stored = localStorage.getItem(this.CACHE_KEY);
+    if (stored) {
+      return JSON.parse(stored);
+    }
+    return null;
+  }
+
   private savePreferences(): void {
     try {
       const prefs = this.preferences();
       this.cacheService.setPreferences(this.CACHE_KEY, prefs);
-      localStorage.setItem(this.CACHE_KEY, JSON.stringify(prefs));
+      this.saveToLocalStorage(prefs);
     } catch (error) {
       console.error('Failed to save preferences:', error);
     }
+  }
+
+  private saveToLocalStorage(preferences: TablePreferences): void {
+    localStorage.setItem(this.CACHE_KEY, JSON.stringify(preferences));
   }
 }

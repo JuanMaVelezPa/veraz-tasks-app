@@ -1,5 +1,6 @@
 package com.veraz.tasks.backend.person.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -86,11 +87,11 @@ public class Person {
     @Column(name = "pers_updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = false)
     @JoinColumn(name = "pers_user", referencedColumnName = "user_user")
     private User user;
 
-    @OneToOne(fetch = FetchType.LAZY, mappedBy = "person")
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
     
     @PrePersist

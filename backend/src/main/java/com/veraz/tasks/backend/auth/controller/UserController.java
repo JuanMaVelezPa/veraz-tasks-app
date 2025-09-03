@@ -66,7 +66,29 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
             : userService.findAll(pageable);
 
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Users"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Users"),
+                response, null));
+    }
+
+    @GetMapping("/available")
+    @Operation(summary = "Get available users (without person association)", description = "Admin/Manager/Supervisor access")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    @PreAuthorize("@permissionService.canReadResources()")
+    public ResponseEntity<ApiResponseDTO<PaginatedResponseDTO<UserResponseDTO>>> findAvailableUsers(
+            @ModelAttribute PaginationRequestDTO paginationRequest) {
+
+        paginationRequest.validateAndNormalize();
+        Pageable pageable = PaginationUtils.createPageable(paginationRequest);
+
+        PaginatedResponseDTO<UserResponseDTO> response = paginationRequest.hasSearch() 
+            ? userService.findUsersWithoutPersonBySearch(paginationRequest.getSearch(), pageable)
+            : userService.findUsersWithoutPerson(pageable);
+
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Available Users"),
                 response, null));
     }
 
@@ -83,12 +105,12 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
         
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "User"), 
+                    MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "User"), 
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
-                            MessageUtils.getEntityNotFound("User"), null, null));
+                            MessageUtils.getEntityNotFoundMessage("User"), null, null));
         }
     }
 
@@ -99,11 +121,11 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
     @PreAuthorize("@permissionService.canWriteResources()")
-    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> create(@Valid @RequestBody UserCreateRequestDTO userRequestDTO) {
-        UserResponseDTO response = userService.create(userRequestDTO);
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> create(@Valid @RequestBody UserCreateRequestDTO createRequest) {
+        UserResponseDTO response = userService.create(createRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, 
-                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "User"), 
+                        MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_CREATED_SUCCESS, "User"), 
                         response, null));
     }
 
@@ -115,10 +137,10 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isResourceOwner(#id)")
-    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody UserUpdateRequestDTO userRequest) {
-        UserResponseDTO response = userService.update(id, userRequest);
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody UserUpdateRequestDTO updateRequest) {
+        UserResponseDTO response = userService.update(id, updateRequest);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "User"), 
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_UPDATED_SUCCESS, "User"), 
                 response, null));
     }
 
@@ -132,7 +154,7 @@ public class UserController implements ControllerInterface<UUID, UserCreateReque
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
         userService.deleteById(id);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "User"), 
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_DELETED_SUCCESS, "User"), 
                 null, null));
     }
 }

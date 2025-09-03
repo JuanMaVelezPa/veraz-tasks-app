@@ -19,6 +19,11 @@ public interface PersonRepository extends JpaRepository<Person, UUID> {
 
     Optional<Person> findByUser(User user);
 
+    Optional<Person> findByUserId(UUID userId);
+
+    @Query("SELECT p FROM Person p LEFT JOIN FETCH p.user WHERE p.user.id = :userId")
+    Optional<Person> findByUserIdWithUser(@Param("userId") UUID userId);
+
     Optional<Person> findByEmail(String email);
 
     Optional<Person> findByIdentNumber(String identNumber);

@@ -22,13 +22,13 @@
       autocomplete="username"
     />
   </label>
-  @if(formUtils.isValidField(signUpForm, 'username')) {
+  @if(formUtils.hasFieldError(signUpForm, 'username')) {
   <div
     role="alert"
     class="alert alert-soft text-xs"
   >
     <div>
-      @for (error of formUtils.getFieldError(signUpForm, 'username'); track $index) {
+      @for (error of formUtils.getFieldErrorMessage(signUpForm, 'username'); track $index) {
       <p class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ error }}</p>
       }
     </div>
@@ -46,13 +46,13 @@
       autocomplete="email"
     />
   </label>
-  @if(formUtils.isValidField(signUpForm, 'email')) {
+  @if(formUtils.hasFieldError(signUpForm, 'email')) {
   <div
     role="alert"
     class="alert alert-soft text-xs"
   >
     <div>
-      @for (error of formUtils.getFieldError(signUpForm, 'email'); track $index) {
+      @for (error of formUtils.getFieldErrorMessage(signUpForm, 'email'); track $index) {
       <p class="text-sm label-text-alt text-error break-words mt-1 ml-1">{{ error }}</p>
       }
     </div>

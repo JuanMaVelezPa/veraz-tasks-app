@@ -2,6 +2,7 @@
   [formGroup]="userForm()"
   class="space-y-6"
   autocomplete="off"
+  data-form-type="password-change"
   (ngSubmit)="onSubmit()"
 >
   <!-- Status Section - Always first, right-aligned -->
@@ -40,10 +41,9 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
     <!-- Username -->
     <div class="form-control">
-      <div class="mb-2">
-        <span class="text-sm font-semibold">Username</span>
-        <span class="text-error">*</span>
-      </div>
+      <label class="label">
+        <span class="label-text font-medium">Username *</span>
+      </label>
       @if (isReadOnly()) {
       <div class="input input-bordered w-full bg-base-200 text-base-content/70">
         {{ userForm().get('username')?.value }}
@@ -52,25 +52,24 @@
       <input
         type="text"
         placeholder="usuario123"
-        class="input input-bordered"
+        class="input input-bordered w-full"
         formControlName="username"
         autocomplete="username"
-        [class.input-error]="formUtils.isValidField(userForm(), 'username')"
+        [class.input-error]="formUtils.hasFieldError(userForm(), 'username')"
       />
-      @if (formUtils.isValidField(userForm(), 'username')) {
-      <div class="mt-1">
-        <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'username') }}</span>
-      </div>
+      @if (formUtils.hasFieldError(userForm(), 'username')) {
+      <label class="label">
+        <span class="label-text-alt text-error">{{ formUtils.getFieldErrorMessage(userForm(), 'username') }}</span>
+      </label>
       }
       }
     </div>
 
     <!-- Email -->
     <div class="form-control">
-      <div class="mb-2">
-        <span class="text-sm font-semibold">Email</span>
-        <span class="text-error">*</span>
-      </div>
+      <label class="label">
+        <span class="label-text font-medium">Email *</span>
+      </label>
       @if (isReadOnly()) {
       <div class="input input-bordered w-full bg-base-200 text-base-content/70">
         {{ userForm().get('email')?.value }}
@@ -79,15 +78,15 @@
       <input
         type="email"
         placeholder="usuario@ejemplo.com"
-        class="input input-bordered"
+        class="input input-bordered w-full"
         formControlName="email"
         autocomplete="email"
-        [class.input-error]="formUtils.isValidField(userForm(), 'email')"
+        [class.input-error]="formUtils.hasFieldError(userForm(), 'email')"
       />
-      @if (formUtils.isValidField(userForm(), 'email')) {
-      <div class="mt-1">
-        <span class="text-error text-xs">{{ formUtils.getFieldError(userForm(), 'email') }}</span>
-      </div>
+      @if (formUtils.hasFieldError(userForm(), 'email')) {
+      <label class="label">
+        <span class="label-text-alt text-error">{{ formUtils.getFieldErrorMessage(userForm(), 'email') }}</span>
+      </label>
       }
       }
     </div>
@@ -95,9 +94,9 @@
     <!-- Role -->
     <div class="form-control">
       @if (isReadOnly()) {
-      <div class="mb-2">
-        <span class="text-sm font-semibold">Role</span>
-      </div>
+      <label class="label">
+        <span class="label-text font-medium">Role *</span>
+      </label>
       <div class="input input-bordered w-full bg-base-200 text-base-content/70">
         {{ getSelectedRole() | titlecase }}
       </div>
@@ -106,6 +105,11 @@
         [selectedRole]="userForm().get('selectedRole')?.value || ''"
         (roleSelected)="onRoleSelected($event)"
       />
+      @if (formUtils.hasFieldError(userForm(), 'selectedRole')) {
+      <label class="label">
+        <span class="label-text-alt text-error">{{ formUtils.getFieldErrorMessage(userForm(), 'selectedRole') }}</span>
+      </label>
+      }
       }
     </div>
   </div>
@@ -134,24 +138,33 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-medium">New Password</span>
-            @if (isPasswordRequired()) {
-            <span class="text-error">*</span>
-            }
+            <span class="label-text font-medium">
+              {{ isEditMode() ? 'New Password' : 'Password' }}
+              @if (!isEditMode()) {
+              <span class="text-error">*</span>
+              }
+            </span>
           </label>
           <input
             type="password"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
             placeholder="••••••••"
             formControlName="password"
-            autocomplete="new-password"
-            [class.input-error]="passwordUtils.isValidField(userForm(), 'password')"
+            autocomplete="off"
+            [class.input-error]="formUtils.hasFieldError(userForm(), 'password')"
           />
-          @if (passwordUtils.isValidField(userForm(), 'password')) {
+          @if (formUtils.hasFieldError(userForm(), 'password')) {
           <label class="label">
             <div>
+              <!-- Mostrar error de required si existe -->
+              @if (userForm().get('password')?.errors?.['required']) {
+              <p class="text-error text-xs mb-1">* Password is required</p>
+              }
+              <!-- Mostrar errores de complejidad si existen -->
+              @if (passwordUtils.getFieldError(userForm(), 'password')) {
               @for (error of passwordUtils.getFieldError(userForm(), 'password'); track $index) {
               <p class="text-error text-xs mb-1">* {{ error }}</p>
+              }
               }
             </div>
           </label>
@@ -159,24 +172,33 @@
         </div>
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-medium">Confirm Password</span>
-            @if (isPasswordRequired()) {
-            <span class="text-error">*</span>
-            }
+            <span class="label-text font-medium">
+              {{ isEditMode() ? 'Confirm New Password' : 'Confirm Password' }}
+              @if (!isEditMode()) {
+              <span class="text-error">*</span>
+              }
+            </span>
           </label>
           <input
             type="password"
-            class="input input-bordered input-sm"
+            class="input input-bordered input-sm w-full"
             placeholder="••••••••"
             formControlName="confirmPassword"
-            autocomplete="new-password"
-            [class.input-error]="formUtils.isValidField(userForm(), 'confirmPassword')"
+            autocomplete="off"
+            [class.input-error]="formUtils.hasFieldError(userForm(), 'confirmPassword')"
           />
-          @if (passwordUtils.isValidField(userForm(), 'confirmPassword')) {
+          @if (formUtils.hasFieldError(userForm(), 'confirmPassword')) {
           <label class="label">
             <div>
+              <!-- Mostrar error de required si existe -->
+              @if (userForm().get('confirmPassword')?.errors?.['required']) {
+              <p class="text-error text-xs mb-1">* Confirm password is required</p>
+              }
+              <!-- Mostrar errores de complejidad si existen -->
+              @if (passwordUtils.getFieldError(userForm(), 'confirmPassword')) {
               @for (error of passwordUtils.getFieldError(userForm(), 'confirmPassword'); track $index) {
               <p class="text-error text-xs mb-1">* {{ error }}</p>
+              }
               }
             </div>
           </label>

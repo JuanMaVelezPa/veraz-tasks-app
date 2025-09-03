@@ -12,39 +12,106 @@
   </div>
   }
 
-  <div class="search-layout">
-    <div class="search-bar-container">
+  <!-- Search and Controls Row -->
+  <div class="flex flex-col lg:flex-row gap-4 mb-4">
+    <!-- Search Bar - Takes most space -->
+    <div class="flex-1">
       <shared-search-bar
         placeholder="Search persons by name, email, ID number..."
         (searchChange)="handleSearch($event)"
       />
     </div>
 
-    <div class="flex gap-3 items-center">
-      <!-- Employee Filter Toggle -->
-      <div class="form-control w-auto">
-        <label class="label cursor-pointer gap-3 justify-start">
-          <span class="label-text text-sm font-medium">Employees Only</span>
-          <input
-            type="checkbox"
-            class="toggle toggle-secondary toggle-sm"
-            [checked]="showOnlyEmployees()"
-            (change)="toggleEmployeeFilter()"
-          />
-        </label>
+    <!-- Controls Group - Compact and aligned -->
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- Filter Group -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-medium text-base-content/60">Show:</span>
+        <div class="flex gap-1">
+          <!-- All Persons -->
+          <button
+            class="btn btn-xs"
+            [class.btn-primary]="!hasActiveFilters()"
+            [class.btn-ghost]="hasActiveFilters()"
+            (click)="clearAllFilters()"
+            title="Show all persons"
+          >
+            <shared-icon
+              type="users"
+              size="xs"
+            />
+            <span class="hidden sm:inline">All</span>
+          </button>
+
+          <!-- Employees Only -->
+          <button
+            class="btn btn-xs"
+            [class.btn-success]="showOnlyEmployees() && !showOnlyUsers()"
+            [class.btn-ghost]="!showOnlyEmployees() || showOnlyUsers()"
+            (click)="toggleEmployeeFilter()"
+            title="Show employees only"
+          >
+            <shared-icon
+              type="user-tie"
+              size="xs"
+            />
+            <span class="hidden sm:inline">Employees</span>
+          </button>
+
+          <!-- Users Only -->
+          <button
+            class="btn btn-xs"
+            [class.btn-info]="showOnlyUsers() && !showOnlyEmployees()"
+            [class.btn-ghost]="!showOnlyUsers() || showOnlyEmployees()"
+            (click)="toggleUserFilter()"
+            title="Show users only"
+          >
+            <shared-icon
+              type="user-check"
+              size="xs"
+            />
+            <span class="hidden sm:inline">Users</span>
+          </button>
+
+          <!-- Complete Profiles -->
+          <button
+            class="btn btn-xs"
+            [class.btn-primary]="showOnlyEmployees() && showOnlyUsers()"
+            [class.btn-ghost]="!showOnlyEmployees() || !showOnlyUsers()"
+            (click)="showCompleteProfiles()"
+            title="Show complete profiles (Employee + User)"
+          >
+            <shared-icon
+              type="user-astronaut"
+              size="xs"
+            />
+            <span class="hidden sm:inline">Complete</span>
+          </button>
+        </div>
       </div>
 
-      <!-- Name Order Toggle -->
-      <div class="form-control w-auto">
-        <label class="label cursor-pointer gap-3 justify-start">
-          <span class="label-text text-sm font-medium">Last Name First</span>
-          <input
-            type="checkbox"
-            class="toggle toggle-primary toggle-sm"
-            [checked]="showLastNameFirst()"
-            (change)="toggleNameOrder()"
-          />
-        </label>
+      <!-- Filter Status Badge -->
+      @if (hasActiveFilters()) {
+      <div class="badge badge-info badge-sm">
+        {{ filteredCount() }}/{{ totalPersons() }}
+      </div>
+      }
+
+      <!-- Simple Separator -->
+      <div class="w-px h-4 bg-base-300"></div>
+
+      <!-- Display Preferences -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-medium text-base-content/60">Display:</span>
+        <button
+          class="btn btn-xs"
+          [class.btn-secondary]="showLastNameFirst()"
+          [class.btn-ghost]="!showLastNameFirst()"
+          (click)="toggleNameOrder()"
+          [title]="showLastNameFirst() ? 'Currently: Last + First' : 'Currently: First + Last'"
+        >
+          {{ showLastNameFirst() ? 'L+F' : 'F+L' }}
+        </button>
       </div>
     </div>
   </div>
@@ -78,8 +145,8 @@
             }
           </tr>
         </thead>
-                 <tbody>
-           @for (person of filteredPersons(); track person.id; let i = $index) {
+        <tbody>
+          @for (person of filteredPersons(); track person.id; let i = $index) {
           <tr class="table-body-row">
             <td class="table-cell">
               <div class="flex items-center gap-3">
@@ -98,9 +165,14 @@
             <td class="table-cell">{{ person.mobile }}</td>
             <td class="table-cell">{{ person.city }}</td>
             <td class="table-cell">
-              <span class="status-badge" [class]="getPersonTypeClass(person)">
-                {{ getPersonType(person) }}
-              </span>
+              <div class="flex justify-center">
+                <shared-icon
+                  [type]="getTypeIcon(person)"
+                  [class]="getTypeCssClass(person)"
+                  size="lg"
+                  [title]="getTypeTooltip(person)"
+                />
+              </div>
             </td>
             <td class="table-cell">
               <span
@@ -158,9 +230,9 @@
   </div>
   }
 
-     <shared-pagination
-     [totalPages]="personsResource.value()?.pagination?.totalPages ?? 0"
-     [totalItems]="filteredPersons().length"
-     [itemsPerPage]="personsPerPage()"
-   />
+  <shared-pagination
+    [totalPages]="personsResource.value()?.pagination?.totalPages ?? 0"
+    [totalItems]="filteredPersons().length"
+    [itemsPerPage]="personsPerPage()"
+  />
 </div>

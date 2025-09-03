@@ -3,16 +3,26 @@
 
     <include resource="org/springframework/boot/logging/logback/base.xml" />
 
-    <!-- Define log directory and file -->
+    <!-- =========================================== -->
+    <!-- LOGGING CONFIGURATION - TASKS BACKEND -->
+    <!-- =========================================== -->
+
+    <!-- Log directory and file properties -->
     <property name="LOG_DIR" value="logs" />
     <property name="LOG_FILE" value="${LOG_DIR}/tasks-backend" />
 
+    <!-- =========================================== -->
+    <!-- APPENDERS CONFIGURATION -->
+    <!-- =========================================== -->
+
+    <!-- Console appender for development -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <Pattern>%d{dd-MM-yyyy-HH:mm} [%thread] %-5level %logger{36} - %msg%n</Pattern> 
         </encoder>
     </appender>
 
+    <!-- File appender with rotation -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${LOG_FILE}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
@@ -24,6 +34,10 @@
             <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level ${PID:- } --- [%15.15t] %logger{39} : %msg%n</Pattern>
         </encoder>
     </appender>
+
+    <!-- =========================================== -->
+    <!-- LOGGER CONFIGURATION -->
+    <!-- =========================================== -->
 
     <!-- Application logger -->
     <logger name="com.veraz.tasks.backend" level="INFO" additivity="false">

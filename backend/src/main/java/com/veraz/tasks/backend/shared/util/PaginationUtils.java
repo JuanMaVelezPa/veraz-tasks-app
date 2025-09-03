@@ -1,5 +1,9 @@
 package com.veraz.tasks.backend.shared.util;
 
+import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +40,41 @@ public class PaginationUtils {
         return PaginatedResponseDTO.<T>builder()
                 .data(page.getContent())
                 .pagination(paginationInfo)
+                .build();
+    }
+
+    public static <T, R> PaginatedResponseDTO<R> toPaginatedResponse(Page<T> page, Function<T, R> mapper) {
+        List<R> mappedContent = page.getContent().stream()
+                .map(mapper)
+                .collect(Collectors.toList());
+
+        PaginatedResponseDTO.PaginationInfo paginationInfo = PaginatedResponseDTO.PaginationInfo.builder()
+                .currentPage(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .hasPrevious(page.hasPrevious())
+                .isFirst(page.isFirst())
+                .isLast(page.isLast())
+                .build();
+
+        return PaginatedResponseDTO.<R>builder()
+                .data(mappedContent)
+                .pagination(paginationInfo)
+                .build();
+    }
+
+    public static PaginatedResponseDTO.PaginationInfo buildPaginationInfo(Page<?> page) {
+        return PaginatedResponseDTO.PaginationInfo.builder()
+                .currentPage(page.getNumber())
+                .totalPages(page.getTotalPages())
+                .totalElements(page.getTotalElements())
+                .pageSize(page.getSize())
+                .hasNext(page.hasNext())
+                .hasPrevious(page.hasPrevious())
+                .isFirst(page.isFirst())
+                .isLast(page.isLast())
                 .build();
     }
 

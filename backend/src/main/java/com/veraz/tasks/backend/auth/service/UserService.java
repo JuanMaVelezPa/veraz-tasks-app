@@ -1,7 +1,6 @@
 package com.veraz.tasks.backend.auth.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -24,7 +23,6 @@ import com.veraz.tasks.backend.auth.dto.UserCreateRequestDTO;
 import com.veraz.tasks.backend.auth.dto.UserUpdateRequestDTO;
 import com.veraz.tasks.backend.auth.mapper.UserMapper;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
-import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO.PaginationInfo;
 import com.veraz.tasks.backend.shared.service.ServiceInterface;
 import com.veraz.tasks.backend.auth.model.Role;
 import com.veraz.tasks.backend.auth.model.User;
@@ -35,6 +33,7 @@ import com.veraz.tasks.backend.exception.DataConflictException;
 import com.veraz.tasks.backend.exception.ResourceNotFoundException;
 import com.veraz.tasks.backend.shared.constants.MessageKeys;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
+import com.veraz.tasks.backend.shared.util.PaginationUtils;
 
 @Service
 public class UserService implements UserDetailsService,
@@ -60,33 +59,13 @@ public class UserService implements UserDetailsService,
     @Transactional(readOnly = true)
     public PaginatedResponseDTO<UserResponseDTO> findAll(Pageable pageable) {
         Page<User> userPage = userRepository.findAll(pageable);
-
-        List<UserResponseDTO> userDtos = userPage.getContent().stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toList());
-
-        PaginationInfo paginationInfo = PaginationInfo
-                .builder()
-                .currentPage(userPage.getNumber())
-                .totalPages(userPage.getTotalPages())
-                .totalElements(userPage.getTotalElements())
-                .pageSize(userPage.getSize())
-                .hasNext(userPage.hasNext())
-                .hasPrevious(userPage.hasPrevious())
-                .isFirst(userPage.isFirst())
-                .isLast(userPage.isLast())
-                .build();
-
-        return PaginatedResponseDTO.<UserResponseDTO>builder()
-                .data(userDtos)
-                .pagination(paginationInfo)
-                .build();
+        return PaginationUtils.toPaginatedResponse(userPage, UserMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     public Optional<UserResponseDTO> findById(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("User")));
 
         // Force lazy loading of roles
         user.getRoles().size();
@@ -94,58 +73,62 @@ public class UserService implements UserDetailsService,
     }
 
     @Transactional(readOnly = true)
-    public UserResponseDTO findByEmailOrUsername(String query) {
-        User user = userRepository.findByUsernameOrEmailAllIgnoreCase(query, query)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+    public UserResponseDTO findByUsernameOrEmail(String usernameOrEmail) {
+        User user = userRepository.findByUsernameOrEmailAllIgnoreCase(usernameOrEmail, usernameOrEmail)
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("User")));
 
         return UserMapper.toDto(user);
     }
 
     @Transactional(readOnly = true)
-    public PaginatedResponseDTO<UserResponseDTO> findBySearch(String query, Pageable pageable) {
-        Page<User> userPage = userRepository.findByUsernameOrEmailOrRolesNameContainingIgnoreCase(query, pageable);
+    public PaginatedResponseDTO<UserResponseDTO> findUsersWithoutPerson(Pageable pageable) {
+        Page<User> userPage = userRepository.findUsersWithoutPerson(pageable);
+        return PaginationUtils.toPaginatedResponse(userPage, UserMapper::toDto);
+    }
 
-        List<UserResponseDTO> userDtos = userPage.getContent().stream()
-                .map(UserMapper::toDto)
-                .collect(Collectors.toList());
+    @Transactional(readOnly = true)
+    public PaginatedResponseDTO<UserResponseDTO> findUsersWithoutPersonBySearch(String searchQuery, Pageable pageable) {
+        Page<User> userPage = userRepository.findUsersWithoutPersonBySearch(searchQuery, pageable);
+        return PaginationUtils.toPaginatedResponse(userPage, UserMapper::toDto);
+    }
 
-        PaginationInfo paginationInfo = PaginationInfo
-                .builder()
-                .currentPage(userPage.getNumber())
-                .totalPages(userPage.getTotalPages())
-                .totalElements(userPage.getTotalElements())
-                .pageSize(userPage.getSize())
-                .hasNext(userPage.hasNext())
-                .hasPrevious(userPage.hasPrevious())
-                .isFirst(userPage.isFirst())
-                .isLast(userPage.isLast())
-                .build();
-
-        return PaginatedResponseDTO.<UserResponseDTO>builder()
-                .data(userDtos)
-                .pagination(paginationInfo)
-                .build();
+    @Transactional(readOnly = true)
+    public PaginatedResponseDTO<UserResponseDTO> findBySearch(String searchQuery, Pageable pageable) {
+        Page<User> userPage = userRepository.findByUsernameOrEmailOrRolesNameContainingIgnoreCase(searchQuery,
+                pageable);
+        return PaginationUtils.toPaginatedResponse(userPage, UserMapper::toDto);
     }
 
     @Transactional
-    public UserResponseDTO create(UserCreateRequestDTO userRequest) {
-        // Check if user already exists
-        if (userRepository.findByUsernameOrEmailAllIgnoreCase(userRequest.getUsername(), userRequest.getEmail())
-                .isPresent()) {
-            throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
+    public UserResponseDTO create(UserCreateRequestDTO userRequestDTO) {
+        // Validate username uniqueness
+        if (userRepository.existsByUsername(userRequestDTO.getUsername())) {
+            throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("User"));
         }
 
-        Role defaultRole = roleRepository.findByName("USER");
-        if (defaultRole == null) {
-            throw new ResourceNotFoundException(MessageUtils.getEntityNotFound("Role"));
+        // Validate email uniqueness
+        if (userRepository.existsByEmail(userRequestDTO.getEmail())) {
+            throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("User"));
         }
 
-        String encodedPassword = passwordEncoder.encode(userRequest.getPassword());
-        User newUser = UserMapper.toEntity(userRequest, encodedPassword, defaultRole);
+        // Validate roles exist
+        Set<Role> roles = userRequestDTO.getRoles().stream()
+                .map(roleName -> {
+                    Role role = roleRepository.findByName(roleName);
+                    if (role == null) {
+                        throw new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Role"));
+                    }
+                    return role;
+                })
+                .collect(Collectors.toSet());
+
+        String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword());
+        Role defaultRole = roles.iterator().next(); // Use first role as default
+        User newUser = UserMapper.toEntity(userRequestDTO, encodedPassword, defaultRole);
+        newUser.setRoles(roles);
         userRepository.save(newUser);
 
-        logger.info("User created successfully: {} with createdAt: {} and updatedAt: {}",
-                newUser.getUsername(), newUser.getCreatedAt(), newUser.getUpdatedAt());
+        logger.info("User created successfully: {}", newUser.getUsername());
 
         return UserMapper.toDto(newUser);
     }
@@ -153,39 +136,33 @@ public class UserService implements UserDetailsService,
     @Transactional
     public UserResponseDTO update(UUID id, UserUpdateRequestDTO userRequestDTO) {
         User userToUpdate = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("User")));
 
-        // Update username if provided and not empty
+        // Update username if provided
         if (userRequestDTO.getUsername() != null && !userRequestDTO.getUsername().trim().isEmpty()) {
             String newUsername = userRequestDTO.getUsername().trim();
-
-            // Check if username is different from current
-            if (!newUsername.equalsIgnoreCase(userToUpdate.getUsername())) {
-                // Check if new username already exists
-                if (userRepository.findByUsername(newUsername).isPresent()) {
-                    throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
+            if (!newUsername.equals(userToUpdate.getUsername())) {
+                if (userRepository.existsByUsername(newUsername)) {
+                    throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("User"));
                 }
+                userToUpdate.setUsername(newUsername);
             }
-            userToUpdate.setUsername(newUsername.toLowerCase());
         }
 
-        // Update email if provided and not empty
+        // Update email if provided
         if (userRequestDTO.getEmail() != null && !userRequestDTO.getEmail().trim().isEmpty()) {
             String newEmail = userRequestDTO.getEmail().trim();
-
-            // Check if email is different from current
             if (!newEmail.equalsIgnoreCase(userToUpdate.getEmail())) {
-                // Check if new email already exists
-                if (userRepository.findByEmail(newEmail).isPresent()) {
-                    throw new DataConflictException(MessageUtils.getEntityAlreadyExists("User"));
+                if (userRepository.existsByEmail(newEmail)) {
+                    throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("User"));
                 }
+                userToUpdate.setEmail(newEmail);
             }
-            userToUpdate.setEmail(newEmail.toLowerCase());
         }
 
-        // Update password if provided and not empty
+        // Update password if provided
         if (userRequestDTO.getPassword() != null && !userRequestDTO.getPassword().trim().isEmpty()) {
-            String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword());
+            String encodedPassword = passwordEncoder.encode(userRequestDTO.getPassword().trim());
             userToUpdate.setPassword(encodedPassword);
         }
 
@@ -200,7 +177,7 @@ public class UserService implements UserDetailsService,
                     .map(roleName -> {
                         Role role = roleRepository.findByName(roleName);
                         if (role == null) {
-                            throw new ResourceNotFoundException(MessageUtils.getEntityNotFound("Role"));
+                            throw new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Role"));
                         }
                         return role;
                     })
@@ -219,7 +196,7 @@ public class UserService implements UserDetailsService,
     @Transactional
     public void deleteById(UUID id) {
         User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFound("User")));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("User")));
 
         if (personRepository.findByUser(user).isPresent()) {
             throw new DataConflictException(MessageUtils.getMessage(MessageKeys.BUSINESS_USER_HAS_PERSON_DELETE));
@@ -234,6 +211,4 @@ public class UserService implements UserDetailsService,
         return userRepository.findByUsernameOrEmailAllIgnoreCase(username, username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username or email: " + username));
     }
-
-
 }

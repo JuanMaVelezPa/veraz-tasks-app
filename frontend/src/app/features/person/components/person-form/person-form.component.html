@@ -1,6 +1,6 @@
 <form
   [formGroup]="personForm()"
-  (ngSubmit)="onSubmit()"
+  (ngSubmit)="submitForm()"
   class="space-y-6"
 >
 
@@ -20,7 +20,7 @@
           </label>
           @if (isReadOnly()) {
           <div class="input input-bordered w-full bg-base-200 text-base-content/70">
-            {{ getIdentificationTypeName(personForm().get('identType')?.value) }}
+            {{ getIdentificationTypeDisplayName(personForm().get('identType')?.value) }}
           </div>
           } @else {
           <select

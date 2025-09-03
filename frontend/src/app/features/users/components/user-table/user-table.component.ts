@@ -1,39 +1,70 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, signal, computed } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, inject, signal, computed, OnInit } from '@angular/core';
+import { RouterLink, ActivatedRoute, Router } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { UserService } from '@users/services/user.service';
+import { PersonService } from '@person/services/person.service';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { SortableColumn } from '@shared/interfaces/sort.interface';
 import { PaginationService } from '@shared/services/pagination.service';
 import { SortService, SortState } from '@shared/services/sort.service';
 import { SearchService, SearchState } from '@shared/services/search.service';
+import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { PaginationComponent } from '@shared/components/pagination/pagination.component';
 import { SearchBarComponent } from '@shared/components/search-bar/search-bar.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { IconType } from '@shared/constants/icons.constant';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-user-table',
   imports: [RouterLink, DatePipe, PaginationComponent, SearchBarComponent, LoadingComponent, IconComponent],
   templateUrl: './user-table.component.html',
 })
-export class UserTableComponent {
+export class UserTableComponent implements OnInit {
   private userService = inject(UserService);
+  private personService = inject(PersonService);
   private pagination = inject(PaginationService);
   private sortService = inject(SortService);
   private searchService = inject(SearchService);
+  private feedbackService = inject(FeedbackMessageService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
 
   usersPerPage = signal(10);
   currentPage = this.pagination.currentPage;
   sortState: SortState;
   searchState: SearchState;
 
+  // Selection mode
+  isSelectionMode = signal(false);
+  selectedPersonId = signal('');
+  selectedPersonName = signal('');
+  returnUrl = signal('');
+
   constructor() {
     this.sortState = this.sortService.createSortState();
     this.searchState = this.searchService.createSearchState();
     this.sortState.setInitialSort('username');
+  }
+
+  ngOnInit(): void {
+    this.checkSelectionMode();
+  }
+
+  private checkSelectionMode(): void {
+    const mode = this.route.snapshot.queryParamMap.get('mode');
+    const personId = this.route.snapshot.queryParamMap.get('personId');
+    const personName = this.route.snapshot.queryParamMap.get('personName');
+    const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+    if (mode === 'select' && personId) {
+      this.isSelectionMode.set(true);
+      this.selectedPersonId.set(personId);
+      this.selectedPersonName.set(personName || 'Unknown Person');
+      this.returnUrl.set(returnUrl || '/admin/users');
+    }
   }
 
   private queryParams = computed(() => {
@@ -54,7 +85,13 @@ export class UserTableComponent {
 
   usersResource = rxResource({
     params: this.queryParams,
-    stream: ({ params }) => this.userService.getUsers(params)
+    stream: ({ params }) => {
+      if (this.isSelectionMode()) {
+        return this.userService.getAvailableUsers(params);
+      } else {
+        return this.userService.getUsers(params);
+      }
+    }
   });
 
   columns: SortableColumn[] = [
@@ -79,6 +116,53 @@ export class UserTableComponent {
       this.pagination.goToFirst();
     }
   };
+
+  async associateUser(userId: string): Promise<void> {
+    console.log('associateUser called with:');
+    console.log('- userId:', userId);
+    console.log('- selectedPersonId:', this.selectedPersonId());
+    console.log('- selectedPersonName:', this.selectedPersonName());
+
+    if (!this.selectedPersonId()) {
+      this.feedbackService.showError('No person ID provided for association');
+      return;
+    }
+
+    try {
+      console.log('Calling personService.associateUser with:');
+      console.log('- personId:', this.selectedPersonId());
+      console.log('- userId:', userId);
+
+      await firstValueFrom(
+        this.personService.associateUser(this.selectedPersonId(), userId)
+      );
+
+      this.feedbackService.showSuccess(`User associated successfully with ${this.selectedPersonName()}`);
+
+      // Limpiar cache de usuarios disponibles para refrescar la lista
+      this.userService.clearAvailableUsersCache();
+
+      // Navigate back to person details
+      if (this.returnUrl()) {
+        this.router.navigateByUrl(this.returnUrl());
+      } else {
+        this.router.navigate(['/admin/persons', this.selectedPersonId()]);
+      }
+    } catch (error: any) {
+      console.error('Error associating user:', error);
+      this.feedbackService.showError(
+        error.error?.message || error.message || 'Failed to associate user. Please try again.'
+      );
+    }
+  }
+
+  goBack(): void {
+    if (this.returnUrl()) {
+      this.router.navigateByUrl(this.returnUrl());
+    } else {
+      this.router.navigate(['/admin/users']);
+    }
+  }
 
   isSortable = (field: string): boolean => this.sortState.isSortable(field, this.columns);
   getSortIcon = (field: string): IconType => this.sortState.getSortIcon(field, this.columns);

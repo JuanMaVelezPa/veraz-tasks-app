@@ -25,11 +25,11 @@ export class SignUpPageComponent {
   signUpForm = this.fb.nonNullable.group({
     username: ['', [
       Validators.required,
-      this.formUtils.usernameValidator
+      this.formUtils.validateUsername
     ]],
     email: ['', [
       Validators.required,
-      Validators.pattern(FormUtilsService.emailPattern),
+      Validators.pattern(FormUtilsService.EMAIL_PATTERN),
     ]],
     password: ['', [
       Validators.required,
@@ -41,7 +41,7 @@ export class SignUpPageComponent {
     ]],
   }, {
     validators: [
-      FormUtilsService.isFieldOneEqualFieldTwo('password', 'confirmPassword')
+      FormUtilsService.validateFieldEquality('password', 'confirmPassword')
     ]
   });
 

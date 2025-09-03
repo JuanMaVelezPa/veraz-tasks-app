@@ -14,12 +14,12 @@ export class TimestampInfoComponent {
   @Input() title: string = 'Account Information';
   @Input() showIcons: boolean = true;
 
-  protected get hasData(): boolean {
+  protected get hasTimestampData(): boolean {
     return this.entity !== null &&
            (!!this.entity.createdAt || !!this.entity.updatedAt);
   }
 
-  protected formatDate(dateString: string): string {
+  protected formatDateToReadable(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
       year: 'numeric',
@@ -28,7 +28,7 @@ export class TimestampInfoComponent {
     });
   }
 
-  protected formatTime(dateString: string): string {
+  protected formatTimeToReadable(dateString: string): string {
     const date = new Date(dateString);
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',

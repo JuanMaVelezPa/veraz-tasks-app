@@ -1,6 +1,6 @@
 <form
   [formGroup]="employeeForm()"
-  (ngSubmit)="onSubmit()"
+  (ngSubmit)="submitForm()"
   class="space-y-6"
 >
 
@@ -18,18 +18,23 @@
           <label class="label">
             <span class="label-text font-medium">Position *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('position')?.value }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="position"
             placeholder="Enter position"
             class="input input-bordered w-full"
             [class.input-error]="employeeForm().get('position')?.invalid && employeeForm().get('position')?.touched"
-            [readonly]="isReadOnly()"
           />
           @if (employeeForm().get('position')?.invalid && employeeForm().get('position')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Position is required</span>
           </label>
+          }
           }
         </div>
 
@@ -38,11 +43,15 @@
           <label class="label">
             <span class="label-text font-medium">Employment Type *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getEmploymentTypeDisplayName(employeeForm().get('employmentType')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="employmentType"
             class="select select-bordered w-full"
             [class.select-error]="employeeForm().get('employmentType')?.invalid && employeeForm().get('employmentType')?.touched"
-            [disabled]="isReadOnly()"
           >
             <option value="">Select type</option>
             @for (type of employmentTypes(); track type.id) {
@@ -56,6 +65,7 @@
             <span class="label-text-alt text-error">Employment type is required</span>
           </label>
           }
+          }
         </div>
 
         <!-- Hire Date -->
@@ -63,17 +73,22 @@
           <label class="label">
             <span class="label-text font-medium">Hire Date *</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('hireDate')?.value }}
+          </div>
+          } @else {
           <input
             type="date"
             formControlName="hireDate"
             class="input input-bordered w-full"
             [class.input-error]="employeeForm().get('hireDate')?.invalid && employeeForm().get('hireDate')?.touched"
-            [readonly]="isReadOnly()"
           />
           @if (employeeForm().get('hireDate')?.invalid && employeeForm().get('hireDate')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Hire date is required</span>
           </label>
+          }
           }
         </div>
       </div>
@@ -94,18 +109,26 @@
           <label class="label">
             <span class="label-text font-medium">Department</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getDepartmentDisplayName(employeeForm().get('department')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="department"
             class="select select-bordered w-full"
-            [disabled]="isReadOnly()"
           >
             <option value="">Select department</option>
             @for (dept of departments(); track dept.id) {
-            <option [value]="dept.code" [title]="dept.description">
+            <option
+              [value]="dept.code"
+              [title]="dept.description"
+            >
               {{ dept.name }}
             </option>
             }
           </select>
+          }
         </div>
 
         <!-- Status -->
@@ -113,10 +136,14 @@
           <label class="label">
             <span class="label-text font-medium">Status</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getEmployeeStatusDisplayName(employeeForm().get('status')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="status"
             class="select select-bordered w-full"
-            [disabled]="isReadOnly()"
           >
             @for (status of employeeStatuses(); track status.id) {
             <option [value]="status.code">
@@ -124,6 +151,7 @@
             </option>
             }
           </select>
+          }
         </div>
 
         <!-- Job Level -->
@@ -131,10 +159,14 @@
           <label class="label">
             <span class="label-text font-medium">Job Level</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getJobLevelDisplayName(employeeForm().get('jobLevel')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="jobLevel"
             class="select select-bordered w-full"
-            [disabled]="isReadOnly()"
           >
             <option value="">Select level</option>
             @for (level of jobLevels(); track level.id) {
@@ -143,6 +175,7 @@
             </option>
             }
           </select>
+          }
         </div>
       </div>
     </div>
@@ -162,12 +195,17 @@
           <label class="label">
             <span class="label-text font-medium">Termination Date</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('terminationDate')?.value }}
+          </div>
+          } @else {
           <input
             type="date"
             formControlName="terminationDate"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
 
         <!-- Probation End Date -->
@@ -175,12 +213,17 @@
           <label class="label">
             <span class="label-text font-medium">Probation End Date</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('probationEndDate')?.value }}
+          </div>
+          } @else {
           <input
             type="date"
             formControlName="probationEndDate"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
       </div>
     </div>
@@ -200,6 +243,15 @@
           <label class="label">
             <span class="label-text font-medium">Salary</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            @if (employeeForm().get('salary')?.value) {
+            {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value || 'USD') }}
+            } @else {
+            -
+            }
+          </div>
+          } @else {
           <div class="relative">
             <input
               type="number"
@@ -208,7 +260,6 @@
               class="input input-bordered w-full pr-12"
               step="0.01"
               min="0"
-              [readonly]="isReadOnly()"
             />
             <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
               <span class="text-gray-500 text-sm">
@@ -218,8 +269,10 @@
           </div>
           @if (employeeForm().get('salary')?.value) {
           <div class="text-xs text-gray-500 mt-1">
-            Formatted: {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value || 'USD') }}
+            Formatted: {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value ||
+            'USD') }}
           </div>
+          }
           }
         </div>
 
@@ -228,10 +281,14 @@
           <label class="label">
             <span class="label-text font-medium">Currency</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getCurrencyDisplayName(employeeForm().get('currency')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="currency"
             class="select select-bordered w-full"
-            [disabled]="isReadOnly()"
           >
             @for (currency of currencies(); track currency.id) {
             <option [value]="currency.code">
@@ -239,6 +296,7 @@
             </option>
             }
           </select>
+          }
         </div>
 
         <!-- Salary Type -->
@@ -246,10 +304,14 @@
           <label class="label">
             <span class="label-text font-medium">Salary Type</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getSalaryTypeDisplayName(employeeForm().get('salaryType')?.value) }}
+          </div>
+          } @else {
           <select
             formControlName="salaryType"
             class="select select-bordered w-full"
-            [disabled]="isReadOnly()"
           >
             <option value="">Select type</option>
             @for (type of salaryTypes(); track type.id) {
@@ -258,6 +320,7 @@
             </option>
             }
           </select>
+          }
         </div>
       </div>
     </div>
@@ -277,18 +340,23 @@
           <label class="label">
             <span class="label-text font-medium">Work Email</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('workEmail')?.value || '-' }}
+          </div>
+          } @else {
           <input
             type="email"
             formControlName="workEmail"
             placeholder="Enter work email"
             class="input input-bordered w-full"
             [class.input-error]="employeeForm().get('workEmail')?.invalid && employeeForm().get('workEmail')?.touched"
-            [readonly]="isReadOnly()"
           />
           @if (employeeForm().get('workEmail')?.invalid && employeeForm().get('workEmail')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Please enter a valid email</span>
           </label>
+          }
           }
         </div>
 
@@ -297,13 +365,18 @@
           <label class="label">
             <span class="label-text font-medium">Work Phone</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('workPhone')?.value || '-' }}
+          </div>
+          } @else {
           <input
             type="tel"
             formControlName="workPhone"
             placeholder="Enter work phone"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
 
         <!-- Work Location -->
@@ -311,13 +384,18 @@
           <label class="label">
             <span class="label-text font-medium">Work Location</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('workLocation')?.value || '-' }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="workLocation"
             placeholder="Enter work location"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
 
         <!-- Work Schedule -->
@@ -325,13 +403,18 @@
           <label class="label">
             <span class="label-text font-medium">Work Schedule</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('workSchedule')?.value || '-' }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="workSchedule"
             placeholder="Enter work schedule"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
 
         <!-- Cost Center -->
@@ -339,13 +422,18 @@
           <label class="label">
             <span class="label-text font-medium">Cost Center</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ employeeForm().get('costCenter')?.value || '-' }}
+          </div>
+          } @else {
           <input
             type="text"
             formControlName="costCenter"
             placeholder="Enter cost center"
             class="input input-bordered w-full"
-            [readonly]="isReadOnly()"
           />
+          }
         </div>
       </div>
     </div>
@@ -365,13 +453,18 @@
           <label class="label">
             <span class="label-text font-medium">Skills</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[4.5rem]">
+            {{ employeeForm().get('skills')?.value || '-' }}
+          </div>
+          } @else {
           <textarea
             formControlName="skills"
             placeholder="Enter skills"
             class="textarea textarea-bordered w-full"
             rows="3"
-            [readonly]="isReadOnly()"
           ></textarea>
+          }
         </div>
 
         <!-- Certifications -->
@@ -379,13 +472,18 @@
           <label class="label">
             <span class="label-text font-medium">Certifications</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[4.5rem]">
+            {{ employeeForm().get('certifications')?.value || '-' }}
+          </div>
+          } @else {
           <textarea
             formControlName="certifications"
             placeholder="Enter certifications"
             class="textarea textarea-bordered w-full"
             rows="3"
-            [readonly]="isReadOnly()"
           ></textarea>
+          }
         </div>
 
         <!-- Education -->
@@ -393,13 +491,18 @@
           <label class="label">
             <span class="label-text font-medium">Education</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[4.5rem]">
+            {{ employeeForm().get('education')?.value || '-' }}
+          </div>
+          } @else {
           <textarea
             formControlName="education"
             placeholder="Enter education"
             class="textarea textarea-bordered w-full"
             rows="3"
-            [readonly]="isReadOnly()"
           ></textarea>
+          }
         </div>
 
         <!-- Benefits -->
@@ -407,13 +510,18 @@
           <label class="label">
             <span class="label-text font-medium">Benefits</span>
           </label>
+          @if (isReadOnly()) {
+          <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[4.5rem]">
+            {{ employeeForm().get('benefits')?.value || '-' }}
+          </div>
+          } @else {
           <textarea
             formControlName="benefits"
             placeholder="Enter benefits"
             class="textarea textarea-bordered w-full"
             rows="3"
-            [readonly]="isReadOnly()"
           ></textarea>
+          }
         </div>
       </div>
 
@@ -422,13 +530,18 @@
         <label class="label">
           <span class="label-text font-medium">Notes</span>
         </label>
+        @if (isReadOnly()) {
+        <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[4.5rem]">
+          {{ employeeForm().get('notes')?.value || '-' }}
+        </div>
+        } @else {
         <textarea
           formControlName="notes"
           placeholder="Enter additional notes"
           class="textarea textarea-bordered w-full"
           rows="3"
-          [readonly]="isReadOnly()"
         ></textarea>
+        }
       </div>
     </div>
   </div>
@@ -439,7 +552,7 @@
     <button
       type="button"
       class="btn btn-outline"
-      (click)="onCancel()"
+      (click)="cancelForm()"
       [disabled]="isLoading()"
     >
       Cancel
@@ -460,4 +573,3 @@
   }
 
 </form>
-

@@ -53,26 +53,34 @@ export class PersonParamsService {
   }
 
   getIdentificationTypeById(id: string): IdentificationType | undefined {
-    return this.identificationTypes().find(type => type.id === id);
+    return this.findById(this.identificationTypes(), id);
   }
 
   getGenderById(id: string): Gender | undefined {
-    return this.genders().find(gender => gender.id === id);
+    return this.findById(this.genders(), id);
   }
 
   getNationalityById(id: string): Nationality | undefined {
-    return this.nationalities().find(nationality => nationality.id === id);
+    return this.findById(this.nationalities(), id);
   }
 
   getIdentificationTypeByCode(code: string): IdentificationType | undefined {
-    return this.identificationTypes().find(type => type.code === code);
+    return this.findByCode(this.identificationTypes(), code);
   }
 
   getGenderByCode(code: string): Gender | undefined {
-    return this.genders().find(gender => gender.code === code);
+    return this.findByCode(this.genders(), code);
   }
 
   getNationalityByCode(code: string): Nationality | undefined {
-    return this.nationalities().find(nationality => nationality.code === code);
+    return this.findByCode(this.nationalities(), code);
+  }
+
+  private findById<T extends { id: string }>(items: T[], id: string): T | undefined {
+    return items.find(item => item.id === id);
+  }
+
+  private findByCode<T extends { code: string }>(items: T[], code: string): T | undefined {
+    return items.find(item => item.code === code);
   }
 }

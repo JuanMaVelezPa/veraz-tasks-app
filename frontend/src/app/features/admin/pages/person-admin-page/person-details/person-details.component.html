@@ -1,73 +1,52 @@
 <div class="bg-base-200 w-full">
+  <shared-feedback-message />
+
   <div class="max-w-6xl mx-auto w-full">
-    <!-- Header -->
     <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6">
       <div class="w-full sm:w-auto text-center sm:text-left">
         <h1 class="text-xl sm:text-2xl font-bold">{{ isEditMode() ? 'Edit' : 'Create' }} Person</h1>
         <p class="text-sm text-gray-500">Person management information</p>
       </div>
 
-      <!-- Action Buttons - Responsive Layout -->
-      <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-center sm:justify-end">
+      <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
+        <button
+          class="btn btn-outline btn-xs sm:btn-sm"
+          (click)="goBack()"
+          title="Back"
+        >
+          <shared-icon type="back" />
+        </button>
 
-        <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
-          <button
-            class="btn btn-outline btn-xs sm:btn-sm"
-            (click)="goBack()"
-            title="Back"
-          >
-            <shared-icon type="back" />
-          </button>
-        </div>
-
-        <div class="flex flex-wrap gap-2 justify-center sm:justify-end">
-          @if (isEditMode()) {
-          <button
-            class="btn btn-error btn-xs sm:btn-sm"
-            (click)="showDeleteConfirmation()"
-            [disabled]="isLoading()"
-          >
-            <shared-icon type="delete" />
-          </button>
-          }
-        </div>
-
+        @if (isEditMode()) {
+        <button
+          class="btn btn-error btn-xs sm:btn-sm"
+          (click)="showDeleteConfirmation()"
+          [disabled]="isLoading()"
+        >
+          <shared-icon type="delete" />
+        </button>
+        }
       </div>
     </div>
 
-    <!-- Feedback Messages -->
-    <shared-feedback-message />
-
-    <!-- Navigation Tabs -->
-    <div class="tabs tabs-bordered mb-0">
+    <div class="tabs tabs-bordered mb-0 flex-wrap gap-1">
       <button
-        class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
-        [class.tab-active]="activeTab() === 'person'"
-        [class.bg-primary]="activeTab() === 'person'"
-        [class.text-primary-content]="activeTab() === 'person'"
-        [class.border-primary]="activeTab() === 'person'"
-        [class.border-base-300]="activeTab() !== 'person'"
-        (click)="setActiveTab('person')"
+        [class]="getTabClasses('user')"
+        (click)="setActiveTab('user')"
+        [disabled]="!isEditMode()"
       >
-        <shared-icon type="user" />
-        Personal Information
-      </button>
-      @if (isEditMode() && currentPerson() && currentPerson()!.id !== 'new') {
-      <button
-        class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
-        [class.tab-active]="activeTab() === 'employee'"
-        [class.bg-primary]="activeTab() === 'employee'"
-        [class.text-primary-content]="activeTab() === 'employee'"
-        [class.border-primary]="activeTab() === 'employee'"
-        [class.border-base-300]="activeTab() !== 'employee'"
-        (click)="setActiveTab('employee')"
-      >
-        <shared-icon type="user-tie" />
-        Employment Information
-        @if (!currentEmployee()) {
-        <div class="badge badge-warning badge-xs ml-1">Optional</div>
+        <shared-icon
+          type="user-secret"
+          class="hidden sm:inline"
+        />
+        <span class="hidden sm:inline">User Management</span>
+        <span class="sm:hidden">User</span>
+        @if (!isEditMode()) {
+        <div class="badge badge-info badge-xs ml-1 hidden sm:inline">After Save</div>
+        } @else if (!currentUser()) {
+        <div class="badge badge-warning badge-xs ml-1 hidden sm:inline">Optional</div>
         } @else {
-        <div class="badge badge-success badge-xs ml-1">
+        <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
           <shared-icon
             type="check"
             size="xs"
@@ -75,19 +54,59 @@
         </div>
         }
       </button>
-      }
+
+      <button
+        [class]="getTabClasses('person')"
+        (click)="setActiveTab('person')"
+      >
+        <shared-icon
+          type="user"
+          class="hidden sm:inline"
+        />
+        <span class="hidden sm:inline">Personal Information</span>
+        <span class="sm:hidden">Personal</span>
+        @if (!isEditMode()) {
+        <div class="badge badge-primary badge-xs ml-1 hidden sm:inline">Required</div>
+        }
+      </button>
+
+      <button
+        [class]="getTabClasses('employee')"
+        (click)="setActiveTab('employee')"
+        [disabled]="!isEditMode()"
+      >
+        <shared-icon
+          type="user-tie"
+          class="hidden sm:inline"
+        />
+        <span class="hidden sm:inline">Employment Information</span>
+        <span class="sm:hidden">Employee</span>
+        @if (!isEditMode()) {
+        <div class="badge badge-info badge-xs ml-1 hidden sm:inline">After Save</div>
+        } @else if (!currentEmployee()) {
+        <div class="badge badge-warning badge-xs ml-1 hidden sm:inline">Optional</div>
+        } @else {
+        <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
+          <shared-icon
+            type="check"
+            size="xs"
+          />
+        </div>
+        }
+      </button>
     </div>
 
-    <!-- Person Tab Content -->
     @if (activeTab() === 'person') {
     <div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
       <div class="card-body p-4 sm:p-6">
         <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-            <shared-icon
-              type="user"
-              size="1x"
-            />
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary rounded-full w-10">
+              <shared-icon
+                type="user"
+                size="1x"
+              />
+            </div>
           </div>
           <div>
             <h2 class="text-xl font-bold">Personal Information</h2>
@@ -100,22 +119,23 @@
           [person]="person()"
           [isEditMode]="isEditMode()"
           [isLoading]="isLoading()"
-          (formSubmitted)="onSubmit()"
+          (formSubmitted)="submitForm()"
         />
       </div>
     </div>
     }
 
-    <!-- Employee Tab Content -->
-    @if (activeTab() === 'employee' && isEditMode() && currentPerson() && currentPerson()!.id !== 'new') {
+    @if (activeTab() === 'employee') {
     <div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
       <div class="card-body p-4 sm:p-6">
         <div class="flex items-center gap-3 mb-6">
-          <div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">
-            <shared-icon
-              type="user-tie"
-              size="1x"
-            />
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary rounded-full w-10">
+              <shared-icon
+                type="user-tie"
+                size="1x"
+              />
+            </div>
           </div>
           <div>
             <h2 class="text-xl font-bold">Employment Information</h2>
@@ -123,6 +143,23 @@
           </div>
         </div>
 
+        @if (!isEditMode()) {
+        <div class="text-center py-12">
+          <div class="avatar placeholder">
+            <div class="bg-info/10 text-info rounded-full w-16">
+              <shared-icon
+                type="user-tie"
+                size="2xl"
+              />
+            </div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">Employment Information</h3>
+          <p class="text-base-content/70 mb-4">
+            Save the person first to add employment details.
+          </p>
+          <div class="badge badge-info badge-lg">Save person first</div>
+        </div>
+        } @else {
         @if (isLoadingEmployee()) {
         <shared-loading />
         } @else {
@@ -131,41 +168,231 @@
           [employee]="currentEmployee() || null"
           [isEditMode]="!!currentEmployee()"
           [isLoading]="isLoadingEmployee()"
-          (formSubmitted)="onEmployeeFormSubmitted()"
+          (formSubmitted)="submitEmployeeForm()"
         />
+        }
         }
       </div>
     </div>
     }
 
-    <!-- Dynamic Timestamp Information based on active tab -->
+    @if (activeTab() === 'user') {
+    <div class="card bg-base-100 shadow-lg rounded-tl-none mb-6">
+      <div class="card-body p-4 sm:p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="avatar placeholder">
+            <div class="bg-primary/10 text-primary rounded-full w-10">
+              <shared-icon
+                type="user-secret"
+                size="1x"
+              />
+            </div>
+          </div>
+          <div>
+            <h2 class="text-xl font-bold">User Management</h2>
+            <p class="text-base-content/70 text-sm">Manage system access and user account information</p>
+          </div>
+        </div>
+
+        @if (!isEditMode()) {
+        <div class="text-center py-12">
+          <div class="avatar placeholder">
+            <div class="bg-info/10 text-info rounded-full w-16">
+              <shared-icon
+                type="user-secret"
+                size="2xl"
+              />
+            </div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">User Account Management</h3>
+          <p class="text-base-content/70 mb-4">
+            Save the person first to manage user accounts.
+          </p>
+          <div class="badge badge-info badge-lg">Save person first</div>
+        </div>
+        } @else {
+        @if (isLoadingUser()) {
+        <shared-loading />
+        } @else if (currentUser()) {
+        <div class="card bg-base-100 shadow-lg mb-6">
+          <div class="card-body p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="card-title text-lg font-semibold">
+                <shared-icon type="user-secret" />
+                User Account Details
+              </h3>
+              <div
+                class="badge badge-lg"
+                [class.badge-success]="currentUser()?.isActive"
+                [class.badge-error]="!currentUser()?.isActive"
+              >
+                {{ currentUser()?.isActive ? 'Active' : 'Inactive' }}
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div class="space-y-4">
+                <h4 class="font-semibold text-base-content/80 border-b pb-2">Account Information</h4>
+
+                <div class="space-y-3">
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Username</span>
+                    <p class="text-sm font-semibold">{{ currentUser()?.username }}</p>
+                  </div>
+
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Email</span>
+                    <p class="text-sm">{{ currentUser()?.email }}</p>
+                  </div>
+
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Account Status</span>
+                    <p class="text-sm">{{ currentUser()?.isActive ? 'Active' : 'Inactive' }}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h4 class="font-semibold text-base-content/80 border-b pb-2">Roles & Permissions</h4>
+
+                <div class="space-y-3">
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Assigned Roles</span>
+                    <div class="flex flex-wrap gap-1 mt-1">
+                      @for (role of currentUser()?.roles; track role) {
+                      <div class="badge badge-primary badge-sm">{{ role }}</div>
+                      }
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="space-y-4">
+                <h4 class="font-semibold text-base-content/80 border-b pb-2">Account Details</h4>
+
+                <div class="space-y-3">
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Created</span>
+                    <p class="text-sm">{{ currentUser()?.createdAt | date:'short' }}</p>
+                  </div>
+
+                  <div>
+                    <span class="text-xs font-medium text-base-content/70">Last Updated</span>
+                    <p class="text-sm">{{ currentUser()?.updatedAt | date:'short' }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-3 mt-6 pt-6 border-t">
+              <button
+                class="btn btn-outline btn-sm"
+                (click)="editUser()"
+              >
+                <shared-icon type="edit" />
+                Edit User
+              </button>
+              <button
+                class="btn btn-warning btn-sm"
+                (click)="removeUserAssociation()"
+              >
+                <shared-icon type="close" />
+                Remove Association
+              </button>
+            </div>
+          </div>
+        </div>
+        } @else {
+        <div class="text-center py-12">
+          <div class="avatar placeholder">
+            <div class="bg-warning/10 text-warning rounded-full w-16">
+              <shared-icon
+                type="user-secret"
+                size="2xl"
+              />
+            </div>
+          </div>
+          <h3 class="text-lg font-semibold mb-2">No User Account Associated</h3>
+          <p class="text-base-content/70 mb-6">
+            No user account associated. Link an existing user or create a new one.
+          </p>
+          <div class="flex flex-wrap gap-3 justify-center">
+            <button
+              class="btn btn-primary btn-sm"
+              (click)="linkExistingUser()"
+            >
+              <shared-icon type="user-plus" />
+              Link Existing User
+            </button>
+            <button
+              class="btn btn-outline btn-sm"
+              (click)="createNewUser()"
+            >
+              <shared-icon type="add" />
+              Create New User
+            </button>
+          </div>
+        </div>
+        }
+        }
+      </div>
+    </div>
+    }
+
     @if (isEditMode()) {
     <div class="card bg-base-100 shadow-lg">
       <div class="card-body p-4 sm:p-6">
         @if (activeTab() === 'person' && person()) {
-          <shared-timestamp-info
-            [entity]="person()"
-            title="Personal Information"
-          />
+        <shared-timestamp-info
+          [entity]="person()"
+          title="Personal Information"
+        />
         }
         @if (activeTab() === 'employee' && currentEmployee()) {
-          <shared-timestamp-info
-            [entity]="currentEmployee()"
-            title="Employment Information"
-          />
+        <shared-timestamp-info
+          [entity]="currentEmployee()"
+          title="Employment Information"
+        />
         }
         @if (activeTab() === 'employee' && !currentEmployee()) {
-          <div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm">
-            <div class="flex items-center gap-3">
-              <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
-                <shared-icon type="warning" size="sm" class="text-warning" />
-              </div>
-              <div>
-                <h3 class="font-semibold text-base-content">Employment Information</h3>
-                <p class="text-sm text-base-content/60">No employment information available</p>
-              </div>
+        <div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
+              <shared-icon
+                type="warning"
+                size="sm"
+                class="text-warning"
+              />
+            </div>
+            <div>
+              <h3 class="font-semibold text-base-content">Employment Information</h3>
+              <p class="text-sm text-base-content/60">No employment information available</p>
             </div>
           </div>
+        </div>
+        }
+        @if (activeTab() === 'user' && currentUser()) {
+        <shared-timestamp-info
+          [entity]="currentUser()"
+          title="User Account"
+        />
+        }
+        @if (activeTab() === 'user' && !currentUser()) {
+        <div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
+              <shared-icon
+                type="warning"
+                size="sm"
+                class="text-warning"
+              />
+            </div>
+            <div>
+              <h3 class="font-semibold text-base-content">User Account</h3>
+              <p class="text-sm text-base-content/60">No user account associated</p>
+            </div>
+          </div>
+        </div>
         }
       </div>
     </div>
@@ -173,18 +400,32 @@
 
   </div>
 
-  <!-- Delete Confirmation Modal -->
   @if (showDeleteModal()) {
   <dialog class="modal modal-open">
     <div class="modal-box">
       <h3 class="font-bold text-lg text-error">Delete Person</h3>
       <p class="py-4">
-        Are you sure you want to delete <strong>{{ currentPerson()?.firstName }} {{ currentPerson()?.lastName
-          }}</strong>?
+        Delete <strong>{{ currentPerson()?.firstName }} {{ currentPerson()?.lastName }}</strong>?
       </p>
       <p class="text-sm text-gray-500 mb-4">
-        This action cannot be undone. The person will be permanently deleted from the system.
+        This action cannot be undone.
       </p>
+      <div class="bg-secondary/10 border border-secondary/20 rounded-lg p-4 mb-4">
+        <div class="flex items-center gap-3">
+          <shared-icon
+            type="info"
+            class="text-secondary"
+          />
+          <div>
+            <p class="text-sm text-secondary/80">
+              <strong>Person and employment data will be deleted.</strong>
+              @if (currentUser()) {
+              User account will be preserved but disassociated.
+              }
+            </p>
+          </div>
+        </div>
+      </div>
       <div class="modal-action">
         <button
           class="btn btn-outline"

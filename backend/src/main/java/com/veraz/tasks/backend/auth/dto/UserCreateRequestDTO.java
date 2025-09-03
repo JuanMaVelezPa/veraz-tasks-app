@@ -32,7 +32,7 @@ public class UserCreateRequestDTO {
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$", message = "{validation.field.password}")
     private String password;
 
-    private Boolean isActive = false;
+    private Boolean isActive = true;
 
     private Set<String> roles = Set.of("USER");
 } 

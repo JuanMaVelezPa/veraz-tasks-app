@@ -49,4 +49,14 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT COUNT(u) FROM User u JOIN u.roles r WHERE r.name = :roleName")
     long countByRoleName(@Param("roleName") String roleName);
 
+    @Query("SELECT u FROM User u WHERE u.id NOT IN (SELECT p.user.id FROM Person p WHERE p.user IS NOT NULL)")
+    Page<User> findUsersWithoutPerson(Pageable pageable);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN u.roles r WHERE " +
+           "u.id NOT IN (SELECT p.user.id FROM Person p WHERE p.user IS NOT NULL) AND " +
+           "(LOWER(u.username) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(u.email) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+           "LOWER(r.name) LIKE LOWER(CONCAT('%', :searchTerm, '%')))")
+    Page<User> findUsersWithoutPersonBySearch(@Param("searchTerm") String searchTerm, Pageable pageable);
+
 }

@@ -7,11 +7,11 @@
 
 /* Search Bar Layout */
 .search-layout {
-  @apply flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between mb-4;
+  @apply flex flex-wrap items-center gap-4 mb-4;
 }
 
 .search-bar-container {
-  @apply w-full lg:w-2/3;
+  @apply w-full;
 }
 
 /* Table Wrapper */
@@ -119,12 +119,8 @@
 }
 
 /* Responsive Design */
-@media (max-width: 1024px) {
+@media (max-width: 768px) {
   .search-layout {
-    @apply flex-col;
-  }
-
-  .search-bar-container {
-    @apply w-full;
+    @apply flex-col gap-3;
   }
 }

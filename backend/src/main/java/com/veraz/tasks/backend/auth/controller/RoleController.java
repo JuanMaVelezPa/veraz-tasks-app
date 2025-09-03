@@ -41,7 +41,7 @@ public class RoleController {
     @PreAuthorize("@permissionService.canReadResources()")
     public ResponseEntity<ApiResponseDTO<RolesResponseDTO>> findAll() {
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Roles"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Roles"),
                 roleService.findAll(), null));
     }
 
@@ -54,7 +54,7 @@ public class RoleController {
     @PreAuthorize("@permissionService.canReadResources()")
     public ResponseEntity<ApiResponseDTO<RolesResponseDTO>> findAllActive() {
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Roles"),
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Roles"),
                 roleService.findAllActive(), null));
     }
 }

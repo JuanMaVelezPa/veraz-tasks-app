@@ -1,4 +1,26 @@
 <div class="table-container">
+  @if (isSelectionMode()) {
+  <div class="bg-info/10 border border-info/20 rounded-lg p-4 mb-4">
+    <div class="flex items-center gap-3">
+      <shared-icon type="info" class="text-info" />
+      <div>
+        <h3 class="font-semibold text-info">Select User for {{ selectedPersonName() }}</h3>
+        <p class="text-xs text-info/70">
+          <shared-icon type="filter" size="xs" />
+          Available users only
+        </p>
+      </div>
+      <button
+        class="btn btn-outline btn-sm ml-auto"
+        (click)="goBack()"
+      >
+        <shared-icon type="back" />
+        Cancel
+      </button>
+    </div>
+  </div>
+  }
+
   <div class="search-layout">
     <div class="search-bar-container">
       <shared-search-bar
@@ -69,12 +91,22 @@
               </span>
             </td>
             <td class="table-cell">
+              @if (isSelectionMode()) {
+              <button
+                class="action-button action-button-primary"
+                (click)="associateUser(user.id)"
+                title="Associate with person"
+              >
+                <shared-icon type="user-plus" />
+              </button>
+              } @else {
               <a
                 [routerLink]="['/admin/users', user.id]"
                 class="action-button action-button-info"
               >
                 <shared-icon type="ellipsis-vertical" />
               </a>
+              }
             </td>
           </tr>
           }

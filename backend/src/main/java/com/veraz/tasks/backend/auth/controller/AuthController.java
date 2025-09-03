@@ -49,14 +49,14 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials"),
             @ApiResponse(responseCode = "400", description = "Bad request - Invalid data")
     })
-    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> signInUser(@Valid @RequestBody AuthRequestDTO signInRequest) {
-        // Service already handles authentication logic
-        AuthResponseDTO response = authService.signInUser(signInRequest);
-        if (response.getUser() != null && response.getToken() != null) {
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), response, null));
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> authenticateUser(@Valid @RequestBody AuthRequestDTO authRequest) {
+        AuthResponseDTO authResponse = authService.signInUser(authRequest);
+        
+        if (authResponse.getUser() != null && authResponse.getToken() != null) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), authResponse, null));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, response.getMessage(), null, null));
+                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, authResponse.getMessage(), null, null));
         }
     }
 
@@ -67,13 +67,12 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "Invalid input data"),
             @ApiResponse(responseCode = "409", description = "User already exists")
     })
-    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> signUpUser(@Valid @RequestBody UserCreateRequestDTO signUpRequest) {
+    public ResponseEntity<ApiResponseDTO<UserResponseDTO>> registerUser(@Valid @RequestBody UserCreateRequestDTO registrationRequest) {
         try {
-            UserResponseDTO response = userService.create(signUpRequest);
+            UserResponseDTO createdUser = userService.create(registrationRequest);
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "User"), response, null));
+                    .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_CREATED_SUCCESS, "User"), createdUser, null));
         } catch (Exception e) {
-            // GlobalExceptionHandler will handle specific exceptions
             throw e;
         }
     }
@@ -85,14 +84,14 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Unauthorized - No token or invalid/expired token."),
             @ApiResponse(responseCode = "404", description = "User not found")
     })
-    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> checkAuthStatus(@AuthenticationPrincipal User userPrincipal) {
-        AuthResponseDTO response = authService.checkAuthStatus(userPrincipal);
+    public ResponseEntity<ApiResponseDTO<AuthResponseDTO>> checkAuthenticationStatus(@AuthenticationPrincipal User authenticatedUser) {
+        AuthResponseDTO authStatus = authService.checkAuthStatus(authenticatedUser);
         
-        if (response.getUser() != null) {
-            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), response, null));
+        if (authStatus.getUser() != null) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, MessageUtils.getMessage(MessageKeys.AUTH_SIGNIN_SUCCESS), authStatus, null));
         } else {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, response.getMessage(), null, null));
+                    .body(new ApiResponseDTO<>(false, HttpStatus.UNAUTHORIZED, authStatus.getMessage(), null, null));
         }
     }
 }

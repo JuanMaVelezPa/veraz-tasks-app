@@ -24,25 +24,6 @@ export class NavigationHistoryService {
       });
   }
 
-  private addToHistory(url: string, title?: string): void {
-    if (this.navigationHistory.length > 0 &&
-        this.navigationHistory[this.navigationHistory.length - 1].url === url) {
-      return;
-    }
-
-    const entry: NavigationEntry = {
-      url,
-      timestamp: Date.now(),
-      title
-    };
-
-    this.navigationHistory.push(entry);
-
-    if (this.navigationHistory.length > this.maxHistorySize) {
-      this.navigationHistory.shift();
-    }
-  }
-
   getPreviousUrl(): string | null {
     if (this.navigationHistory.length < 2) {
       return null;
@@ -66,9 +47,8 @@ export class NavigationHistoryService {
     }
   }
 
-  // New methods for specific navigation patterns
   goBackToUser(userId: string): void {
-    if (userId && userId !== 'new') {
+    if (this.isValidUserId(userId)) {
       this.router.navigate(['/admin/users', userId]);
     } else {
       this.router.navigate(['/admin/users']);
@@ -102,5 +82,35 @@ export class NavigationHistoryService {
 
   getHistorySize(): number {
     return this.navigationHistory.length;
+  }
+
+  private addToHistory(url: string, title?: string): void {
+    if (this.isDuplicateUrl(url)) {
+      return;
+    }
+
+    const entry: NavigationEntry = {
+      url,
+      timestamp: Date.now(),
+      title
+    };
+
+    this.navigationHistory.push(entry);
+    this.trimHistoryIfNeeded();
+  }
+
+  private isDuplicateUrl(url: string): boolean {
+    return this.navigationHistory.length > 0 &&
+           this.navigationHistory[this.navigationHistory.length - 1].url === url;
+  }
+
+  private trimHistoryIfNeeded(): void {
+    if (this.navigationHistory.length > this.maxHistorySize) {
+      this.navigationHistory.shift();
+    }
+  }
+
+  private isValidUserId(userId: string): boolean {
+    return Boolean(userId && userId !== 'new');
   }
 }

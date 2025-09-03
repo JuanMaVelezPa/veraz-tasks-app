@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, tap, catchError } from 'rxjs';
 import { environment } from '@env/environment';
 import { User } from '@users/interfaces/user.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
@@ -31,6 +31,23 @@ export class UserApiService {
     return this.http.get<ApiResponse<PaginatedResponseDTO<any>>>(`${this.baseUrl}`, { params });
   }
 
+  getAvailableUsers(options: SearchOptions): Observable<ApiResponse<PaginatedResponseDTO<any>>> {
+    const { page, size, sort, order, search } = options;
+
+    const params: any = {
+      page,
+      size,
+      sortBy: sort,
+      sortDirection: order
+    };
+
+    if (search && search.trim()) {
+      params.search = search.trim();
+    }
+
+    return this.http.get<ApiResponse<PaginatedResponseDTO<any>>>(`${this.baseUrl}/available`, { params });
+  }
+
   getUserById(id: string): Observable<ApiResponse<User>> {
     return this.http.get<ApiResponse<User>>(`${this.baseUrl}/${id}`);
   }
@@ -40,7 +57,7 @@ export class UserApiService {
     return this.http.post<ApiResponse<User>>(`${this.baseUrl}`, dataToSend);
   }
 
-  updateUser(id: string, updatedUser: Partial<User>): Observable<ApiResponse<User>> {
+    updateUser(id: string, updatedUser: Partial<User>): Observable<ApiResponse<User>> {
     return this.http.patch<ApiResponse<User>>(`${this.baseUrl}/${id}`, updatedUser);
   }
 

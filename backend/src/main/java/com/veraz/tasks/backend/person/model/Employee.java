@@ -1,5 +1,6 @@
 package com.veraz.tasks.backend.person.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -36,7 +37,7 @@ public class Employee {
     @Column(name = "empl_empl", nullable = false)
     private UUID id;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "empl_pers", referencedColumnName = "pers_pers")
     private Person person;
 

@@ -5,15 +5,6 @@ import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Component;
 
-/**
- * Utility for standardized message handling
- * 
- * Applied principles:
- * - Centralize message retrieval logic
- * - Facilitate standardized message usage
- * - Reduce code duplication
- * - Automatic MessageSource injection
- */
 @Component
 public class MessageUtils {
 
@@ -23,71 +14,47 @@ public class MessageUtils {
         MessageUtils.messageSource = messageSource;
     }
 
-    /**
-     * Gets a localized message
-     */
-    public static String getMessage(String code) {
-        return getMessage(code, (Object[]) null);
+    public static String getMessage(String messageCode) {
+        return getMessage(messageCode, (Object[]) null);
     }
 
-    /**
-     * Gets a localized message with arguments
-     */
-    public static String getMessage(String code, Object... args) {
+    public static String getMessage(String messageCode, Object... arguments) {
         if (messageSource == null) {
             throw new IllegalStateException(
                     "MessageSource has not been initialized. Make sure MessageUtils is being injected by Spring.");
         }
-        return messageSource.getMessage(code, args, code, LocaleContextHolder.getLocale());
+        return messageSource.getMessage(messageCode, arguments, messageCode, LocaleContextHolder.getLocale());
     }
 
-    /**
-     * Gets an entity not found message
-     */
-    public static String getEntityNotFound(String entityName) {
-        String entityLocalizedName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(MessageKeys.CRUD_NOT_FOUND, entityLocalizedName);
+    public static String getEntityNotFoundMessage(String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(MessageKeys.CRUD_NOT_FOUND, localizedEntityName);
     }
 
-    /**
-     * Gets an entity already exists message
-     */
-    public static String getEntityAlreadyExists(String entityName) {
-        String entityLocalizedName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(MessageKeys.CRUD_ALREADY_EXISTS, entityLocalizedName);
+    public static String getEntityAlreadyExistsMessage(String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(MessageKeys.CRUD_ALREADY_EXISTS, localizedEntityName);
     }
 
-    /**
-     * Gets a CRUD success message
-     */
-    public static String getCrudSuccess(String operation, String entityName) {
-        String entityLocalizedName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(operation, entityLocalizedName);
+    public static String getCrudSuccessMessage(String operation, String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(operation, localizedEntityName);
     }
 
-    /**
-     * Gets a CRUD error message
-     */
-    public static String getCrudError(String operation, String entityName) {
-        String entityLocalizedName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(operation, entityLocalizedName);
+    public static String getCrudErrorMessage(String operation, String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(operation, localizedEntityName);
     }
 
-    /**
-     * Gets a field validation message
-     */
-    public static String getFieldValidation(String fieldName, String validationType, Object... args) {
-        String fieldLocalizedName = getMessage("entity.field." + fieldName.toLowerCase(), fieldName);
-        return getMessage("validation.field." + validationType, fieldLocalizedName, args);
+    public static String getFieldValidationMessage(String fieldName, String validationType, Object... arguments) {
+        String localizedFieldName = getMessage("entity.field." + fieldName.toLowerCase(), fieldName);
+        return getMessage("validation.field." + validationType, localizedFieldName, arguments);
     }
 
-    /**
-     * Checks if a message exists for the given key
-     */
-    public static boolean hasMessage(String code) {
+    public static boolean hasMessage(String messageCode) {
         try {
-            String message = getMessage(code);
-            return !message.equals(code); // If message equals code, it doesn't exist
+            String message = getMessage(messageCode);
+            return !message.equals(messageCode);
         } catch (Exception e) {
             return false;
         }

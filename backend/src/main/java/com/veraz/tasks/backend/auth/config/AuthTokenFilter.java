@@ -24,6 +24,10 @@ import org.springframework.lang.NonNull;
 public class AuthTokenFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String BEARER_PREFIX = "Bearer ";
+    private static final int BEARER_PREFIX_LENGTH = 7;
+
     private final JwtUtils jwtUtils;
     private final AuthService authService;
 
@@ -40,27 +44,8 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         try {
-
-            String jwt = parseJwt(request);
-
-            if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-
-                String userID = jwtUtils.getUserIDFromJwtToken(jwt);
-                UserDetails userDetails = authService.getUserByIDAuth(UUID.fromString(userID));
-
-                if (userDetails != null) {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            userDetails, null, userDetails.getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                } else {
-                    logger.warn("User not found for ID: {}", userID);
-                }
-
-            } else if (jwt != null) {
-                logger.warn("Invalid JWT token provided");
-            } else {
-                logger.debug("No JWT token found in request");
-            }
+            String jwtToken = extractJwtToken(request);
+            processJwtToken(jwtToken);
         } catch (Exception e) {
             logger.error("Cannot set user authentication: {}", e.getMessage(), e);
         }
@@ -68,12 +53,38 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    private String parseJwt(HttpServletRequest request) {
-        String headerAuth = request.getHeader("Authorization");
-        if (StringUtils.hasText(headerAuth) && headerAuth.startsWith("Bearer ")) {
-            return headerAuth.substring(7);
+    private void processJwtToken(String jwtToken) {
+        if (jwtToken == null) {
+            logger.debug("No JWT token found in request");
+            return;
+        }
+
+        if (!jwtUtils.validateJwtToken(jwtToken)) {
+            logger.warn("Invalid JWT token provided");
+            return;
+        }
+
+        String userId = jwtUtils.getUserIDFromJwtToken(jwtToken);
+        UserDetails userDetails = authService.getUserByIDAuth(UUID.fromString(userId));
+
+        if (userDetails != null) {
+            setAuthentication(userDetails);
+        } else {
+            logger.warn("User not found for ID: {}", userId);
+        }
+    }
+
+    private void setAuthentication(UserDetails userDetails) {
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                userDetails, null, userDetails.getAuthorities());
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    private String extractJwtToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.hasText(authorizationHeader) && authorizationHeader.startsWith(BEARER_PREFIX)) {
+            return authorizationHeader.substring(BEARER_PREFIX_LENGTH);
         }
         return null;
     }
-
 }

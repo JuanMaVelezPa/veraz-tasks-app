@@ -1,8 +1,9 @@
-import { Component, inject, input, output, effect } from '@angular/core';
+import { Component, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { PersonParamsService } from '@person/services/person-params.service';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
+import { ScrollService } from '@shared/services/scroll.service';
 import { IconComponent } from '@shared/components/icon/icon.component';
 
 @Component({
@@ -23,22 +24,24 @@ export class PersonFormComponent {
   personCreated = output<any>();
 
   private personParamsService = inject(PersonParamsService);
+  private scrollService = inject(ScrollService);
 
   identificationTypes = this.personParamsService.getIdentificationTypes();
   genders = this.personParamsService.getGenders();
   nationalities = this.personParamsService.getNationalities();
 
-  onSubmit(): void {
+  submitForm(): void {
     if (this.personForm().invalid) {
       this.personForm().markAllAsTouched();
       return;
     }
     this.formSubmitted.emit();
+    this.scrollService.scrollToTop();
   }
 
-  getIdentificationTypeName(code: string | undefined): string {
-    if (!code) return '';
-    return this.identificationTypes().find(t => t.code === code)?.name || code;
+  getIdentificationTypeDisplayName(typeCode: string | undefined): string {
+    if (!typeCode) return '';
+    const identificationType = this.identificationTypes().find(type => type.code === typeCode);
+    return identificationType?.name || typeCode;
   }
-
 }

@@ -1,12 +1,15 @@
 import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef, OnInit } from '@angular/core';
+import { ScrollService } from '@shared/services/scroll.service';
 import { Person } from '@person/interfaces/person.interface';
 import { Employee } from '@employee/interfaces/employee.interface';
+import { User } from '@users/interfaces/user.interface';
 import { ReactiveFormsModule } from '@angular/forms';
 import { PersonService } from '@person/services/person.service';
 import { PersonManagementService } from '@person/services/person-management.service';
-import { EmployeeService } from '@employee/services/employee.service';
 import { EmployeeAssociationService } from '@employee/services/employee-association.service';
-import { Router, ActivatedRoute } from '@angular/router';
+import { UserService } from '@users/services/user.service';
+
+import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
@@ -17,8 +20,9 @@ import { TimestampInfoComponent } from '@shared/components/timestamp-info/timest
 import { EmployeeFormComponent } from '@employee/components/employee-form/employee-form.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
-import { firstValueFrom, catchError } from 'rxjs';
+import { firstValueFrom, catchError, filter } from 'rxjs';
 import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
+import { EmployeeService } from '@employee/services/employee.service';
 
 @Component({
   selector: 'person-details',
@@ -33,12 +37,15 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private personService = inject(PersonService);
   private personManagementService = inject(PersonManagementService);
-  private employeeService = inject(EmployeeService);
   private employeeAssociationService = inject(EmployeeAssociationService);
+  private userService = inject(UserService);
+
   private httpErrorService = inject(HttpErrorService);
   private feedbackService = inject(FeedbackMessageService);
   private navigationHistory = inject(NavigationHistoryService);
   private cdr = inject(ChangeDetectorRef);
+  private employeeService = inject(EmployeeService);
+  private scrollService = inject(ScrollService);
 
   wasSaved = signal(false);
   isLoading = signal(false);
@@ -46,14 +53,14 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   showDeleteModal = signal(false);
   currentPerson = signal<Person | null>(null);
 
-  // Employee signals
   currentEmployee = signal<Employee | null>(null);
   isLoadingEmployee = signal(false);
 
-  // Tab management
-  activeTab = signal<'person' | 'employee'>('person');
+  currentUser = signal<User | null>(null);
+  isLoadingUser = signal(false);
 
-  // Forms
+  activeTab = signal<'person' | 'employee' | 'user'>('person');
+
   personForm = this.formBuilders.buildPersonForm();
   employeeForm = this.formBuilders.buildEmployeeForm();
 
@@ -64,15 +71,37 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.setFormValues(person);
     this.isEditMode.set(person.id !== 'new');
 
-    // Load employment info if person exists and has a valid ID
-    if (this.isEditMode() && person.id && person.id !== 'new' && person.id !== 'undefined' && person.id !== 'null') {
+    if (this.isEditMode()) {
       this.loadEmployeeInfo(person.id);
-    }
+      this.loadUserInfo(person);
 
-    // Reset employee form if no employee exists
-    if (!this.currentEmployee()) {
+      const returnFromUser = this.route.snapshot.queryParamMap.get('returnFromUser');
+      if (returnFromUser === 'true') {
+        this.activeTab.set('user');
+      }
+    } else {
       this.formBuilders.resetForm(this.employeeForm);
     }
+
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd),
+      filter(() => this.isEditMode() && this.currentPerson()?.id !== 'new')
+    ).subscribe(async () => {
+      try {
+        const updatedPerson = await firstValueFrom(
+          this.personService.getPersonById(this.currentPerson()!.id)
+        );
+        this.currentPerson.set(updatedPerson);
+
+        if (updatedPerson.userId) {
+          await this.loadUserInfo(updatedPerson);
+        } else {
+          this.currentUser.set(null);
+        }
+      } catch (error) {
+        console.error('Error refreshing person info:', error);
+      }
+    });
   }
 
   private setFormValues(person: Partial<Person>): void {
@@ -80,7 +109,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
-  async onSubmit(): Promise<void> {
+  async submitForm(): Promise<void> {
     this.feedbackService.clearMessage();
     if (this.personForm.invalid) {
       this.personForm.markAllAsTouched();
@@ -96,8 +125,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       }
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while saving the person.');
-      // Reset form to original values after error
-      this.setFormValues(this.currentPerson()!);
+      this.resetFormToOriginalValues();
     } finally {
       this.isLoading.set(false);
     }
@@ -113,7 +141,6 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Check if we're creating a person for a specific user
     const userId = this.route.snapshot.queryParamMap.get('userId');
 
     try {
@@ -123,33 +150,15 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
           context: 'admin',
           userId: userId || undefined,
           onSuccess: (person) => {
-            this.currentPerson.set(person);
-            this.wasSaved.set(true);
-            this.isEditMode.set(true);
-
-            // Load employment info after person is created
-            if (person.id && person.id !== 'new') {
-              this.loadEmployeeInfo(person.id);
-            }
-
-            // Navigate back after success
-            setTimeout(() => {
-              if (userId) {
-                this.navigationHistory.goBackToUser(userId);
-              } else {
-                this.navigationHistory.goBackToPersons();
-              }
-            }, 500);
+            this.handlePersonCreationSuccess(person, userId);
           },
           onError: () => {
-            // Reset form to original values after error
-            this.setFormValues(this.currentPerson() || this.person());
+            this.resetFormToOriginalValues();
           }
         }
       );
     } catch (error: any) {
-      // Error handling is done in the service
-      this.setFormValues(this.currentPerson() || this.person());
+      this.resetFormToOriginalValues();
       throw error;
     }
   }
@@ -168,19 +177,15 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
         {
           context: 'admin',
           onSuccess: (person) => {
-            this.currentPerson.set(person);
-            this.setFormValues(person);
-            this.wasSaved.set(true);
+            this.handlePersonUpdateSuccess(person);
           },
           onError: () => {
-            // Reset form to original values after error
-            this.setFormValues(this.currentPerson()!);
+            this.resetFormToOriginalValues();
           }
         }
       );
     } catch (error: any) {
-      // Error handling is done in the service
-      this.setFormValues(this.currentPerson()!);
+      this.resetFormToOriginalValues();
     }
   }
 
@@ -192,21 +197,14 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.feedbackService.clearMessage();
 
     try {
-      const response = await firstValueFrom(
+      await firstValueFrom(
         this.personService.deletePerson(person.id).pipe(
           catchError(error => this.httpErrorService.handleError(error, 'deleting person'))
         )
       );
-      // For delete operations, response will be true if successful
-      this.feedbackService.showSuccess('Person deleted successfully');
 
-      // Check if we came from a user context
-      const userId = this.route.snapshot.queryParamMap.get('userId');
-      if (userId) {
-        this.navigationHistory.goBackToUser(userId);
-      } else {
-        this.navigationHistory.goBackToPersons();
-      }
+      this.feedbackService.showSuccess('Person and employment information deleted successfully. User account has been disassociated.');
+      this.navigationHistory.goBackToPersons();
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while deleting the person.');
     } finally {
@@ -221,6 +219,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
   cancelDelete(): void {
     this.showDeleteModal.set(false);
+    this.scrollService.scrollToTop();
   }
 
   goBack(): void {
@@ -228,7 +227,6 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.navigationHistory.goBack('/admin/persons');
   }
 
-  // Employment methods
   private async loadEmployeeInfo(personId: string): Promise<void> {
     if (!personId || personId === 'undefined' || personId === 'null') {
       this.currentEmployee.set(null);
@@ -249,12 +247,44 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
-  setActiveTab(tab: 'person' | 'employee') {
-    this.activeTab.set(tab);
+  private async loadUserInfo(person: Person): Promise<void> {
+    if (!person.userId) {
+      this.currentUser.set(null);
+      this.isLoadingUser.set(false);
+      return;
+    }
+
+    this.isLoadingUser.set(true);
+    try {
+      const user = await firstValueFrom(
+        this.userService.getUserById(person.userId)
+      );
+      this.currentUser.set(user);
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      this.currentUser.set(null);
+    } finally {
+      this.isLoadingUser.set(false);
+    }
   }
 
-  async onEmployeeFormSubmitted(): Promise<void> {
-    this.feedbackService.clearMessage();
+  setActiveTab(tab: 'person' | 'employee' | 'user') {
+    this.activeTab.set(tab);
+    this.scrollService.scrollToTop();
+  }
+
+  getTabClasses(tab: 'person' | 'employee' | 'user'): string {
+    const isActive = this.activeTab() === tab;
+    const isDisabled = (tab === 'user' || tab === 'employee') && !this.isEditMode();
+
+    const baseClasses = 'tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0';
+    const activeClasses = isActive ? 'tab-active bg-primary text-primary-content border-primary' : 'border-base-300';
+    const disabledClasses = isDisabled ? 'opacity-50 cursor-not-allowed' : '';
+
+    return `${baseClasses} ${activeClasses} ${disabledClasses}`.trim();
+  }
+
+  async submitEmployeeForm(): Promise<void> {
     if (this.employeeForm.invalid) {
       this.employeeForm.markAllAsTouched();
       this.feedbackService.showError('Please fix validation errors before saving.');
@@ -263,30 +293,151 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
     this.isLoadingEmployee.set(true);
     try {
-      const formValue = this.employeeForm.value;
-      const formData = this.formBuilders.prepareEmployeeFormData(formValue);
-
-      const person = this.currentPerson();
-      if (!person || person.id === 'new') {
-        this.feedbackService.showError('Person must be saved first before creating employment information.');
-        return;
-      }
+      const employeeData = this.formBuilders.prepareEmployeeFormData(this.employeeForm.value);
 
       if (this.currentEmployee()) {
-        // Update existing employee
-        await this.updateEmployee(formData);
+        await this.updateEmployeeData(employeeData);
       } else {
-        // Create new employee
-        await this.createEmployee(formData);
+        await this.createEmployeeData(employeeData);
       }
     } catch (error: any) {
-      this.feedbackService.showError(error.message || 'An error occurred while saving employment information.');
+      this.feedbackService.showError(error.message || 'An error occurred while saving the employee.');
     } finally {
       this.isLoadingEmployee.set(false);
     }
   }
 
-  private async createEmployee(formData: any): Promise<void> {
+
+
+  async removeUserAssociation(): Promise<void> {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    this.isLoadingUser.set(true);
+    try {
+      await firstValueFrom(
+        this.personService.removeUserAssociation(person.id).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'removing user association'))
+        )
+      );
+
+      this.currentUser.set(null);
+      this.feedbackService.showSuccess('User association removed successfully.');
+      this.scrollService.scrollToTop();
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while removing user association.');
+    } finally {
+      this.isLoadingUser.set(false);
+    }
+  }
+
+  linkExistingUser(): void {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    this.router.navigate(['/admin/users'], {
+      queryParams: {
+        mode: 'select',
+        personId: person.id,
+        personName: `${person.firstName} ${person.lastName}`,
+        returnUrl: `/admin/persons/${person.id}?returnFromUser=true`,
+        filter: 'available'
+      }
+    });
+  }
+
+  async associateUserFromTable(userId: string): Promise<void> {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    this.isLoadingUser.set(true);
+    try {
+      await firstValueFrom(
+        this.personService.associateUser(person.id, userId).pipe(
+          catchError(error => this.httpErrorService.handleError(error, 'associating user'))
+        )
+      );
+
+      const updatedPerson = await firstValueFrom(
+        this.personService.getPersonById(person.id)
+      );
+      this.currentPerson.set(updatedPerson);
+
+      await this.loadUserInfo(updatedPerson);
+      this.feedbackService.showSuccess('User associated successfully!');
+      this.activeTab.set('user');
+      this.scrollService.scrollToTop();
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while associating user.');
+    } finally {
+      this.isLoadingUser.set(false);
+    }
+  }
+
+  createNewUser(): void {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    this.router.navigate(['/admin/users/new'], {
+      queryParams: {
+        personId: person.id,
+        returnUrl: `/admin/persons/${person.id}?returnFromUser=true`
+      }
+    });
+  }
+
+  editUser(): void {
+    const user = this.currentUser();
+    if (!user) return;
+
+    this.router.navigate(['/admin/users', user.id]);
+  }
+
+  ngOnDestroy(): void {
+    this.feedbackService.clearMessage();
+  }
+
+  private handlePersonCreationSuccess(person: Person, userId: string | null): void {
+    this.currentPerson.set(person);
+    this.wasSaved.set(true);
+    this.isEditMode.set(true);
+
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { id: person.id, mode: 'edit' },
+      queryParamsHandling: 'merge'
+    });
+
+    if (person.id && person.id !== 'new') {
+      this.loadEmployeeInfo(person.id);
+      this.loadUserInfo(person);
+    }
+
+    this.feedbackService.showSuccess(
+      'Person created successfully! Use the tabs above to add employment information or associate a user account.'
+    );
+    this.activeTab.set('person');
+    this.cdr.detectChanges();
+    this.scrollService.scrollToTop();
+  }
+
+  private handlePersonUpdateSuccess(person: Person): void {
+    this.currentPerson.set(person);
+    this.setFormValues(person);
+    this.wasSaved.set(true);
+    this.scrollService.scrollToTop();
+  }
+
+  private resetFormToOriginalValues(): void {
+    this.setFormValues(this.currentPerson() || this.person());
+  }
+
+  private setEmployeeFormValues(employee: Employee): void {
+    this.formBuilders.patchForm(this.employeeForm, employee);
+    this.cdr.detectChanges();
+  }
+
+  private async createEmployeeData(formData: any): Promise<void> {
     const person = this.currentPerson();
     if (!person || person.id === 'new') return;
 
@@ -300,9 +451,10 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.currentEmployee.set(createdEmployee);
     this.setEmployeeFormValues(createdEmployee);
     this.feedbackService.showSuccess('Employment information created successfully!');
+    this.scrollService.scrollToTop();
   }
 
-  private async updateEmployee(formData: any): Promise<void> {
+  private async updateEmployeeData(formData: any): Promise<void> {
     const employee = this.currentEmployee();
     if (!employee) return;
 
@@ -315,30 +467,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.currentEmployee.set(updatedEmployee);
     this.setEmployeeFormValues(updatedEmployee);
     this.feedbackService.showSuccess('Employment information updated successfully!');
+    this.scrollService.scrollToTop();
   }
 
-  private setEmployeeFormValues(employee: Employee): void {
-    this.formBuilders.patchForm(this.employeeForm, employee);
-    this.cdr.detectChanges();
-  }
-
-  onEmployeeAction(): void {
-    const person = this.currentPerson();
-    if (!person || person.id === 'new') return;
-
-    const employee = this.currentEmployee();
-    if (employee) {
-      // Navigate to edit employee
-      this.router.navigate(['/admin/employees', employee.id]);
-    } else {
-      // Navigate to create employee with person ID
-      this.router.navigate(['/admin/employees/new'], {
-        queryParams: { personId: person.id }
-      });
-    }
-  }
-
-  ngOnDestroy(): void {
-    this.feedbackService.clearMessage();
-  }
 }

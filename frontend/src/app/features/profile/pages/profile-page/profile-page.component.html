@@ -1,5 +1,5 @@
 <div class="max-w-7xl mx-auto p-4">
-  <shared-feedback-message></shared-feedback-message>
+  <shared-feedback-message />
 
   @if (isLoadingUser()) {
   <shared-loading />
@@ -11,9 +11,9 @@
   </div>
 
   <!-- Navigation Tabs -->
-  <div class="tabs tabs-bordered mb-0">
+  <div class="tabs tabs-bordered mb-0 flex-wrap gap-1">
     <button
-      class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
       [class.tab-active]="activeTab() === 'user'"
       [class.bg-primary]="activeTab() === 'user'"
       [class.text-primary-content]="activeTab() === 'user'"
@@ -21,12 +21,16 @@
       [class.border-base-300]="activeTab() !== 'user'"
       (click)="setActiveTab('user')"
     >
-      <shared-icon type="user" />
-      Account & Security
+      <shared-icon
+        type="user"
+        class="hidden sm:inline"
+      />
+      <span class="hidden sm:inline">Account & Security</span>
+      <span class="sm:hidden">Account</span>
     </button>
     @if (personalProfile()) {
     <button
-      class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
       [class.tab-active]="activeTab() === 'person'"
       [class.bg-primary]="activeTab() === 'person'"
       [class.text-primary-content]="activeTab() === 'person'"
@@ -34,9 +38,13 @@
       [class.border-base-300]="activeTab() !== 'person'"
       (click)="setActiveTab('person')"
     >
-      <shared-icon type="user" />
-      Personal Information
-      <div class="badge badge-success badge-xs ml-1">
+      <shared-icon
+        type="user"
+        class="hidden sm:inline"
+      />
+      <span class="hidden sm:inline">Personal Information</span>
+      <span class="sm:hidden">Personal</span>
+      <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
         <shared-icon
           type="check"
           size="xs"
@@ -46,7 +54,7 @@
     }
     @if (employmentProfile()) {
     <button
-      class="tab font-medium transition-all duration-200 rounded-t-lg border-2"
+      class="tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0"
       [class.tab-active]="activeTab() === 'employment'"
       [class.bg-primary]="activeTab() === 'employment'"
       [class.text-primary-content]="activeTab() === 'employment'"
@@ -54,9 +62,13 @@
       [class.border-base-300]="activeTab() !== 'employment'"
       (click)="setActiveTab('employment')"
     >
-      <shared-icon type="user-tie" />
-      Employment Information
-      <div class="badge badge-success badge-xs ml-1">
+      <shared-icon
+        type="user-tie"
+        class="hidden sm:inline"
+      />
+      <span class="hidden sm:inline">Employment Information</span>
+      <span class="sm:hidden">Employment</span>
+      <div class="badge badge-success badge-xs ml-1 hidden sm:inline">
         <shared-icon
           type="check"
           size="xs"

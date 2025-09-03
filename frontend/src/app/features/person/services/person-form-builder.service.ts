@@ -58,8 +58,9 @@ export class PersonFormBuilderService extends BaseFormBuilderService {
     },
     email: {
       name: 'email',
-      validators: [Validators.pattern(FormUtilsService.emailPattern)],
-      defaultValue: ''
+      validators: [Validators.pattern(FormUtilsService.EMAIL_PATTERN)],
+      defaultValue: '',
+      isRequired: true
     },
     address: {
       name: 'address',
@@ -104,9 +105,27 @@ export class PersonFormBuilderService extends BaseFormBuilderService {
   }
 
   detectPersonChanges(formValue: any, originalPerson: any): any {
-    return this.detectChanges(formValue, originalPerson, {
+    // Clean up form values for better comparison
+    const cleanedFormValue = this.cleanFormValues(formValue);
+
+    const changes = this.detectChanges(cleanedFormValue, originalPerson, {
       trimStrings: true
     });
+
+    return changes;
+  }
+
+  private cleanFormValues(formValue: any): any {
+    const cleaned = { ...formValue };
+
+    // Convert empty strings to null for better comparison
+    Object.keys(cleaned).forEach(key => {
+      if (typeof cleaned[key] === 'string' && cleaned[key].trim() === '') {
+        cleaned[key] = null;
+      }
+    });
+
+    return cleaned;
   }
 
   preparePersonFormData(formValue: any): any {

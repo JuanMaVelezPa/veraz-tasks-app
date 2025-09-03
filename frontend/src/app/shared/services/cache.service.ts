@@ -25,17 +25,11 @@ export class CacheService implements OnDestroy {
     this.cleanupSubscription?.unsubscribe();
   }
 
-  private startAutoCleanup(): void {
-    this.cleanupSubscription = interval(5 * 60 * 1000).subscribe(() => {
-      this.cleanup();
-    });
-  }
-
   get<T>(key: string): T | null {
     const entry = this.cache.get(key);
     if (!entry) return null;
 
-    if (entry.type === 'data' && Date.now() - entry.timestamp > entry.ttl) {
+    if (this.isEntryExpired(entry)) {
       this.cache.delete(key);
       return null;
     }
@@ -66,27 +60,15 @@ export class CacheService implements OnDestroy {
   }
 
   clearDataCache(): void {
-    const keysToDelete = Array.from(this.cache.entries())
-      .filter(([_, entry]) => entry.type === 'data')
-      .map(([key]) => key);
-
-    keysToDelete.forEach(key => this.cache.delete(key));
+    this.deleteEntriesByType('data');
   }
 
   clearPreferencesCache(): void {
-    const keysToDelete = Array.from(this.cache.entries())
-      .filter(([_, entry]) => entry.type === 'preferences')
-      .map(([key]) => key);
-
-    keysToDelete.forEach(key => this.cache.delete(key));
+    this.deleteEntriesByType('preferences');
   }
 
   clearPattern(pattern: string): void {
-    const keysToDelete = Array.from(this.cache.entries())
-      .filter(([key, entry]) => key.includes(pattern) && entry.type === 'data')
-      .map(([key]) => key);
-
-    keysToDelete.forEach(key => this.cache.delete(key));
+    this.deleteEntriesByPattern(pattern, 'data');
   }
 
   has(key: string): boolean {
@@ -98,16 +80,8 @@ export class CacheService implements OnDestroy {
   }
 
   getStats(): { data: number; preferences: number; total: number } {
-    let dataCount = 0;
-    let preferencesCount = 0;
-
-    for (const entry of this.cache.values()) {
-      if (entry.type === 'data') {
-        dataCount++;
-      } else {
-        preferencesCount++;
-      }
-    }
+    const dataCount = this.countEntriesByType('data');
+    const preferencesCount = this.countEntriesByType('preferences');
 
     return {
       data: dataCount,
@@ -117,28 +91,17 @@ export class CacheService implements OnDestroy {
   }
 
   cleanup(): void {
-    const now = Date.now();
-    const keysToDelete = Array.from(this.cache.entries())
-      .filter(([_, entry]) => entry.type === 'data' && now - entry.timestamp > entry.ttl)
-      .map(([key]) => key);
-
-    keysToDelete.forEach(key => this.cache.delete(key));
+    this.deleteExpiredEntries('data');
   }
 
   cleanupAll(): void {
-    const now = Date.now();
-    const keysToDelete = Array.from(this.cache.entries())
-      .filter(([_, entry]) => now - entry.timestamp > entry.ttl)
-      .map(([key]) => key);
-
-    keysToDelete.forEach(key => this.cache.delete(key));
+    this.deleteExpiredEntries();
   }
 
   clearOnLogout(): void {
     this.clearDataCache();
   }
 
-  // Utility methods for debugging (development only)
   forceCleanup(): void {
     this.cleanup();
   }
@@ -147,16 +110,10 @@ export class CacheService implements OnDestroy {
     this.cleanupAll();
   }
 
-  /**
-   * Get cache keys matching a pattern
-   */
   getKeysMatching(pattern: string): string[] {
     return Array.from(this.cache.keys()).filter(key => key.includes(pattern));
   }
 
-  /**
-   * Get detailed cache statistics
-   */
   getDetailedStats(): {
     data: number;
     preferences: number;
@@ -164,26 +121,22 @@ export class CacheService implements OnDestroy {
     expired: number;
     patterns: Record<string, number>;
   } {
+    const now = Date.now();
     let dataCount = 0;
     let preferencesCount = 0;
     let expiredCount = 0;
     const patterns: Record<string, number> = {};
-    const now = Date.now();
 
     for (const [key, entry] of this.cache.entries()) {
-      // Count by type
       if (entry.type === 'data') {
         dataCount++;
-
-        // Check if expired
-        if (now - entry.timestamp > entry.ttl) {
+        if (this.isEntryExpired(entry, now)) {
           expiredCount++;
         }
       } else {
         preferencesCount++;
       }
 
-      // Count by pattern (prefix before first colon)
       const pattern = key.split(':')[0];
       patterns[pattern] = (patterns[pattern] || 0) + 1;
     }
@@ -197,12 +150,57 @@ export class CacheService implements OnDestroy {
     };
   }
 
-  /**
-   * Check if cache is healthy (not too many expired entries)
-   */
   isHealthy(): boolean {
     const stats = this.getDetailedStats();
     const expiredPercentage = stats.total > 0 ? (stats.expired / stats.total) * 100 : 0;
-    return expiredPercentage < 50; // Consider unhealthy if more than 50% are expired
+    return expiredPercentage < 50;
+  }
+
+  private startAutoCleanup(): void {
+    this.cleanupSubscription = interval(5 * 60 * 1000).subscribe(() => {
+      this.cleanup();
+    });
+  }
+
+  private isEntryExpired(entry: CacheEntry<any>, currentTime: number = Date.now()): boolean {
+    return entry.type === 'data' && currentTime - entry.timestamp > entry.ttl;
+  }
+
+  private deleteEntriesByType(type: 'data' | 'preferences'): void {
+    const keysToDelete = this.getKeysByType(type);
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  private deleteEntriesByPattern(pattern: string, type: 'data' | 'preferences'): void {
+    const keysToDelete = this.getKeysByPatternAndType(pattern, type);
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  private deleteExpiredEntries(type?: 'data' | 'preferences'): void {
+    const now = Date.now();
+    const keysToDelete = Array.from(this.cache.entries())
+      .filter(([_, entry]) => {
+        const isExpired = this.isEntryExpired(entry, now);
+        return type ? isExpired && entry.type === type : isExpired;
+      })
+      .map(([key]) => key);
+
+    keysToDelete.forEach(key => this.cache.delete(key));
+  }
+
+  private countEntriesByType(type: 'data' | 'preferences'): number {
+    return this.getKeysByType(type).length;
+  }
+
+  private getKeysByType(type: 'data' | 'preferences'): string[] {
+    return Array.from(this.cache.entries())
+      .filter(([_, entry]) => entry.type === type)
+      .map(([key]) => key);
+  }
+
+  private getKeysByPatternAndType(pattern: string, type: 'data' | 'preferences'): string[] {
+    return Array.from(this.cache.entries())
+      .filter(([key, entry]) => key.includes(pattern) && entry.type === type)
+      .map(([key]) => key);
   }
 }

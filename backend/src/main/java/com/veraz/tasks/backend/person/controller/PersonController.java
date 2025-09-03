@@ -3,6 +3,8 @@ package com.veraz.tasks.backend.person.controller;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,15 +23,17 @@ import org.springframework.web.bind.annotation.RestController;
 import com.veraz.tasks.backend.person.dto.PersonCreateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.PersonResponseDTO;
-import com.veraz.tasks.backend.person.dto.PersonUserAssociationDTO;
 import com.veraz.tasks.backend.shared.controller.ControllerInterface;
 import com.veraz.tasks.backend.shared.dto.ApiResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginatedResponseDTO;
 import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
 import com.veraz.tasks.backend.shared.util.PaginationUtils;
 import com.veraz.tasks.backend.person.service.PersonService;
+import com.veraz.tasks.backend.person.repository.PersonRepository;
+import com.veraz.tasks.backend.person.model.Person;
 import com.veraz.tasks.backend.shared.constants.MessageKeys;
 import com.veraz.tasks.backend.shared.util.MessageUtils;
+import com.veraz.tasks.backend.person.dto.PersonUserAssociationDTO;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -46,12 +50,16 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/persons")
 @Tag(name = "Person", description = "Person management endpoints")
-public class PersonController implements ControllerInterface<UUID, PersonCreateRequestDTO, PersonUpdateRequestDTO, PersonResponseDTO> {
+public class PersonController
+        implements ControllerInterface<UUID, PersonCreateRequestDTO, PersonUpdateRequestDTO, PersonResponseDTO> {
 
+    private static final Logger logger = LoggerFactory.getLogger(PersonController.class);
     private final PersonService personService;
+    private final PersonRepository personRepository;
 
-    public PersonController(PersonService personService) {
+    public PersonController(PersonService personService, PersonRepository personRepository) {
         this.personService = personService;
+        this.personRepository = personRepository;
     }
 
     @GetMapping
@@ -67,12 +75,12 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
         paginationRequest.validateAndNormalize();
         Pageable pageable = PaginationUtils.createPageable(paginationRequest);
 
-        PaginatedResponseDTO<PersonResponseDTO> response = paginationRequest.hasSearch() 
-            ? personService.findBySearch(paginationRequest.getSearch(), pageable)
-            : personService.findAll(pageable);
+        PaginatedResponseDTO<PersonResponseDTO> response = paginationRequest.hasSearch()
+                ? personService.findBySearch(paginationRequest.getSearch(), pageable)
+                : personService.findAll(pageable);
 
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Persons"),
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Persons"),
                 response, null));
     }
 
@@ -86,15 +94,15 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
     @PreAuthorize("@permissionService.canAccessResource(#id, 'PERSON') or @permissionService.hasAdminAccess()")
     public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> findById(@PathVariable UUID id) {
         Optional<PersonResponseDTO> response = personService.findById(id);
-        
+
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Person"), 
+                    MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Person"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
-                            MessageUtils.getEntityNotFound("Person"), null, null));
+                            MessageUtils.getEntityNotFoundMessage("Person"), null, null));
         }
     }
 
@@ -104,12 +112,13 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
             @ApiResponse(responseCode = "201", description = "Created"),
             @ApiResponse(responseCode = "403", description = "Forbidden")
     })
-    @PreAuthorize("@permissionService.canCreatePerson(#personRequestDTO.userId)")
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> create(@Valid @RequestBody PersonCreateRequestDTO personRequestDTO) {
-        PersonResponseDTO response = personService.create(personRequestDTO);
+    @PreAuthorize("@permissionService.canCreatePerson(#createRequest.userId)")
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> create(
+            @Valid @RequestBody PersonCreateRequestDTO createRequest) {
+        PersonResponseDTO response = personService.create(createRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED, 
-                        MessageUtils.getCrudSuccess(MessageKeys.CRUD_CREATED_SUCCESS, "Person"), 
+                .body(new ApiResponseDTO<>(true, HttpStatus.CREATED,
+                        MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_CREATED_SUCCESS, "Person"),
                         response, null));
     }
 
@@ -121,10 +130,11 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isPersonOwner(#id)")
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> update(@PathVariable UUID id, @Valid @RequestBody PersonUpdateRequestDTO personRequest) {
-        PersonResponseDTO response = personService.update(id, personRequest);
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> update(@PathVariable UUID id,
+            @Valid @RequestBody PersonUpdateRequestDTO updateRequest) {
+        PersonResponseDTO response = personService.update(id, updateRequest);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_UPDATED_SUCCESS, "Person"), 
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_UPDATED_SUCCESS, "Person"),
                 response, null));
     }
 
@@ -138,38 +148,12 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
     public ResponseEntity<ApiResponseDTO<Void>> deleteById(@PathVariable UUID id) {
         personService.deleteById(id);
         return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                MessageUtils.getCrudSuccess(MessageKeys.CRUD_DELETED_SUCCESS, "Person"), 
+                MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_DELETED_SUCCESS, "Person"),
                 null, null));
     }
 
-    @PatchMapping("/remove-user/{id}")
-    @Operation(summary = "Remove user association", description = "Admin/Manager access only")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    @PreAuthorize("@permissionService.canWriteResources()")
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> removeUserAssociation(@PathVariable UUID id) {
-        PersonResponseDTO response = personService.removeUserAssociation(id);
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
-                "User association removed successfully", response, null));
-    }
-
-    @PatchMapping("/associate-user/{id}")
-    @Operation(summary = "Associate user with person", description = "Admin/Manager access only")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Success"),
-            @ApiResponse(responseCode = "403", description = "Forbidden")
-    })
-    @PreAuthorize("@permissionService.canWriteResources()")
-    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> associateUser(@PathVariable UUID id, @Valid @RequestBody PersonUserAssociationDTO associationDTO) {
-        PersonResponseDTO response = personService.associateUser(id, associationDTO.getUserId());
-        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK, 
-                "User associated successfully", response, null));
-    }
-
     @GetMapping("/by-user/{userId}")
-    @Operation(summary = "Get person by user ID", description = "Admin/Manager/Supervisor access OR resource ownership")
+    @Operation(summary = "Get person by user ID", description = "Admin/Manager/Supervisor access OR user ownership")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Success"),
             @ApiResponse(responseCode = "403", description = "Forbidden"),
@@ -178,16 +162,81 @@ public class PersonController implements ControllerInterface<UUID, PersonCreateR
     @PreAuthorize("@permissionService.canAccessResource(#userId, 'USER') or @permissionService.hasAdminAccess()")
     public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> findByUserId(@PathVariable UUID userId) {
         Optional<PersonResponseDTO> response = personService.findByUserId(userId);
-        
+
         if (response.isPresent()) {
             return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
-                    MessageUtils.getCrudSuccess(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Person"), 
+                    MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Person"),
                     response.get(), null));
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
-                            MessageUtils.getEntityNotFound("Person"), null, null));
+                            MessageUtils.getEntityNotFoundMessage("Person"), null, null));
         }
     }
 
+    @PatchMapping("/associate-user/{id}")
+    @Operation(summary = "Associate user with person", description = "Admin/Manager access only")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "409", description = "Conflict - User already associated")
+    })
+    @PreAuthorize("@permissionService.canWriteResources()")
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> associateUser(
+            @PathVariable UUID id,
+            @RequestBody PersonUserAssociationDTO associationRequest) {
+
+        PersonResponseDTO response = personService.associateUser(id, associationRequest.getUserId());
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                "User associated successfully with person", response, null));
+    }
+
+    @PatchMapping("/remove-user/{id}")
+    @Operation(summary = "Remove user association from person", description = "Admin/Manager access only")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found"),
+            @ApiResponse(responseCode = "409", description = "Conflict - No user association found")
+    })
+    @PreAuthorize("@permissionService.canWriteResources()")
+    public ResponseEntity<ApiResponseDTO<PersonResponseDTO>> removeUserAssociation(@PathVariable UUID id) {
+        PersonResponseDTO response = personService.removeUserAssociation(id);
+        return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                "User association removed successfully from person", response, null));
+    }
+
+    @GetMapping("/test")
+    @Operation(summary = "Test endpoint", description = "Simple test to verify controller is working")
+    public ResponseEntity<String> test() {
+        // logger.info("Test endpoint called successfully"); // Original code had this line commented out
+        return ResponseEntity.ok("PersonController is working! Current time: " + java.time.LocalDateTime.now());
+    }
+
+    @GetMapping("/exists/{id}")
+    @Operation(summary = "Check if person exists", description = "Test endpoint to verify person existence")
+    public ResponseEntity<String> checkPersonExists(@PathVariable UUID id) {
+        logger.info("Checking if person exists with ID: {}", id);
+        
+        boolean exists = personRepository.existsById(id);
+        logger.info("Person with ID {} exists: {}", id, exists);
+        
+        if (exists) {
+            try {
+                Person person = personRepository.findByIdWithUser(id).orElse(null);
+                if (person != null) {
+                    return ResponseEntity.ok(String.format("Person exists: %s %s (ID: %s)", 
+                        person.getFirstName(), person.getLastName(), person.getId()));
+                } else {
+                    return ResponseEntity.ok("Person exists but findByIdWithUser failed");
+                }
+            } catch (Exception e) {
+                logger.error("Error finding person with ID {}: {}", id, e.getMessage());
+                return ResponseEntity.ok("Person exists but error occurred: " + e.getMessage());
+            }
+        } else {
+            return ResponseEntity.ok("Person does not exist with ID: " + id);
+        }
+    }
 }

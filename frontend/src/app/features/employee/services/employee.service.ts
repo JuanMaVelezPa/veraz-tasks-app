@@ -41,7 +41,7 @@ export class EmployeeService {
   private cacheService = inject(CacheService);
 
   getEmployees(options: SearchOptions): Observable<PaginatedResponseDTO<Employee>> {
-    const cacheKey = this.generateCacheKey(options);
+    const cacheKey = this.buildCacheKey(options);
     const cached = this.cacheService.get<PaginatedResponseDTO<Employee>>(cacheKey);
 
     if (cached) {
@@ -50,7 +50,7 @@ export class EmployeeService {
 
     return this.employeeApiService.getEmployees(options)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'employees')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'employees')),
         tap(response => this.cacheService.set(cacheKey, response)),
         catchError((error) => {
           console.error('EmployeeService - getEmployees - Error:', error);
@@ -71,7 +71,7 @@ export class EmployeeService {
 
     return this.employeeApiService.getEmployeeById(id)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'employee')),
         tap((employee) => this.cacheService.set(cacheKey, employee)),
         catchError((error) => {
           console.error('EmployeeService - getEmployeeById - Error:', error);
@@ -83,39 +83,41 @@ export class EmployeeService {
   createEmployee(employeeData: EmployeeCreateRequest): Observable<Employee> {
     return this.employeeApiService.createEmployee(employeeData)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
-        tap((employee: Employee) => this.cacheService.clearPattern('employees:')),
-        catchError((error) => this.handleError(error, 'creating employee'))
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'employee')),
+        tap(() => {
+          this.clearEmployeesCache();
+          this.clearPersonsCache();
+        }),
+        catchError((error) => this.propagateError(error, 'creating employee'))
       );
   }
 
   updateEmployee(id: string, employeeData: EmployeeUpdateRequest): Observable<Employee> {
     return this.employeeApiService.updateEmployee(id, employeeData)
       .pipe(
-        map((apiResponse) => this.handleSuccess(apiResponse, 'employee')),
+        map((apiResponse) => this.extractDataFromResponse(apiResponse, 'employee')),
         tap((employee: Employee) => {
-          this.cacheService.set(`employee:${employee.id}`, employee);
-          this.cacheService.clearPattern('employees:');
+          this.updateEmployeeCache(employee);
+          this.clearPersonsCache();
         }),
-        catchError((error) => this.handleError(error, 'updating employee'))
+        catchError((error) => this.propagateError(error, 'updating employee'))
       );
   }
 
   deleteEmployee(id: string): Observable<void> {
     return this.employeeApiService.deleteEmployee(id)
       .pipe(
-        map(() => {}),
+        map(() => { }),
         tap(() => {
-          this.cacheService.delete(`employee:${id}`);
-          this.cacheService.clearPattern('employees:');
+          this.clearEmployeeCache(id);
+          this.clearPersonsCache();
         }),
-        catchError((error) => this.handleError(error, 'deleting employee'))
+        catchError((error) => this.propagateError(error, 'deleting employee'))
       );
   }
 
   getEmployeeByPersonId(personId: string): Observable<Employee | null> {
-    // Validar que el personId sea válido
-    if (!personId || personId === 'undefined' || personId === 'null' || personId.trim() === '') {
+    if (!this.isValidPersonId(personId)) {
       console.error('EmployeeService - getEmployeeByPersonId - Invalid personId:', personId);
       return of(null);
     }
@@ -123,55 +125,38 @@ export class EmployeeService {
     const cacheKey = `employee:person:${personId}`;
     const cached = this.cacheService.get<Employee | null>(cacheKey);
 
-    // Only use cache if we have a valid employee (not null)
     if (cached !== undefined && cached !== null) {
       return of(cached);
     }
 
-    // Clear any null cache entry to force API call
     if (cached === null) {
       this.cacheService.delete(cacheKey);
     }
 
     return this.employeeApiService.getEmployeeByPersonId(personId)
       .pipe(
-        map((apiResponse) => {
-          // Si success es false, significa que no se encontró el empleado (caso válido)
-          if (!apiResponse.success) {
-            return null;
-          }
-
-          return apiResponse.data;
-        }),
-        tap((employee: Employee | null) => {
-          // Cache the result (null or valid employee)
-          this.cacheService.set(cacheKey, employee);
-        }),
+        map((apiResponse) => this.extractEmployeeFromResponse(apiResponse)),
+        tap((employee: Employee | null) => this.cacheService.set(cacheKey, employee)),
         catchError((error) => {
-          console.error('EmployeeService - getEmployeeByPersonId - Error:', error);
-          return this.handleError(error, 'loading employee by person ID');
+          return this.propagateError(error, 'loading employee by person ID');
         })
       );
   }
 
-  private generateCacheKey(options: SearchOptions): string {
+  private buildCacheKey(options: SearchOptions): string {
     const { page, size, search, sort, order } = options;
     return `employees:${page}:${size}:${search || ''}:${sort || ''}:${order || ''}`;
   }
 
-
-
-  private handleSuccess(apiResponse: ApiResponse<any>, type: string): any {
+  private extractDataFromResponse(apiResponse: ApiResponse<any>, type: string): any {
     if (!apiResponse.success) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
 
-    // For delete operations, data can be null/undefined, which is valid
     if (type === 'boolean' || type === 'void') {
-      return true; // Return true for successful delete operations
+      return true;
     }
 
-    // For other operations, data should exist
     if (!apiResponse.data) {
       throw new Error(apiResponse.message || `Error ${type}`);
     }
@@ -179,8 +164,37 @@ export class EmployeeService {
     return apiResponse.data;
   }
 
-  private handleError(error: any, operation: string): Observable<never> {
-    // Propagar el error original para que HttpErrorService pueda manejarlo correctamente
+  private extractEmployeeFromResponse(apiResponse: ApiResponse<any>): Employee | null {
+    if (!apiResponse.success) {
+      return null;
+    }
+    return apiResponse.data;
+  }
+
+  private propagateError(error: any, operation: string): Observable<never> {
     return throwError(() => error);
+  }
+
+  private isValidPersonId(personId: string): boolean {
+    return Boolean(personId && personId !== 'undefined' && personId !== 'null' && personId.trim() !== '');
+  }
+
+  private updateEmployeeCache(employee: Employee): void {
+    this.cacheService.set(`employee:${employee.id}`, employee);
+    this.clearEmployeesCache();
+    this.clearPersonsCache();
+  }
+
+  private clearEmployeeCache(employeeId: string): void {
+    this.cacheService.delete(`employee:${employeeId}`);
+    this.clearEmployeesCache();
+  }
+
+  private clearEmployeesCache(): void {
+    this.cacheService.clearPattern('employees:');
+  }
+
+  private clearPersonsCache(): void {
+    this.cacheService.clearPattern('persons:');
   }
 }

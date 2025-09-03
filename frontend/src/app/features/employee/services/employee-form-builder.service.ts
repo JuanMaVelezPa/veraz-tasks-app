@@ -67,8 +67,9 @@ export class EmployeeFormBuilderService extends BaseFormBuilderService {
     },
     workEmail: {
       name: 'workEmail',
-      validators: [Validators.pattern(FormUtilsService.emailPattern), Validators.maxLength(100)],
-      defaultValue: ''
+      validators: [Validators.pattern(FormUtilsService.EMAIL_PATTERN), Validators.maxLength(100)],
+      defaultValue: '',
+      isRequired: true
     },
     workPhone: {
       name: 'workPhone',

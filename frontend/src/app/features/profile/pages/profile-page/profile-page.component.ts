@@ -4,9 +4,11 @@ import { Router } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '@auth/services/auth.service';
 import { ProfileService } from '@profile/services/profile.service';
+import { PersonManagementService } from '@person/services/person-management.service';
 import { FeedbackMessageService } from '@shared/services/feedback-message.service';
 import { FormBuildersManagerService } from '@shared/services/form-builders-manager.service';
 import { HttpErrorService } from '@shared/services/http-error.service';
+import { ScrollService } from '@shared/services/scroll.service';
 
 import { FeedbackMessageComponent } from '@shared/components/feedback-message/feedback-message.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
@@ -37,9 +39,11 @@ import { firstValueFrom, catchError } from 'rxjs';
 export class ProfilePageComponent implements OnInit {
   private authService = inject(AuthService);
   private profileService = inject(ProfileService);
+  private personManagementService = inject(PersonManagementService);
   private feedbackService = inject(FeedbackMessageService);
   private formBuilders = inject(FormBuildersManagerService);
   private httpErrorService = inject(HttpErrorService);
+  private scrollService = inject(ScrollService);
 
   private router = inject(Router);
 
@@ -196,6 +200,7 @@ export class ProfilePageComponent implements OnInit {
       this.setUserFormValues(updatedUser);
       await this.loadPersonalProfile();
       this.feedbackService.showSuccess('User profile updated successfully!');
+      this.scrollService.scrollToTop();
     }
   }
 
@@ -213,15 +218,22 @@ export class ProfilePageComponent implements OnInit {
       const formData = this.formBuilders.preparePersonFormData(formValue);
 
       if (this.personalProfile()) {
-        // Update existing person
-        const updatedPerson = await firstValueFrom(
-          this.profileService.updateMyProfile(formData).pipe(
-            catchError(error => this.httpErrorService.handleError(error, 'updating personal information'))
-          )
+        await this.personManagementService.updatePerson(
+          this.personalProfile()!,
+          formData,
+          {
+            context: 'profile',
+            onSuccess: (person) => {
+              this.personalProfile.set(person);
+              this.setPersonFormValues(person);
+              this.scrollService.scrollToTop();
+            },
+            onError: (error) => {
+              this.feedbackService.showError(error.message || 'An error occurred while updating personal information.');
+              this.setPersonFormValues(this.personalProfile()!);
+            }
+          }
         );
-        this.personalProfile.set(updatedPerson);
-        this.setPersonFormValues(updatedPerson);
-        this.feedbackService.showSuccess('Personal information updated successfully!');
       } else {
         // Create new person
         const validation = this.formBuilders.validateRequiredPersonFields(formData);
@@ -230,18 +242,23 @@ export class ProfilePageComponent implements OnInit {
           return;
         }
 
-        const newPerson = await firstValueFrom(
-          this.profileService.createMyProfile(formData).pipe(
-            catchError(error => this.httpErrorService.handleError(error, 'creating personal information'))
-          )
+        await this.personManagementService.createPerson(
+          formData,
+          {
+            context: 'profile',
+            onSuccess: (person) => {
+              this.personalProfile.set(person);
+              this.setPersonFormValues(person);
+              this.scrollService.scrollToTop();
+            },
+            onError: (error) => {
+              this.feedbackService.showError(error.message || 'An error occurred while creating personal information.');
+            }
+          }
         );
-        this.personalProfile.set(newPerson);
-        this.setPersonFormValues(newPerson);
-        this.feedbackService.showSuccess('Personal information created successfully!');
       }
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while saving personal information.');
-      // Reset form to original values after error
       if (this.personalProfile()) {
         this.setPersonFormValues(this.personalProfile()!);
       }
@@ -259,12 +276,14 @@ export class ProfilePageComponent implements OnInit {
     this.personalProfile.set(updatedPerson);
     this.setPersonFormValues(updatedPerson);
     this.feedbackService.showSuccess('Personal information updated successfully!');
+    this.scrollService.scrollToTop();
   }
 
   onPersonCreated(newPerson: Person) {
     this.personalProfile.set(newPerson);
     this.setPersonFormValues(newPerson);
     this.feedbackService.showSuccess('Personal information created successfully!');
+    this.scrollService.scrollToTop();
   }
 
   async onEmploymentFormSubmitted() {
@@ -281,7 +300,6 @@ export class ProfilePageComponent implements OnInit {
       const formData = this.formBuilders.prepareEmployeeFormData(formValue);
 
       if (this.employmentProfile()) {
-        // Update existing employee
         const updatedEmployee = await firstValueFrom(
           this.profileService.updateMyEmployee(formData).pipe(
             catchError(error => this.httpErrorService.handleError(error, 'updating employment information'))
@@ -290,8 +308,8 @@ export class ProfilePageComponent implements OnInit {
         this.employmentProfile.set(updatedEmployee);
         this.setEmploymentFormValues(updatedEmployee);
         this.feedbackService.showSuccess('Employment information updated successfully!');
+        this.scrollService.scrollToTop();
       } else {
-        // Create new employee
         const person = this.personalProfile();
         if (!person) {
           this.feedbackService.showError('Personal information must be completed first.');
@@ -307,10 +325,10 @@ export class ProfilePageComponent implements OnInit {
         this.employmentProfile.set(newEmployee);
         this.setEmploymentFormValues(newEmployee);
         this.feedbackService.showSuccess('Employment information created successfully!');
+        this.scrollService.scrollToTop();
       }
     } catch (error: any) {
       this.feedbackService.showError(error.message || 'An error occurred while saving employment information.');
-      // Reset form to original values after error
       if (this.employmentProfile()) {
         this.setEmploymentFormValues(this.employmentProfile()!);
       }
@@ -329,6 +347,7 @@ export class ProfilePageComponent implements OnInit {
     if (tab === 'employment' && !this.employmentProfile()) {
       this.formBuilders.resetForm(this.employmentForm);
     }
+    this.scrollService.scrollToTop();
   }
 
 }

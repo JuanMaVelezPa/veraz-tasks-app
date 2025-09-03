@@ -12,99 +12,113 @@ import { IconComponent } from '@shared/components/icon/icon.component';
 import { firstValueFrom } from 'rxjs';
 
 @Component({
-  selector: 'app-sign-in-page',
-  imports: [ReactiveFormsModule, LoadingComponent, FeedbackMessageComponent, IconComponent],
-  templateUrl: './sign-in-page.component.html',
+    selector: 'app-sign-in-page',
+    imports: [ReactiveFormsModule, LoadingComponent, FeedbackMessageComponent, IconComponent],
+    templateUrl: './sign-in-page.component.html',
 })
 export class SignInPageComponent {
 
-  fb = inject(FormBuilder);
-  formUtils = inject(FormUtilsService);
-  passwordUtils = inject(PasswordUtilsService);
-  router = inject(Router);
+    fb = inject(FormBuilder);
+    formUtils = inject(FormUtilsService);
+    passwordUtils = inject(PasswordUtilsService);
+    router = inject(Router);
 
-  authService = inject(AuthService);
-  appInitService = inject(AppInitService);
-  feedbackService = inject(FeedbackMessageService);
+    authService = inject(AuthService);
+    appInitService = inject(AppInitService);
+    feedbackService = inject(FeedbackMessageService);
 
-  isLoading = signal(false);
-  hasError = signal(false);
+    isLoading = signal(false);
+    hasError = signal(false);
 
-  signInForm = this.fb.nonNullable.group({
-    usernameOrEmail: ['', [Validators.required]],
-    password: ['', [Validators.required]],
-  });
+    signInForm = this.fb.nonNullable.group({
+        usernameOrEmail: ['', [Validators.required]],
+        password: ['', [Validators.required]],
+    });
 
-  async onSubmit() {
-    this.feedbackService.clearMessage();
+    async submitForm() {
+        this.feedbackService.clearMessage();
 
-    if (this.signInForm.invalid) {
-      this.signInForm.markAllAsTouched();
-      return;
-    }
+        if (this.signInForm.invalid) {
+            this.signInForm.markAllAsTouched();
+            return;
+        }
 
-    const { usernameOrEmail, password } = this.signInForm.value;
-    if (!usernameOrEmail || !password) {
-      this.showError('Invalid credentials, please check your username/email and password');
-      return;
-    }
+        const { usernameOrEmail, password } = this.signInForm.value;
+        if (!this.validateCredentials(usernameOrEmail, password)) {
+            return;
+        }
 
-    if (this.formUtils.usernameValidator(this.signInForm.get('usernameOrEmail')!)) {
-      this.showError('Invalid credentials, please check your username/email and password');
-      return;
-    }
-    if (this.passwordUtils.passwordValidator(this.signInForm.get('password')!)) {
-      this.showError('Invalid credentials, please check your username/email and password');
-      return;
-    }
+        if (!usernameOrEmail || !password) {
+            this.showError('Invalid credentials, please check your username/email and password');
+            return;
+        }
 
-    this.isLoading.set(true);
-    this.hasError.set(false);
-    this.feedbackService.clearMessage();
-
-    try {
-      const signInResponse = await firstValueFrom(
-        this.authService.signIn(usernameOrEmail.toLowerCase(), password!)
-      );
-
-      if (signInResponse.authStatus === 'authenticated') {
-        this.signInForm.reset();
+        this.isLoading.set(true);
         this.hasError.set(false);
         this.feedbackService.clearMessage();
-        this.appInitService.startTokenRefresh();
-        this.feedbackService.showSuccess('Login successful! Redirecting...', 1000);
 
-        setTimeout(() => {
-          this.isLoading.set(false);
-          this.router.navigateByUrl('/');
-        }, 300);
-      } else {
-        this.showError(signInResponse.message, 10000);
-      }
-    } catch (error) {
-      this.showError('Unexpected error signing in. Please try again.');
-    } finally {
-      if (this.isLoading()) {
-        setTimeout(() => {
-          this.isLoading.set(false);
-        }, 1000);
-      }
+        try {
+            const signInResponse = await firstValueFrom(
+                this.authService.signIn(usernameOrEmail, password)
+            );
+
+            if (signInResponse.authStatus === 'authenticated') {
+                this.handleSuccessfulSignIn(signInResponse);
+            } else {
+                this.handleSignInError(signInResponse.message || 'Sign-in failed');
+            }
+        } catch (error: any) {
+            this.handleSignInError(error.message || 'An error occurred during sign-in');
+        } finally {
+            this.isLoading.set(false);
+        }
     }
-  }
 
-  private showError(message: string, timeout: number = 2000) {
-    this.hasError.set(true);
-    this.isLoading.set(false);
-    this.feedbackService.showError(message, timeout);
-  }
+    private validateCredentials(usernameOrEmail: string | undefined, password: string | undefined): boolean {
+        if (!usernameOrEmail || !password) {
+            this.showError('Invalid credentials, please check your username/email and password');
+            return false;
+        }
 
-  resetForm() {
-    this.hasError.set(false);
-    this.feedbackService.clearMessage();
-    this.signInForm.reset();
-  }
+        const usernameOrEmailControl = this.signInForm.get('usernameOrEmail')!;
+        const passwordControl = this.signInForm.get('password')!;
 
-  // navigateToSignUp() {
-  //   this.router.navigate(['/auth/sign-up']);
-  // }
+        const usernameValidation = this.formUtils.validateUsername(usernameOrEmailControl);
+        if (usernameValidation) {
+            this.showError('Invalid credentials, please check your username/email and password');
+            return false;
+        }
+
+        const passwordValidation = this.passwordUtils.passwordValidator(passwordControl);
+        if (passwordValidation) {
+            this.showError('Invalid credentials, please check your username/email and password');
+            return false;
+        }
+
+        return true;
+    }
+
+    private handleSuccessfulSignIn(authData: any): void {
+        this.feedbackService.showSuccess('Sign-in successful!');
+        this.router.navigate(['/dashboard']);
+    }
+
+    private handleSignInError(errorMessage: string): void {
+        this.hasError.set(true);
+        this.showError(errorMessage);
+    }
+
+    private showError(message: string): void {
+        this.feedbackService.showError(message);
+    }
+
+    resetForm() {
+        this.hasError.set(false);
+        this.feedbackService.clearMessage();
+        this.signInForm.reset();
+    }
+
+    // navigateToSignUp() {
+    //   this.router.navigate(['/auth/sign-up']);
+    // }
 }

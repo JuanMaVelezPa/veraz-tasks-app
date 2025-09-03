@@ -19,6 +19,11 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtils {
 
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+    private static final int MIN_SECRET_LENGTH = 32;
+    private static final int SECRET_PREVIEW_LENGTH = 10;
+    private static final String DEFAULT_SECRET = "V3r4zT4sks@AppP@sS@pP@sS@w0Rd1o10sS";
+    private static final String DEVELOPMENT_KEYWORD = "development";
+    private static final String DEV_KEYWORD = "dev";
 
     @Value("${veraz.app.jwtSecret}")
     private String jwtSecret;
@@ -27,37 +32,46 @@ public class JwtUtils {
     private int jwtExpirationMs;
 
     private SecretKey getSigningKey() {
-        // Security validation: secret must be at least 32 characters (256 bits)
+        validateJwtSecret();
+        logSecretUsage();
+        
+        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    private void validateJwtSecret() {
         if (jwtSecret == null || jwtSecret.trim().isEmpty()) {
             logger.error("JWT secret is null or empty!");
             throw new IllegalArgumentException("JWT secret cannot be null or empty");
         }
 
-        if (jwtSecret.length() < 32) {
-            logger.error("JWT secret is too short! Must be at least 32 characters for security.");
-            throw new IllegalArgumentException("JWT secret must be at least 32 characters long");
+        if (jwtSecret.length() < MIN_SECRET_LENGTH) {
+            logger.error("JWT secret is too short! Must be at least {} characters for security.", MIN_SECRET_LENGTH);
+            throw new IllegalArgumentException("JWT secret must be at least " + MIN_SECRET_LENGTH + " characters long");
         }
+    }
 
-        // Additional validation: don't use default value in production
-        if (jwtSecret.equals("V3r4zT4sks@AppP@sS@pP@sS@w0Rd1o10sS")) {
+    private void logSecretUsage() {
+        if (jwtSecret.equals(DEFAULT_SECRET)) {
             logger.warn("Using default JWT secret! This is not secure for production.");
         }
 
-        // Additional validation: don't use development value in production
-        if (jwtSecret.contains("development") || jwtSecret.contains("dev")) {
+        if (jwtSecret.contains(DEVELOPMENT_KEYWORD) || jwtSecret.contains(DEV_KEYWORD)) {
             logger.warn("Using development JWT secret! This is not secure for production.");
         }
         
-        logger.debug("Using JWT secret: {}...", jwtSecret.substring(0, Math.min(10, jwtSecret.length())));
-        byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
-        return Keys.hmacShaKeyFor(keyBytes);
+        String secretPreview = jwtSecret.substring(0, Math.min(SECRET_PREVIEW_LENGTH, jwtSecret.length()));
+        logger.debug("Using JWT secret: {}...", secretPreview);
     }
 
     public String generateJwtToken(User user) {
+        Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + jwtExpirationMs);
+        
         return Jwts.builder()
                 .subject(user.getId().toString())
-                .issuedAt(new Date())
-                .expiration(new Date((new Date()).getTime() + jwtExpirationMs))
+                .issuedAt(now)
+                .expiration(expirationDate)
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -85,5 +99,4 @@ public class JwtUtils {
         }
         return false;
     }
-
 }

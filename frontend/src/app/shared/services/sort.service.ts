@@ -30,19 +30,14 @@ export class SortState {
     const currentField = this.sortField();
     const currentOrder = this.sortOrder();
 
-    let newOrder: 'asc' | 'desc';
-    if (currentField === field) {
-      newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
-    } else {
-      newOrder = 'asc';
-    }
+    const newOrder = this.calculateNewSortOrder(field, currentField, currentOrder);
 
     this.sortField.set(field);
     this.sortOrder.set(newOrder);
   }
 
   isSortable(field: string, columns: SortableColumn[]): boolean {
-    const column = columns.find(col => col.key === field);
+    const column = this.findColumnByField(field, columns);
     return column?.sortable ?? false;
   }
 
@@ -56,11 +51,7 @@ export class SortState {
       return 'sort';
     }
 
-    if (currentOrder === 'asc') {
-      return 'chevron-up';
-    } else {
-      return 'chevron-down';
-    }
+    return currentOrder === 'asc' ? 'chevron-up' : 'chevron-down';
   }
 
   getSortClass(field: string, columns: SortableColumn[]): string {
@@ -99,6 +90,17 @@ export class SortState {
 
   getCurrentSortOrder(): 'asc' | 'desc' {
     return this.sortOrder();
+  }
+
+  private calculateNewSortOrder(field: string, currentField: string, currentOrder: 'asc' | 'desc'): 'asc' | 'desc' {
+    if (currentField === field) {
+      return currentOrder === 'asc' ? 'desc' : 'asc';
+    }
+    return 'asc';
+  }
+
+  private findColumnByField(field: string, columns: SortableColumn[]): SortableColumn | undefined {
+    return columns.find(col => col.key === field);
   }
 }
 
