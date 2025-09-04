@@ -2,9 +2,14 @@
   [class]="fullScreen() ? 'flex justify-center items-center min-h-screen' : overlay() ? 'absolute inset-0 bg-base-100/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center' : 'flex justify-center items-center'"
 >
   <div class="text-center">
-    <span class="loading loading-ring loading-xl"></span>
+    <div class="relative">
+      <span class="loading loading-ring loading-xl text-primary"></span>
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="w-8 h-8 bg-primary/20 rounded-full animate-pulse"></div>
+      </div>
+    </div>
     @if(text()) {
-    <p class="mt-2 text-base-content/70">{{ text() }}</p>
+    <p class="mt-4 text-base-content font-medium">{{ text() }}</p>
     }
   </div>
 </div>

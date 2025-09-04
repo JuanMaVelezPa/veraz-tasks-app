@@ -1,1 +1,7 @@
+@if (isLoading()) {
+<shared-loading
+  [fullScreen]="true"
+  text="Cargando página..."
+></shared-loading>
+}
 <router-outlet></router-outlet>
