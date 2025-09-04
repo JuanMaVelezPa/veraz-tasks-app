@@ -54,6 +54,18 @@
     (formSubmitted)="onEmploymentFormSubmitted()"
   />
   }
+
+  @if (activeTab() === 'client') {
+  <app-client-tab
+    [clientForm]="clientForm"
+    [client]="clientProfile() || null"
+    [isEditMode]="!!clientProfile()"
+    [isLoading]="isLoadingClient()"
+    [isLoadingClient]="isLoadingClient()"
+    [isReadOnly]="true"
+    (formSubmitted)="onClientFormSubmitted()"
+  />
+  }
   } @else {
   <div class="alert alert-error shadow-lg">
     <shared-icon type="error" />

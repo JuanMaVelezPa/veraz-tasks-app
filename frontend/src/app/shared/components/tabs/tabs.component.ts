@@ -14,21 +14,41 @@ export class TabsComponent {
   activeTab = input.required<string>();
   activeTabChange = output<string>();
 
+  private readonly BASE_CLASSES = 'tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0';
+  private readonly ACTIVE_CLASSES = 'tab-active bg-primary text-primary-content border-primary';
+  private readonly INACTIVE_CLASSES = 'border-base-300 hover:border-primary/50';
+  private readonly DISABLED_CLASSES = 'opacity-50 cursor-not-allowed';
+
   setActiveTab(tabId: string): void {
-    const tab = this.tabs().find(t => t.id === tabId);
-    if (tab && !tab.disabled) {
+    const tab = this.findTabById(tabId);
+    if (this.canActivateTab(tab)) {
       this.activeTabChange.emit(tabId);
     }
   }
 
   getTabClasses(tab: TabItem): string {
-    const isActive = this.activeTab() === tab.id;
-    const isDisabled = tab.disabled;
+    const classes = [
+      this.BASE_CLASSES,
+      this.isTabActive(tab) ? this.ACTIVE_CLASSES : this.INACTIVE_CLASSES,
+      this.isTabDisabled(tab) ? this.DISABLED_CLASSES : ''
+    ];
 
-    const baseClasses = 'tab tab-sm sm:tab-md font-medium transition-all duration-200 rounded-t-lg border-2 flex-1 sm:flex-none min-w-0';
-    const activeClasses = isActive ? 'tab-active bg-primary text-primary-content border-primary' : 'border-base-300 hover:border-primary/50';
-    const disabledClasses = isDisabled ? 'opacity-50 cursor-not-allowed' : '';
+    return classes.filter(Boolean).join(' ');
+  }
 
-    return `${baseClasses} ${activeClasses} ${disabledClasses}`.trim();
+  private findTabById(tabId: string): TabItem | undefined {
+    return this.tabs().find(tab => tab.id === tabId);
+  }
+
+  private canActivateTab(tab: TabItem | undefined): boolean {
+    return tab != null && !tab.disabled;
+  }
+
+  private isTabActive(tab: TabItem): boolean {
+    return this.activeTab() === tab.id;
+  }
+
+  private isTabDisabled(tab: TabItem): boolean {
+    return Boolean(tab.disabled);
   }
 }

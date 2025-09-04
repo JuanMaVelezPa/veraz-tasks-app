@@ -14,11 +14,13 @@ import { FeedbackMessageComponent } from '@shared/components/feedback-message/fe
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 import { PersonalInfoTabComponent } from '@person/components/personal-info-tab/personal-info-tab.component';
 import { EmployeeTabComponent } from '@employee/components/employee-tab/employee-tab.component';
+import { ClientTabComponent } from '@client/components/client-tab/client-tab.component';
 import { UserTabComponent } from '@users/components/user-tab/user-tab.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { User } from '@users/interfaces/user.interface';
 import { Person } from '@person/interfaces/person.interface';
 import { Employee } from '@employee/interfaces/employee.interface';
+import { Client } from '@client/interfaces/client.interface';
 import { firstValueFrom, catchError } from 'rxjs';
 import { TabsComponent } from '@shared/components/tabs/tabs.component';
 import { TabItem } from '@shared/interfaces/tab.interface';
@@ -34,6 +36,7 @@ import { TabsService } from '@shared/services/tabs.service';
     LoadingComponent,
     PersonalInfoTabComponent,
     EmployeeTabComponent,
+    ClientTabComponent,
     UserTabComponent,
     IconComponent,
     TabsComponent
@@ -55,15 +58,18 @@ export class ProfilePageComponent implements OnInit {
   currentUser = signal<User | null>(null);
   personalProfile = signal<Person | null>(null);
   employmentProfile = signal<Employee | null>(null);
+  clientProfile = signal<Client | null>(null);
   isLoadingUser = signal(false);
   isLoadingPerson = signal(false);
   isLoadingEmployment = signal(false);
-  activeTab = signal<'user' | 'person' | 'employment'>('user');
+  isLoadingClient = signal(false);
+  activeTab = signal<'user' | 'person' | 'employment' | 'client'>('user');
   tabs = signal<TabItem[]>([]);
 
   userForm = this.formBuilders.buildUserForm({ includePasswordValidation: true });
   personForm = this.formBuilders.buildPersonForm();
   employmentForm = this.formBuilders.buildEmployeeForm();
+  clientForm = this.formBuilders.buildClientForm();
 
   ngOnInit() {
     this.feedbackService.clearMessage();
@@ -75,7 +81,8 @@ export class ProfilePageComponent implements OnInit {
     const context = {
       type: 'profile' as const,
       hasPersonalProfile: !!this.personalProfile(),
-      hasEmploymentProfile: !!this.employmentProfile()
+      hasEmploymentProfile: !!this.employmentProfile(),
+      hasClientProfile: !!this.clientProfile()
     };
 
     const tabs = this.tabsService.initializeTabs(context);
@@ -86,7 +93,8 @@ export class ProfilePageComponent implements OnInit {
     const context = {
       type: 'profile' as const,
       hasPersonalProfile: !!this.personalProfile(),
-      hasEmploymentProfile: !!this.employmentProfile()
+      hasEmploymentProfile: !!this.employmentProfile(),
+      hasClientProfile: !!this.clientProfile()
     };
 
     const tabs = this.tabsService.initializeTabs(context);
@@ -133,6 +141,8 @@ export class ProfilePageComponent implements OnInit {
         this.setPersonFormValues(person);
         // Load employment info if person exists
         this.loadEmploymentProfile(person.id);
+        // Load client info if person exists
+        this.loadClientProfile(person.id);
       }
     } catch (error: any) {
       this.personalProfile.set(null);
@@ -159,6 +169,26 @@ export class ProfilePageComponent implements OnInit {
       this.employmentProfile.set(null);
     } finally {
       this.isLoadingEmployment.set(false);
+      this.updateTabs();
+    }
+  }
+
+  private async loadClientProfile(personId: string) {
+    if (!personId) return;
+
+    this.isLoadingClient.set(true);
+    try {
+      const client = await firstValueFrom(
+        this.profileService.getMyClient()
+      );
+      this.clientProfile.set(client);
+      if (client) {
+        this.setClientFormValues(client);
+      }
+    } catch (error: any) {
+      this.clientProfile.set(null);
+    } finally {
+      this.isLoadingClient.set(false);
       this.updateTabs();
     }
   }
@@ -368,7 +398,7 @@ export class ProfilePageComponent implements OnInit {
   }
 
   setActiveTab(tab: string) {
-    this.activeTab.set(tab as 'user' | 'person' | 'employment');
+    this.activeTab.set(tab as 'user' | 'person' | 'employment' | 'client');
 
     if (tab === 'person' && !this.personalProfile()) {
       this.formBuilders.resetForm(this.personForm);
@@ -377,7 +407,93 @@ export class ProfilePageComponent implements OnInit {
     if (tab === 'employment' && !this.employmentProfile()) {
       this.formBuilders.resetForm(this.employmentForm);
     }
+
+    if (tab === 'client' && !this.clientProfile()) {
+      this.formBuilders.resetForm(this.clientForm);
+    }
     this.scrollService.scrollToTop();
+  }
+
+  async onClientFormSubmitted() {
+    if (this.clientForm.invalid) {
+      this.clientForm.markAllAsTouched();
+      this.feedbackService.showError('Please fix the validation errors before saving.');
+      return;
+    }
+
+    this.isLoadingClient.set(true);
+
+    try {
+      const formValue = this.clientForm.value;
+      const formData = this.formBuilders.prepareClientFormData(formValue);
+
+      if (this.clientProfile()) {
+        const updatedClient = await firstValueFrom(
+          this.profileService.updateMyClient(formData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'updating client information'))
+          )
+        );
+        this.clientProfile.set(updatedClient);
+        this.setClientFormValues(updatedClient);
+        this.feedbackService.showSuccess('Client information updated successfully!');
+        this.scrollService.scrollToTop();
+        this.updateTabs();
+      } else {
+        const person = this.personalProfile();
+        if (!person) {
+          this.feedbackService.showError('Personal information must be completed first.');
+          return;
+        }
+
+        const clientData = { ...formData, personId: person.id };
+        const newClient = await firstValueFrom(
+          this.profileService.createMyClient(clientData).pipe(
+            catchError(error => this.httpErrorService.handleError(error, 'creating client information'))
+          )
+        );
+        this.clientProfile.set(newClient);
+        this.setClientFormValues(newClient);
+        this.feedbackService.showSuccess('Client information created successfully!');
+        this.scrollService.scrollToTop();
+        this.updateTabs();
+      }
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while saving client information.');
+      if (this.clientProfile()) {
+        this.setClientFormValues(this.clientProfile()!);
+      }
+    } finally {
+      this.isLoadingClient.set(false);
+    }
+  }
+
+  private setClientFormValues(client: Client) {
+    this.clientForm.patchValue({
+      personId: client.personId,
+      type: client.type,
+      category: client.category,
+      source: client.source,
+      companyName: client.companyName,
+      companyWebsite: client.companyWebsite,
+      companyIndustry: client.companyIndustry,
+      contactPerson: client.contactPerson,
+      contactPosition: client.contactPosition,
+      address: client.address,
+      city: client.city,
+      country: client.country,
+      postalCode: client.postalCode,
+      taxId: client.taxId,
+      creditLimit: client.creditLimit,
+      currency: client.currency,
+      paymentTerms: client.paymentTerms,
+      paymentMethod: client.paymentMethod,
+      notes: client.notes,
+      preferences: client.preferences,
+      tags: client.tags,
+      rating: client.rating,
+      status: client.status,
+      isActive: client.isActive
+    });
   }
 
 }

@@ -25,10 +25,6 @@ public class ClientCreateRequestDTO {
 
     @NotBlank(message = "{validation.field.required}")
     @Size(min = 3, max = 20, message = "{validation.field.size}")
-    private String clientCode;
-
-    @NotBlank(message = "{validation.field.required}")
-    @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String type;
 
     @Size(max = 50, message = "{validation.field.max.length}")

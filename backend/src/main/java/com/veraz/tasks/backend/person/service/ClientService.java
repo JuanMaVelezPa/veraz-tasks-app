@@ -36,16 +36,19 @@ public class ClientService
 
     private final ClientRepository clientRepository;
     private final PersonRepository personRepository;
+    private final ClientMapper clientMapper;
 
-    public ClientService(ClientRepository clientRepository, PersonRepository personRepository) {
+    public ClientService(ClientRepository clientRepository, PersonRepository personRepository,
+            ClientMapper clientMapper) {
         this.clientRepository = clientRepository;
         this.personRepository = personRepository;
+        this.clientMapper = clientMapper;
     }
 
     @Transactional(readOnly = true)
     public PaginatedResponseDTO<ClientResponseDTO> findAll(Pageable pageable) {
         Page<Client> clientPage = clientRepository.findAll(pageable);
-        return PaginationUtils.toPaginatedResponse(clientPage, ClientMapper::toDto);
+        return PaginationUtils.toPaginatedResponse(clientPage, clientMapper::toResponseDTO);
     }
 
     @Transactional(readOnly = true)
@@ -53,42 +56,29 @@ public class ClientService
         Client client = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Client")));
 
-        return Optional.of(ClientMapper.toDto(client));
+        return Optional.of(clientMapper.toResponseDTO(client));
     }
 
     @Transactional(readOnly = true)
-    public ClientResponseDTO findByClientCode(String clientCode) {
-        Client client = clientRepository.findByClientCode(clientCode)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Client")));
-
-        return ClientMapper.toDto(client);
-    }
-
-    @Transactional(readOnly = true)
-    public ClientResponseDTO findByPersonId(UUID personId) {
-        personRepository.findById(personId)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Person")));
-
-        Client client = clientRepository.findByPersonId(personId)
-                .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Client")));
-
-        return ClientMapper.toDto(client);
+    public Optional<ClientResponseDTO> findByPersonId(UUID personId) {
+        return clientRepository.findByPersonId(personId)
+                .map(clientMapper::toResponseDTO);
     }
 
     @Transactional
     public ClientResponseDTO create(ClientCreateRequestDTO createRequest) {
-        validateClientCodeUniqueness(createRequest);
+
         validatePersonUniqueness(createRequest);
 
         Person person = personRepository.findById(createRequest.getPersonId())
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Person")));
 
-        Client newClient = ClientMapper.toEntity(createRequest, person);
+        Client newClient = clientMapper.toEntity(createRequest, person);
         clientRepository.save(newClient);
 
         logger.info("Client created successfully with ID: {}", newClient.getId());
 
-        return ClientMapper.toDto(newClient);
+        return clientMapper.toResponseDTO(newClient);
     }
 
     @Transactional
@@ -96,15 +86,13 @@ public class ClientService
         Client clientToUpdate = clientRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageUtils.getEntityNotFoundMessage("Client")));
 
-        validateClientCodeUniquenessForUpdate(updateRequest, clientToUpdate);
-
-        ClientMapper.updateEntity(clientToUpdate, updateRequest);
+        clientMapper.updateEntity(clientToUpdate, updateRequest);
         clientToUpdate.setUpdatedAt(LocalDateTime.now());
         clientRepository.save(clientToUpdate);
 
         logger.info("Client updated successfully with ID: {}", clientToUpdate.getId());
 
-        return ClientMapper.toDto(clientToUpdate);
+        return clientMapper.toResponseDTO(clientToUpdate);
     }
 
     @Transactional
@@ -119,58 +107,50 @@ public class ClientService
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByIsActive(Boolean isActive) {
         return clientRepository.findByIsActive(isActive).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByType(String type) {
         return clientRepository.findByType(type).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByCategory(String category) {
         return clientRepository.findByCategory(category).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByStatus(String status) {
         return clientRepository.findByStatus(status).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByCity(String city) {
         return clientRepository.findByCity(city).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByCountry(String country) {
         return clientRepository.findByCountry(country).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
     public List<ClientResponseDTO> findByRatingGreaterThanOrEqualTo(Integer minRating) {
         return clientRepository.findByRatingGreaterThanOrEqualTo(minRating).stream()
-                .map(ClientMapper::toDto)
+                .map(clientMapper::toResponseDTO)
                 .collect(Collectors.toList());
-    }
-
-    private void validateClientCodeUniqueness(ClientCreateRequestDTO createRequest) {
-        if (createRequest.getClientCode() != null && !createRequest.getClientCode().trim().isEmpty()) {
-            if (clientRepository.existsByClientCode(createRequest.getClientCode().trim())) {
-                throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("Client"));
-            }
-        }
     }
 
     private void validatePersonUniqueness(ClientCreateRequestDTO createRequest) {
@@ -179,15 +159,4 @@ public class ClientService
         }
     }
 
-    private void validateClientCodeUniquenessForUpdate(ClientUpdateRequestDTO updateRequest, Client existingClient) {
-        if (updateRequest.getClientCode() != null && !updateRequest.getClientCode().trim().isEmpty()) {
-            String newClientCode = updateRequest.getClientCode().trim();
-
-            if (!newClientCode.equalsIgnoreCase(existingClient.getClientCode())) {
-                if (clientRepository.existsByClientCode(newClientCode)) {
-                    throw new DataConflictException(MessageUtils.getEntityAlreadyExistsMessage("Client"));
-                }
-            }
-        }
-    }
 }

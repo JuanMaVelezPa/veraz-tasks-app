@@ -16,22 +16,17 @@ import com.veraz.tasks.backend.person.model.Client;
 @Repository
 public interface ClientRepository extends JpaRepository<Client, UUID> {
 
-    Optional<Client> findByClientCode(String clientCode);
-
     Optional<Client> findByPersonId(UUID personId);
 
     @Query("SELECT c FROM Client c JOIN c.person p WHERE " +
-           "LOWER(c.clientCode) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(c.companyName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(c.contactPerson) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
-           "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
-    Page<Client> findByClientCodeOrCompanyNameOrContactPersonOrPersonNameContainingIgnoreCase(
+            "LOWER(c.companyName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(c.contactPerson) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.firstName) LIKE LOWER(CONCAT('%', :searchTerm, '%')) OR " +
+            "LOWER(p.lastName) LIKE LOWER(CONCAT('%', :searchTerm, '%'))")
+    Page<Client> findByCompanyNameOrContactPersonOrPersonNameContainingIgnoreCase(
             @Param("searchTerm") String searchTerm, Pageable pageable);
 
     // Additional useful methods
-    boolean existsByClientCode(String clientCode);
-
     boolean existsByPersonId(UUID personId);
 
     List<Client> findByIsActive(Boolean isActive);

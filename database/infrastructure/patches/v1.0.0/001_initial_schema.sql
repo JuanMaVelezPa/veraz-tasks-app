@@ -53,8 +53,8 @@ END $$;
 -- Create GE_TEMPL table (depends on GE_TUSER and GE_TPERS)
 \i ../../schema/tables/GE_TEMPL.sql
 
--- Create CL_TCLIE table (depends on GE_TUSER and GE_TPERS)
-\i ../../schema/tables/CL_TCLIE.sql
+-- Create GE_TCLIE table (depends on GE_TUSER and GE_TPERS)
+\i ../../schema/tables/GE_TCLIE.sql
 
 
 -- =====================================================
@@ -73,7 +73,7 @@ END $$;
 
 -- Add constraints to business tables
 \i ../../schema/constraints/GE_TEMPL_CONSTRAINTS.sql
-\i ../../schema/constraints/CL_TCLIE_CONSTRAINTS.sql
+\i ../../schema/constraints/GE_TCLIE_CONSTRAINTS.sql
 
 -- =====================================================
 -- STEP 5: CREATE INDEXES
@@ -92,7 +92,7 @@ END $$;
 -- Create indexes for business tables
 
 \i ../../schema/indixes/GE_TEMPL_INDEXES.sql
-\i ../../schema/indixes/CL_TCLIE_INDEXES.sql
+\i ../../schema/indixes/GE_TCLIE_INDEXES.sql
 
 
 -- =====================================================
@@ -116,6 +116,6 @@ BEGIN
     RAISE NOTICE '';
     RAISE NOTICE 'Created business tables:';
     RAISE NOTICE '- GE_TEMPL (Employees)';
-    RAISE NOTICE '- CL_TCLIE (Clients)';
+    RAISE NOTICE '- GE_TCLIE (Clients)';
     RAISE NOTICE '=====================================================';
 END $$; 

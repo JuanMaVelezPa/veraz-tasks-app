@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "cl_tclie")
+@Table(name = "ge_tclie")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -21,12 +21,9 @@ public class Client {
     @Column(name = "clie_clie", nullable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "clie_pers", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @JoinColumn(name = "clie_pers", referencedColumnName = "pers_pers")
     private Person person;
-
-    @Column(name = "clie_client_code", nullable = false, length = 20)
-    private String clientCode;
 
     @Column(name = "clie_type", nullable = false, length = 20)
     private String type;

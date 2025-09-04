@@ -82,7 +82,7 @@ psql -h localhost -p 5432 tasks_app_db -U tasks_app_user
 ### Business Tables
 - **GE_TPERS:** Persons (base table)
 - **GE_TEMPL:** Employees
-- **CL_TCLIE:** Clients
+- **GE_TCLIE:** Clients
 
 ## 🔐 Extensions
 

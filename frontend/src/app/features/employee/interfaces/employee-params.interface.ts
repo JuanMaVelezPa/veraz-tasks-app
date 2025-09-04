@@ -6,17 +6,11 @@ export interface BaseParamOption {
   isActive: boolean;
 }
 
-// Specific interfaces extending the base
-export interface EmploymentType extends BaseParamOption {}
-
-export interface EmployeeStatus extends BaseParamOption {}
-
-export interface JobLevel extends BaseParamOption {}
-
-export interface SalaryType extends BaseParamOption {}
-
-export interface WorkShift extends BaseParamOption {}
-
+export interface EmploymentType extends BaseParamOption { }
+export interface EmployeeStatus extends BaseParamOption { }
+export interface JobLevel extends BaseParamOption { }
+export interface SalaryType extends BaseParamOption { }
+export interface WorkShift extends BaseParamOption { }
 export interface Currency extends BaseParamOption {
   symbol: string;
 }

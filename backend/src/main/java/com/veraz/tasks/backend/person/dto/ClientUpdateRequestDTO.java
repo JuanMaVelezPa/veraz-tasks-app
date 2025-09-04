@@ -21,9 +21,6 @@ public class ClientUpdateRequestDTO {
     private UUID personId;
 
     @Size(min = 3, max = 20, message = "{validation.field.size}")
-    private String clientCode;
-
-    @Size(min = 3, max = 20, message = "{validation.field.size}")
     private String type;
 
     @Size(max = 50, message = "{validation.field.max.length}")

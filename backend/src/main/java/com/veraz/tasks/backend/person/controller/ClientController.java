@@ -114,7 +114,7 @@ public class ClientController
             @ApiResponse(responseCode = "403", description = "Forbidden"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isResourceOwner(#id)")
+    @PreAuthorize("@permissionService.canWriteResources() or @permissionService.isClientOwner(#id)")
     public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> update(@PathVariable UUID id,
             @Valid @RequestBody ClientUpdateRequestDTO updateRequest) {
         ClientResponseDTO response = clientService.update(id, updateRequest);
@@ -136,4 +136,27 @@ public class ClientController
                 MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_DELETED_SUCCESS, "Client"),
                 null, null));
     }
+
+    @GetMapping("/by-person/{personId}")
+    @Operation(summary = "Get client by person ID", description = "Admin/Manager/Supervisor access OR person ownership")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "403", description = "Forbidden"),
+            @ApiResponse(responseCode = "404", description = "Not found")
+    })
+    @PreAuthorize("@permissionService.canReadResources() or @permissionService.isPersonOwner(#personId)")
+    public ResponseEntity<ApiResponseDTO<ClientResponseDTO>> findByPersonId(@PathVariable UUID personId) {
+        Optional<ClientResponseDTO> response = clientService.findByPersonId(personId);
+
+        if (response.isPresent()) {
+            return ResponseEntity.ok(new ApiResponseDTO<>(true, HttpStatus.OK,
+                    MessageUtils.getCrudSuccessMessage(MessageKeys.CRUD_RETRIEVED_SUCCESS, "Client"),
+                    response.get(), null));
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponseDTO<>(false, HttpStatus.NOT_FOUND,
+                            MessageUtils.getEntityNotFoundMessage("Client"), null, null));
+        }
+    }
+
 }

@@ -129,7 +129,7 @@ public class PersonService {
         }
 
         personRepository.delete(person);
-        logger.info("Person and all associated data (Employee) deleted successfully with ID: {}", id);
+        logger.info("Person and all associated data (Employee, Client) deleted successfully with ID: {}", id);
     }
 
     @Transactional(readOnly = true)

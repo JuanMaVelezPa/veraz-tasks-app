@@ -3,26 +3,24 @@ package com.veraz.tasks.backend.person.mapper;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.stereotype.Component;
+
 import com.veraz.tasks.backend.person.dto.ClientCreateRequestDTO;
 import com.veraz.tasks.backend.person.dto.ClientUpdateRequestDTO;
 import com.veraz.tasks.backend.person.dto.ClientResponseDTO;
 import com.veraz.tasks.backend.person.model.Client;
 import com.veraz.tasks.backend.person.model.Person;
 
+@Component
 public class ClientMapper {
 
-    /**
-     * Converts Client entity to ClientResponseDTO
-     * @param client Client entity
-     * @return ClientResponseDTO
-     */
-    public static ClientResponseDTO toDto(Client client) {
-        if (client == null) return null;
-        
+    public ClientResponseDTO toResponseDTO(Client client) {
+        if (client == null)
+            return null;
+
         return ClientResponseDTO.builder()
                 .id(client.getId())
                 .personId(client.getPerson().getId())
-                .clientCode(client.getClientCode())
                 .type(client.getType())
                 .category(client.getCategory())
                 .source(client.getSource())
@@ -51,186 +49,118 @@ public class ClientMapper {
                 .build();
     }
 
-    /**
-     * Converts ClientCreateRequestDTO to Client entity for creation
-     * @param clientRequest Create request DTO
-     * @param person Person entity
-     * @return Client entity
-     */
-    public static Client toEntity(ClientCreateRequestDTO clientRequest, Person person) {
-        if (clientRequest == null) return null;
-        
+    public Client toEntity(ClientCreateRequestDTO dto, Person person) {
+        if (dto == null)
+            return null;
+
         return Client.builder()
                 .person(person)
-                .clientCode(clientRequest.getClientCode())
-                .type(clientRequest.getType())
-                .category(clientRequest.getCategory())
-                .source(clientRequest.getSource())
-                .companyName(clientRequest.getCompanyName())
-                .companyWebsite(clientRequest.getCompanyWebsite())
-                .companyIndustry(clientRequest.getCompanyIndustry())
-                .contactPerson(clientRequest.getContactPerson())
-                .contactPosition(clientRequest.getContactPosition())
-                .address(clientRequest.getAddress())
-                .city(clientRequest.getCity())
-                .country(clientRequest.getCountry())
-                .postalCode(clientRequest.getPostalCode())
-                .taxId(clientRequest.getTaxId())
-                .creditLimit(clientRequest.getCreditLimit())
-                .currency(clientRequest.getCurrency())
-                .paymentTerms(clientRequest.getPaymentTerms())
-                .paymentMethod(clientRequest.getPaymentMethod())
-                .notes(clientRequest.getNotes())
-                .preferences(clientRequest.getPreferences())
-                .tags(clientRequest.getTags())
-                .rating(clientRequest.getRating())
-                .status(clientRequest.getStatus())
-                .isActive(clientRequest.getIsActive())
+                .type(dto.getType())
+                .category(dto.getCategory())
+                .source(dto.getSource())
+                .companyName(dto.getCompanyName())
+                .companyWebsite(dto.getCompanyWebsite())
+                .companyIndustry(dto.getCompanyIndustry())
+                .contactPerson(dto.getContactPerson())
+                .contactPosition(dto.getContactPosition())
+                .address(dto.getAddress())
+                .city(dto.getCity())
+                .country(dto.getCountry())
+                .postalCode(dto.getPostalCode())
+                .taxId(dto.getTaxId())
+                .creditLimit(dto.getCreditLimit())
+                .currency(dto.getCurrency() != null ? dto.getCurrency() : "USD")
+                .paymentTerms(dto.getPaymentTerms())
+                .paymentMethod(dto.getPaymentMethod())
+                .notes(dto.getNotes())
+                .preferences(dto.getPreferences())
+                .tags(dto.getTags())
+                .rating(dto.getRating())
+                .status(dto.getStatus() != null ? dto.getStatus() : "ACTIVE")
+                .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .build();
     }
 
-    /**
-     * Updates an existing Client entity with data from ClientUpdateRequestDTO
-     * @param client Existing client entity
-     * @param clientRequest Update request DTO
-     * @return Updated Client entity
-     */
-    public static Client updateEntity(Client client, ClientUpdateRequestDTO clientRequest) {
-        if (client == null || clientRequest == null) return client;
-        
-        // Update client code if provided and not empty
-        if (clientRequest.getClientCode() != null && !clientRequest.getClientCode().trim().isEmpty()) {
-            client.setClientCode(clientRequest.getClientCode().trim());
+    public Client updateEntity(Client entity, ClientUpdateRequestDTO dto) {
+
+        if (dto.getType() != null) {
+            entity.setType(dto.getType());
         }
-        
-        // Update type if provided and not empty
-        if (clientRequest.getType() != null && !clientRequest.getType().trim().isEmpty()) {
-            client.setType(clientRequest.getType().trim());
+        if (dto.getCategory() != null) {
+            entity.setCategory(dto.getCategory());
         }
-        
-        // Update category if provided and not empty
-        if (clientRequest.getCategory() != null && !clientRequest.getCategory().trim().isEmpty()) {
-            client.setCategory(clientRequest.getCategory().trim());
+        if (dto.getSource() != null) {
+            entity.setSource(dto.getSource());
         }
-        
-        // Update source if provided and not empty
-        if (clientRequest.getSource() != null && !clientRequest.getSource().trim().isEmpty()) {
-            client.setSource(clientRequest.getSource().trim());
+        if (dto.getCompanyName() != null) {
+            entity.setCompanyName(dto.getCompanyName());
         }
-        
-        // Update company name if provided and not empty
-        if (clientRequest.getCompanyName() != null && !clientRequest.getCompanyName().trim().isEmpty()) {
-            client.setCompanyName(clientRequest.getCompanyName().trim());
+        if (dto.getCompanyWebsite() != null) {
+            entity.setCompanyWebsite(dto.getCompanyWebsite());
         }
-        
-        // Update company website if provided and not empty
-        if (clientRequest.getCompanyWebsite() != null && !clientRequest.getCompanyWebsite().trim().isEmpty()) {
-            client.setCompanyWebsite(clientRequest.getCompanyWebsite().trim());
+        if (dto.getCompanyIndustry() != null) {
+            entity.setCompanyIndustry(dto.getCompanyIndustry());
         }
-        
-        // Update company industry if provided and not empty
-        if (clientRequest.getCompanyIndustry() != null && !clientRequest.getCompanyIndustry().trim().isEmpty()) {
-            client.setCompanyIndustry(clientRequest.getCompanyIndustry().trim());
+        if (dto.getContactPerson() != null) {
+            entity.setContactPerson(dto.getContactPerson());
         }
-        
-        // Update contact person if provided and not empty
-        if (clientRequest.getContactPerson() != null && !clientRequest.getContactPerson().trim().isEmpty()) {
-            client.setContactPerson(clientRequest.getContactPerson().trim());
+        if (dto.getContactPosition() != null) {
+            entity.setContactPosition(dto.getContactPosition());
         }
-        
-        // Update contact position if provided and not empty
-        if (clientRequest.getContactPosition() != null && !clientRequest.getContactPosition().trim().isEmpty()) {
-            client.setContactPosition(clientRequest.getContactPosition().trim());
+        if (dto.getAddress() != null) {
+            entity.setAddress(dto.getAddress());
         }
-        
-        // Update address if provided and not empty
-        if (clientRequest.getAddress() != null && !clientRequest.getAddress().trim().isEmpty()) {
-            client.setAddress(clientRequest.getAddress().trim());
+        if (dto.getCity() != null) {
+            entity.setCity(dto.getCity());
         }
-        
-        // Update city if provided and not empty
-        if (clientRequest.getCity() != null && !clientRequest.getCity().trim().isEmpty()) {
-            client.setCity(clientRequest.getCity().trim());
+        if (dto.getCountry() != null) {
+            entity.setCountry(dto.getCountry());
         }
-        
-        // Update country if provided and not empty
-        if (clientRequest.getCountry() != null && !clientRequest.getCountry().trim().isEmpty()) {
-            client.setCountry(clientRequest.getCountry().trim());
+        if (dto.getPostalCode() != null) {
+            entity.setPostalCode(dto.getPostalCode());
         }
-        
-        // Update postal code if provided and not empty
-        if (clientRequest.getPostalCode() != null && !clientRequest.getPostalCode().trim().isEmpty()) {
-            client.setPostalCode(clientRequest.getPostalCode().trim());
+        if (dto.getTaxId() != null) {
+            entity.setTaxId(dto.getTaxId());
         }
-        
-        // Update tax ID if provided and not empty
-        if (clientRequest.getTaxId() != null && !clientRequest.getTaxId().trim().isEmpty()) {
-            client.setTaxId(clientRequest.getTaxId().trim());
+        if (dto.getCreditLimit() != null) {
+            entity.setCreditLimit(dto.getCreditLimit());
         }
-        
-        // Update credit limit if provided
-        if (clientRequest.getCreditLimit() != null) {
-            client.setCreditLimit(clientRequest.getCreditLimit());
+        if (dto.getCurrency() != null) {
+            entity.setCurrency(dto.getCurrency());
         }
-        
-        // Update currency if provided and not empty
-        if (clientRequest.getCurrency() != null && !clientRequest.getCurrency().trim().isEmpty()) {
-            client.setCurrency(clientRequest.getCurrency().trim());
+        if (dto.getPaymentTerms() != null) {
+            entity.setPaymentTerms(dto.getPaymentTerms());
         }
-        
-        // Update payment terms if provided and not empty
-        if (clientRequest.getPaymentTerms() != null && !clientRequest.getPaymentTerms().trim().isEmpty()) {
-            client.setPaymentTerms(clientRequest.getPaymentTerms().trim());
+        if (dto.getPaymentMethod() != null) {
+            entity.setPaymentMethod(dto.getPaymentMethod());
         }
-        
-        // Update payment method if provided and not empty
-        if (clientRequest.getPaymentMethod() != null && !clientRequest.getPaymentMethod().trim().isEmpty()) {
-            client.setPaymentMethod(clientRequest.getPaymentMethod().trim());
+        if (dto.getNotes() != null) {
+            entity.setNotes(dto.getNotes());
         }
-        
-        // Update notes if provided and not empty
-        if (clientRequest.getNotes() != null && !clientRequest.getNotes().trim().isEmpty()) {
-            client.setNotes(clientRequest.getNotes().trim());
+        if (dto.getPreferences() != null) {
+            entity.setPreferences(dto.getPreferences());
         }
-        
-        // Update preferences if provided and not empty
-        if (clientRequest.getPreferences() != null && !clientRequest.getPreferences().trim().isEmpty()) {
-            client.setPreferences(clientRequest.getPreferences().trim());
+        if (dto.getTags() != null) {
+            entity.setTags(dto.getTags());
         }
-        
-        // Update tags if provided and not empty
-        if (clientRequest.getTags() != null && !clientRequest.getTags().trim().isEmpty()) {
-            client.setTags(clientRequest.getTags().trim());
+        if (dto.getRating() != null) {
+            entity.setRating(dto.getRating());
         }
-        
-        // Update rating if provided
-        if (clientRequest.getRating() != null) {
-            client.setRating(clientRequest.getRating());
+        if (dto.getStatus() != null) {
+            entity.setStatus(dto.getStatus());
         }
-        
-        // Update status if provided and not empty
-        if (clientRequest.getStatus() != null && !clientRequest.getStatus().trim().isEmpty()) {
-            client.setStatus(clientRequest.getStatus().trim());
+        if (dto.getIsActive() != null) {
+            entity.setIsActive(dto.getIsActive());
         }
-        
-        // Update active status if provided
-        if (clientRequest.getIsActive() != null) {
-            client.setIsActive(clientRequest.getIsActive());
-        }
-        
-        return client;
+        return entity;
     }
 
-    /**
-     * Converts a set of Clients to DTOs
-     * @param clients Set of clients
-     * @return Set of DTOs
-     */
-    public static Set<ClientResponseDTO> toDtoSet(Set<Client> clients) {
-        if (clients == null) return Set.of();
-        
+    public Set<ClientResponseDTO> toDtoSet(Set<Client> clients) {
+        if (clients == null)
+            return Set.of();
+
         return clients.stream()
-                .map(ClientMapper::toDto)
+                .map(this::toResponseDTO)
                 .collect(Collectors.toSet());
     }
-} 
+}

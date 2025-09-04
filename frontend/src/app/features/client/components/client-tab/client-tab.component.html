@@ -3,14 +3,14 @@
     <div class="flex items-center gap-3 mb-6">
       <div class="flex items-center justify-center">
         <shared-icon
-          type="user-tie"
+          type="building"
           size="2xl"
           class="text-primary"
         />
       </div>
       <div>
-        <h2 class="text-xl font-bold">Employment Information</h2>
-        <p class="text-base-content/70 text-sm">Manage professional and employment details</p>
+        <h2 class="text-xl font-bold">Client Information</h2>
+        <p class="text-base-content/70 text-sm">Manage client and business details</p>
       </div>
     </div>
 
@@ -18,26 +18,26 @@
     <div class="text-center py-12">
       <div class="flex items-center justify-center">
         <shared-icon
-          type="user-tie"
+          type="building"
           size="2xl"
           class="text-info"
         />
       </div>
-      <h3 class="text-lg font-semibold mb-2">Employment Information</h3>
+      <h3 class="text-lg font-semibold mb-2">Client Information</h3>
       <p class="text-base-content/70 mb-4">
-        Save the person first to add employment details.
+        Save the person first to add client details.
       </p>
       <div class="badge badge-info badge-lg">Save person first</div>
     </div>
     } @else {
-    @if (isLoadingEmployee()) {
+    @if (isLoadingClient()) {
     <shared-loading />
     } @else {
-    <app-employee-form
-      [employeeForm]="employeeForm()"
-      [employee]="employee() || null"
-      [isEditMode]="!!employee()"
-      [isLoading]="isLoadingEmployee()"
+    <app-client-form
+      [clientForm]="clientForm()"
+      [client]="client() || null"
+      [isEditMode]="!!client()"
+      [isLoading]="isLoadingClient()"
       [isReadOnly]="isReadOnly()"
       (formSubmitted)="formSubmitted.emit()"
     />

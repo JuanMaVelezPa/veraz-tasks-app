@@ -31,17 +31,14 @@ export interface Employee extends EmployeeFields, Timestamped {
   id: string;
 }
 
-// Derived types using TypeScript utilities
 export type EmployeeCreateRequest = EmployeeFields;
 export type EmployeeUpdateRequest = Partial<EmployeeFields>;
 export type EmployeeFormData = EmployeeFields;
 
-// Employee association interface
 export interface EmployeePersonAssociation {
   personId: string;
 }
 
-// Options for management service
 export interface EmployeeManagementOptions {
   context: 'admin' | 'profile';
   personId?: string;

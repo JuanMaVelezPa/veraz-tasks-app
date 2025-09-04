@@ -93,6 +93,9 @@ public class Person {
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
     private Employee employee;
+
+    @OneToOne(fetch = FetchType.LAZY, mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Client client;
     
     @PrePersist
     public void prePersist() {

@@ -3,12 +3,14 @@ import { Observable, of, tap, map, catchError, throwError, switchMap } from 'rxj
 import { User } from '@users/interfaces/user.interface';
 import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interfaces/person.interface';
 import { Employee, EmployeeCreateRequest, EmployeeUpdateRequest } from '@employee/interfaces/employee.interface';
+import { Client, ClientCreateRequest, ClientUpdateRequest } from '@client/interfaces/client.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { CacheService } from '@shared/services/cache.service';
 import { AuthService } from '@auth/services/auth.service';
 import { UserApiService } from '@users/services/user-api.service';
 import { PersonApiService } from '@person/services/person-api.service';
 import { EmployeeApiService } from '@employee/services/employee-api.service';
+import { ClientApiService } from '@client/services/client-api.service';
 
 @Injectable({
   providedIn: 'root'
@@ -17,6 +19,7 @@ export class ProfileService {
   private userApiService = inject(UserApiService);
   private personApiService = inject(PersonApiService);
   private employeeApiService = inject(EmployeeApiService);
+  private clientApiService = inject(ClientApiService);
   private cacheService = inject(CacheService);
   private authService = inject(AuthService);
 
@@ -192,6 +195,82 @@ export class ProfileService {
         );
       }),
       catchError((error) => this.handleError(error, 'getting employee'))
+    );
+  }
+
+  getMyClient(): Observable<Client | null> {
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return of(null);
+        }
+        return this.clientApiService.getClientByPersonId(person.id).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'client')),
+          catchError((error) => {
+            if (error.status === 404) {
+              return of(null);
+            }
+            return this.handleError(error, 'getting client');
+          })
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
+  }
+
+  checkClientExists(): Observable<boolean> {
+    return this.getMyClient().pipe(
+      map((client) => client !== null),
+      catchError(() => of(false))
+    );
+  }
+
+  createMyClient(clientData: ClientCreateRequest): Observable<Client> {
+    return this.getMyProfile().pipe(
+      switchMap((person) => {
+        if (!person) {
+          return throwError(() => new Error('No person profile found to create client for'));
+        }
+        const clientDataWithPerson = { ...clientData, personId: person.id };
+        return this.clientApiService.createClient(clientDataWithPerson).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'client')),
+          tap((client) => this.cacheService.clearPattern('clients:')),
+          catchError((error) => this.handleError(error, 'creating client'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting profile'))
+    );
+  }
+
+  updateMyClient(clientData: ClientUpdateRequest): Observable<Client> {
+    return this.getMyClient().pipe(
+      switchMap((client) => {
+        if (!client) {
+          return throwError(() => new Error('No client profile found to update'));
+        }
+        return this.clientApiService.updateClient(client.id, clientData).pipe(
+          map((apiResponse) => this.handleSuccess(apiResponse, 'client')),
+          tap((client) => this.cacheService.clearPattern('clients:')),
+          catchError((error) => this.handleError(error, 'updating client'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting client'))
+    );
+  }
+
+  deleteMyClient(): Observable<void> {
+    return this.getMyClient().pipe(
+      switchMap((client) => {
+        if (!client) {
+          return throwError(() => new Error('No client profile found to delete'));
+        }
+        return this.clientApiService.deleteClient(client.id).pipe(
+          map(() => {}),
+          tap(() => this.cacheService.clearPattern('clients:')),
+          catchError((error) => this.handleError(error, 'deleting client'))
+        );
+      }),
+      catchError((error) => this.handleError(error, 'getting client'))
     );
   }
 

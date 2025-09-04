@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { FormGroup } from '@angular/forms';
 import { PersonFormBuilderService, PersonFormConfig } from '@person/services/person-form-builder.service';
 import { EmployeeFormBuilderService, EmployeeFormConfig } from '@employee/services/employee-form-builder.service';
+import { ClientFormBuilderService, ClientFormConfig } from '@client/services/client-form-builder.service';
 import { UserFormBuilderService, UserFormConfig } from '@users/services/user-form-builder.service';
 
 @Injectable({
@@ -10,6 +11,7 @@ import { UserFormBuilderService, UserFormConfig } from '@users/services/user-for
 export class FormBuildersManagerService {
   private personFormBuilder = inject(PersonFormBuilderService);
   private employeeFormBuilder = inject(EmployeeFormBuilderService);
+  private clientFormBuilder = inject(ClientFormBuilderService);
   private userFormBuilder = inject(UserFormBuilderService);
 
   buildPersonForm(config: PersonFormConfig = {}): FormGroup {
@@ -18,6 +20,10 @@ export class FormBuildersManagerService {
 
   buildEmployeeForm(config: EmployeeFormConfig = {}): FormGroup {
     return this.employeeFormBuilder.buildEmployeeForm(config);
+  }
+
+  buildClientForm(config: ClientFormConfig = {}): FormGroup {
+    return this.clientFormBuilder.buildClientForm(config);
   }
 
   buildUserForm(config: UserFormConfig = {}): FormGroup {
@@ -47,6 +53,8 @@ export class FormBuildersManagerService {
       this.personFormBuilder.resetForm(form, fieldNames);
     } else if (this.isEmployeeForm(formKeys)) {
       this.employeeFormBuilder.resetForm(form, fieldNames);
+    } else if (this.isClientForm(formKeys)) {
+      this.clientFormBuilder.resetForm(form, fieldNames);
     } else if (this.isUserForm(formKeys)) {
       this.userFormBuilder.resetForm(form, fieldNames);
     }
@@ -70,6 +78,10 @@ export class FormBuildersManagerService {
 
   prepareEmployeeFormData(formValue: any): any {
     return this.employeeFormBuilder.prepareEmployeeFormData(formValue);
+  }
+
+  prepareClientFormData(formValue: any): any {
+    return this.clientFormBuilder.prepareClientFormData(formValue);
   }
 
   validateRequiredPersonFields(formData: any): { isValid: boolean; missingFields: string[] } {
@@ -132,6 +144,11 @@ export class FormBuildersManagerService {
   private isEmployeeForm(formKeys: string[]): boolean {
     const employeeFields = ['position', 'employmentType', 'hireDate'];
     return employeeFields.some(field => formKeys.includes(field));
+  }
+
+  private isClientForm(formKeys: string[]): boolean {
+    const clientFields = ['type', 'status'];
+    return clientFields.some(field => formKeys.includes(field));
   }
 
   private isUserForm(formKeys: string[]): boolean {

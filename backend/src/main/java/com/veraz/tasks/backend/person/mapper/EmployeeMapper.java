@@ -8,20 +8,9 @@ import com.veraz.tasks.backend.person.dto.EmployeeUpdateRequestDTO;
 import com.veraz.tasks.backend.person.model.Employee;
 import com.veraz.tasks.backend.person.model.Person;
 
-/**
- * Mapper for converting between Employee entities and DTOs
- * Provides methods for entity-DTO transformations
- */
 @Component
 public class EmployeeMapper {
 
-    /**
-     * Convert EmployeeCreateRequestDTO to Employee entity
-     * 
-     * @param dto the create request DTO
-     * @param person the associated person
-     * @return Employee entity
-     */
     public Employee toEntity(EmployeeCreateRequestDTO dto, Person person) {
         return Employee.builder()
                 .person(person)
@@ -51,13 +40,6 @@ public class EmployeeMapper {
                 .build();
     }
 
-    /**
-     * Update Employee entity with EmployeeUpdateRequestDTO
-     * 
-     * @param entity the existing employee entity
-     * @param dto the update request DTO
-     * @return updated Employee entity
-     */
     public Employee updateEntity(Employee entity, EmployeeUpdateRequestDTO dto) {
         if (dto.getPosition() != null) {
             entity.setPosition(dto.getPosition());
@@ -131,12 +113,6 @@ public class EmployeeMapper {
         return entity;
     }
 
-    /**
-     * Convert Employee entity to EmployeeResponseDTO
-     * 
-     * @param employee the employee entity
-     * @return EmployeeResponseDTO
-     */
     public EmployeeResponseDTO toResponseDTO(Employee employee) {
         if (employee == null) {
             return null;

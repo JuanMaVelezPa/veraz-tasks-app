@@ -72,7 +72,6 @@ export class PersonService {
         map((apiResponse) => this.extractDataFromResponse(apiResponse, 'person')),
         tap((person) => this.cacheService.set(cacheKey, person)),
         catchError((error) => {
-          console.error('PersonService - getPersonById - Error:', error);
           return of(emptyPerson);
         })
       );

@@ -58,6 +58,17 @@
     />
     }
 
+    @if (activeTab() === 'client') {
+    <app-client-tab
+      [clientForm]="clientForm"
+      [client]="currentClient()"
+      [isEditMode]="isEditMode()"
+      [isLoading]="isLoading()"
+      [isLoadingClient]="isLoadingClient()"
+      (formSubmitted)="submitClientForm()"
+    />
+    }
+
     @if (activeTab() === 'user') {
     <app-user-tab
       [currentUser]="currentUser()"
@@ -152,7 +163,7 @@
           />
           <div>
             <p class="text-sm text-secondary/80">
-              <strong>Person and employment data will be deleted.</strong>
+              <strong>Person (Employment/Client Information) data will be deleted.</strong>
               @if (currentUser()) {
               User account will be preserved but disassociated.
               }

@@ -17,8 +17,8 @@
 -- STEP 1: DROP BUSINESS TABLES FIRST
 -- =====================================================
 
--- Drop CL_TCLIE table (has foreign keys to GE_TUSER and GE_TPERS)
-DROP TABLE IF EXISTS CL_TCLIE CASCADE;
+-- Drop GE_TCLIE table (has foreign keys to GE_TUSER and GE_TPERS)
+DROP TABLE IF EXISTS GE_TCLIE CASCADE;
 
 -- Drop GE_TEMPL table (has foreign keys to GE_TUSER and GE_TPERS)
 DROP TABLE IF EXISTS GE_TEMPL CASCADE;
@@ -59,7 +59,7 @@ BEGIN
     RAISE NOTICE 'ALL TABLES DROPPED SUCCESSFULLY';
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'Dropped business tables:';
-    RAISE NOTICE '- CL_TCLIE (Clients)';
+    RAISE NOTICE '- GE_TCLIE (Clients)';
     RAISE NOTICE '- GE_TEMPL (Employees)';
     RAISE NOTICE '';
     RAISE NOTICE 'Dropped relationship tables:';

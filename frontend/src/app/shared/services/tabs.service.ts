@@ -5,6 +5,7 @@ export interface TabsContext {
   type: 'admin' | 'profile';
   hasPersonalProfile?: boolean;
   hasEmploymentProfile?: boolean;
+  hasClientProfile?: boolean;
   hasUserAccount?: boolean;
   isEditMode?: boolean;
 }
@@ -23,7 +24,7 @@ export class TabsService {
   }
 
   private getAdminTabs(context: TabsContext): TabItem[] {
-    const { hasUserAccount, hasEmploymentProfile, isEditMode } = context;
+    const { hasUserAccount, hasEmploymentProfile, hasClientProfile, isEditMode } = context;
 
     return [
       {
@@ -52,12 +53,22 @@ export class TabsService {
         badge: this.getBadge('info', 'After Save', !isEditMode) ||
           this.getBadge('warning', 'Optional', !hasEmploymentProfile) ||
           this.getBadge('success', '', !!hasEmploymentProfile, 'check')
+      },
+      {
+        id: 'client',
+        label: 'Client Information',
+        shortLabel: 'Client',
+        icon: 'building',
+        disabled: !isEditMode,
+        badge: this.getBadge('info', 'After Save', !isEditMode) ||
+          this.getBadge('warning', 'Optional', !hasClientProfile) ||
+          this.getBadge('success', '', !!hasClientProfile, 'check')
       }
     ];
   }
 
   private getProfileTabs(context: TabsContext): TabItem[] {
-    const { hasPersonalProfile, hasEmploymentProfile } = context;
+    const { hasPersonalProfile, hasEmploymentProfile, hasClientProfile } = context;
 
     return [
       {
@@ -81,6 +92,14 @@ export class TabsService {
         icon: 'user-tie',
         disabled: !hasEmploymentProfile,
         badge: hasEmploymentProfile ? { type: 'success', text: '', icon: 'check' } : undefined
+      },
+      {
+        id: 'client',
+        label: 'Client Information',
+        shortLabel: 'Client',
+        icon: 'building',
+        disabled: !hasClientProfile,
+        badge: hasClientProfile ? { type: 'success', text: '', icon: 'check' } : undefined
       }
     ];
   }

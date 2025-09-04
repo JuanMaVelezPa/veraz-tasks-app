@@ -26,6 +26,9 @@
       "@employee/*": [
         "./src/app/features/employee/*"
       ],
+      "@client/*": [
+        "./src/app/features/client/*"
+      ],
       "@shared/*": [
         "./src/app/shared/*"
       ],

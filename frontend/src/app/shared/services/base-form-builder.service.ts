@@ -31,7 +31,6 @@ export abstract class BaseFormBuilderService {
 
     this.addCustomValidators(form, customValidators);
 
-    // Set disabled state for all controls if form is read-only
     if (isReadOnly) {
       this.setFormReadOnly(form, true);
     }

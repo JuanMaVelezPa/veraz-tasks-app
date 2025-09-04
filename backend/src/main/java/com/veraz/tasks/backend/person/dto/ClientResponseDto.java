@@ -16,7 +16,6 @@ import lombok.NoArgsConstructor;
 public class ClientResponseDTO {
     private UUID id;
     private UUID personId;
-    private String clientCode;
     private String type;
     private String category;
     private String source;
@@ -42,4 +41,4 @@ public class ClientResponseDTO {
     private Boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-} 
+}

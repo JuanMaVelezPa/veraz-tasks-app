@@ -1,0 +1,603 @@
+<form
+  [formGroup]="clientForm()"
+  (ngSubmit)="submitForm()"
+  class="space-y-6"
+>
+  <!-- Hidden field for personId -->
+  <input
+    type="hidden"
+    formControlName="personId"
+  />
+
+  <!-- Required Information -->
+  <div class="card bg-base-200 shadow-sm border-l-4 border-l-primary">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="building" />
+        Required Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- Client Type -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Client Type *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getClientTypeDisplayName(clientForm().get('type')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="type"
+            class="select select-bordered w-full"
+            [class.select-error]="clientForm().get('type')?.invalid && clientForm().get('type')?.touched"
+          >
+            <option
+              value=""
+              disabled
+            >Select type</option>
+            @for (type of clientTypes(); track type.id) {
+            <option [value]="type.code">
+              {{ type.name }}
+            </option>
+            }
+          </select>
+          @if (clientForm().get('type')?.invalid && clientForm().get('type')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Client type is required</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Status -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Status</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getClientStatusDisplayName(clientForm().get('status')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="status"
+            class="select select-bordered w-full"
+          >
+            @for (status of clientStatuses(); track status.id) {
+            <option [value]="status.code">
+              {{ status.name }}
+            </option>
+            }
+          </select>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Company Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="building" />
+        Company Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Company Name -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Company Name</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('companyName')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="companyName"
+            placeholder="Enter company name"
+            class="input input-bordered w-full"
+            [class.input-error]="clientForm().get('companyName')?.invalid && clientForm().get('companyName')?.touched"
+          />
+          @if (clientForm().get('companyName')?.invalid && clientForm().get('companyName')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Company name is too long</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Company Website -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Company Website</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('companyWebsite')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="url"
+            formControlName="companyWebsite"
+            placeholder="https://example.com"
+            class="input input-bordered w-full"
+            [class.input-error]="clientForm().get('companyWebsite')?.invalid && clientForm().get('companyWebsite')?.touched"
+          />
+          @if (clientForm().get('companyWebsite')?.invalid && clientForm().get('companyWebsite')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Please enter a valid URL</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Company Industry -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Industry</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('companyIndustry')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="companyIndustry"
+            placeholder="Enter industry"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- Category -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Category</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getClientCategoryDisplayName(clientForm().get('category')?.value) || '-' }}
+          </div>
+          } @else {
+          <select
+            formControlName="category"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select category</option>
+            @for (category of clientCategories(); track category.id) {
+            <option [value]="category.code">
+              {{ category.name }}
+            </option>
+            }
+          </select>
+          }
+        </div>
+
+        <!-- Source -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Source</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('source')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="source"
+            placeholder="Enter source"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- Tax ID -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Tax ID</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('taxId')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="taxId"
+            placeholder="Enter tax ID"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Contact Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="user" />
+        Contact Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Contact Person -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Contact Person</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('contactPerson')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="contactPerson"
+            placeholder="Enter contact person name"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- Contact Position -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Contact Position</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('contactPosition')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="contactPosition"
+            placeholder="Enter contact position"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Address Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="location" />
+        Address Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Address -->
+        <div class="form-control md:col-span-2">
+          <label class="label">
+            <span class="label-text font-medium">Address</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('address')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="address"
+            placeholder="Enter full address"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- City -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">City</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('city')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="city"
+            placeholder="Enter city"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- Country -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Country</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('country')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="country"
+            placeholder="Enter country"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+
+        <!-- Postal Code -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Postal Code</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('postalCode')?.value || '-' }}
+          </div>
+          } @else {
+          <input
+            type="text"
+            formControlName="postalCode"
+            placeholder="Enter postal code"
+            class="input input-bordered w-full"
+          />
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Financial Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="credit-card" />
+        Financial Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Credit Limit -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Credit Limit</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ clientForm().get('creditLimit')?.value | currency:clientForm().get('currency')?.value || 'USD' || '-' }}
+          </div>
+          } @else {
+          <input
+            type="number"
+            formControlName="creditLimit"
+            placeholder="Enter credit limit"
+            class="input input-bordered w-full"
+            min="0"
+            step="0.01"
+          />
+          }
+        </div>
+
+        <!-- Currency -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Currency</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getCurrencyDisplayName(clientForm().get('currency')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="currency"
+            class="select select-bordered w-full"
+          >
+            @for (currency of currencies(); track currency.id) {
+            <option [value]="currency.code">
+              {{ currency.name }} ({{ currency.symbol }})
+            </option>
+            }
+          </select>
+          }
+        </div>
+
+        <!-- Payment Terms -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Payment Terms</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getPaymentTermDisplayName(clientForm().get('paymentTerms')?.value) || '-' }}
+          </div>
+          } @else {
+          <select
+            formControlName="paymentTerms"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select payment terms</option>
+            @for (term of paymentTerms(); track term.id) {
+            <option [value]="term.code">
+              {{ term.name }}
+            </option>
+            }
+          </select>
+          }
+        </div>
+
+        <!-- Payment Method -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Payment Method</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getPaymentMethodDisplayName(clientForm().get('paymentMethod')?.value) || '-' }}
+          </div>
+          } @else {
+          <select
+            formControlName="paymentMethod"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select payment method</option>
+            @for (method of paymentMethods(); track method.id) {
+            <option [value]="method.code">
+              {{ method.name }}
+            </option>
+            }
+          </select>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Additional Information -->
+  <div class="card bg-base-200 shadow-sm">
+    <div class="card-body p-4">
+      <h3 class="card-title text-lg font-semibold mb-4">
+        <shared-icon type="info" />
+        Additional Information
+      </h3>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rating -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Rating</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getClientRatingDisplayName(clientForm().get('rating')?.value) || '-' }}
+          </div>
+          } @else {
+          <select
+            formControlName="rating"
+            class="select select-bordered w-full"
+          >
+            <option value="">Select rating</option>
+            @for (rating of clientRatings(); track rating.id) {
+            <option [value]="rating.code">
+              {{ rating.name }}
+            </option>
+            }
+          </select>
+          }
+        </div>
+
+        <!-- Active Status -->
+        <div class="form-control">
+          <label class="label cursor-pointer">
+            <span class="label-text font-medium">Active Status</span>
+            @if (!isReadOnly()) {
+            <input
+              type="checkbox"
+              formControlName="isActive"
+              class="checkbox checkbox-primary"
+            />
+            }
+          </label>
+          @if (isReadOnly()) {
+          <div
+            class="badge"
+            [class]="clientForm().get('isActive')?.value ? 'badge-success' : 'badge-error'"
+          >
+            {{ clientForm().get('isActive')?.value ? 'Active' : 'Inactive' }}
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="form-control mt-4">
+        <label class="label">
+          <span class="label-text font-medium">Notes</span>
+        </label>
+        @if (isReadOnly()) {
+        <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[100px]">
+          {{ clientForm().get('notes')?.value || '-' }}
+        </div>
+        } @else {
+        <textarea
+          formControlName="notes"
+          placeholder="Enter additional notes"
+          class="textarea textarea-bordered w-full min-h-[100px]"
+        ></textarea>
+        }
+      </div>
+
+      <!-- Preferences -->
+      <div class="form-control mt-4">
+        <label class="label">
+          <span class="label-text font-medium">Preferences</span>
+        </label>
+        @if (isReadOnly()) {
+        <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[100px]">
+          {{ clientForm().get('preferences')?.value || '-' }}
+        </div>
+        } @else {
+        <textarea
+          formControlName="preferences"
+          placeholder="Enter client preferences"
+          class="textarea textarea-bordered w-full min-h-[100px]"
+        ></textarea>
+        }
+      </div>
+
+      <!-- Tags -->
+      <div class="form-control mt-4">
+        <label class="label">
+          <span class="label-text font-medium">Tags</span>
+        </label>
+        @if (isReadOnly()) {
+        <div class="textarea textarea-bordered w-full bg-base-200 text-base-content/70 min-h-[100px]">
+          {{ clientForm().get('tags')?.value || '-' }}
+        </div>
+        } @else {
+        <textarea
+          formControlName="tags"
+          placeholder="Enter tags (comma separated)"
+          class="textarea textarea-bordered w-full min-h-[100px]"
+        ></textarea>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div class="flex justify-end gap-3">
+    @if (!isReadOnly()) {
+    <button
+      type="button"
+      (click)="cancelForm()"
+      class="btn btn-outline"
+    >
+      Cancel
+    </button>
+    }
+    <button
+      type="submit"
+      [disabled]="isLoading() || clientForm().invalid"
+      class="btn btn-primary"
+    >
+      @if (isLoading()) {
+      <shared-loading size="sm" />
+      } @else {
+      <shared-icon [type]="submitButtonIcon()" />
+      }
+      {{ submitButtonText() }}
+    </button>
+  </div>
+
+</form>

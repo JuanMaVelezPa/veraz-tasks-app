@@ -13,7 +13,7 @@
 - HR => Human Resources
 
 ### Objects
-- **Tables**: `{MODULE}_T` + 4-letter name (e.g., `GE_TUSER`, `CL_TCLIE`)
+- **Tables**: `{MODULE}_T` + 4-letter name (e.g., `GE_TUSER`, `GE_TCLIE`)
 - **Views**: `{MODULE}_V` + 4-letter name (e.g., `GE_VUSER_WITH_ROLES`)
 - **Procedures**: `{MODULE}_P` + verb + 4-letter name (e.g., `GE_PINS_USER`)
 - **Functions**: `{MODULE}_F` + verb + 4-letter name (e.g., `GE_FGET_USER_FULL_NAME`)

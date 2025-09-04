@@ -12,9 +12,5 @@
 -- OBJECT NAME: GE_TPERM_CONSTRAINTS
 -- DESCRIPTION: Primary key and unique constraints for GE_TPERM table
 --
-
--- Primary Key
 ALTER TABLE GE_TPERM ADD CONSTRAINT PKY_GE_TPERM_PERM PRIMARY KEY (perm_perm);
-
--- Unique Constraints
 ALTER TABLE GE_TPERM ADD CONSTRAINT UQ_GE_TPERM_NAME UNIQUE (perm_name); 

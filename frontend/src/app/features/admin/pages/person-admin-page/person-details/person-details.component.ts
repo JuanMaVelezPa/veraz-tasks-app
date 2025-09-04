@@ -2,11 +2,13 @@ import { Component, inject, input, signal, OnDestroy, ChangeDetectorRef, OnInit 
 import { ScrollService } from '@shared/services/scroll.service';
 import { Person } from '@person/interfaces/person.interface';
 import { Employee } from '@employee/interfaces/employee.interface';
+import { Client } from '@client/interfaces/client.interface';
 import { User } from '@users/interfaces/user.interface';
 import { ReactiveFormsModule } from '@angular/forms';
 import { PersonService } from '@person/services/person.service';
 import { PersonManagementService } from '@person/services/person-management.service';
 import { EmployeeAssociationService } from '@employee/services/employee-association.service';
+import { ClientService } from '@client/services/client.service';
 import { UserService } from '@users/services/user.service';
 
 import { Router, ActivatedRoute, NavigationEnd } from '@angular/router';
@@ -25,6 +27,7 @@ import { TabItem } from '@shared/interfaces/tab.interface';
 import { TabsService } from '@shared/services/tabs.service';
 import { PersonalInfoTabComponent } from '@person/components/personal-info-tab/personal-info-tab.component';
 import { EmployeeTabComponent } from '@employee/components/employee-tab/employee-tab.component';
+import { ClientTabComponent } from '@client/components/client-tab/client-tab.component';
 import { UserTabComponent } from '@users/components/user-tab/user-tab.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 
@@ -33,7 +36,7 @@ import { LoadingComponent } from '@shared/components/loading/loading.component';
   standalone: true,
   imports: [ReactiveFormsModule, CommonModule, FeedbackMessageComponent,
     TimestampInfoComponent, IconComponent, TabsComponent,
-    PersonalInfoTabComponent, EmployeeTabComponent, UserTabComponent,
+    PersonalInfoTabComponent, EmployeeTabComponent, ClientTabComponent, UserTabComponent,
     LoadingComponent],
   templateUrl: './person-details.component.html',
 })
@@ -46,6 +49,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   private personService = inject(PersonService);
   private personManagementService = inject(PersonManagementService);
   private employeeAssociationService = inject(EmployeeAssociationService);
+  private clientService = inject(ClientService);
   private userService = inject(UserService);
 
   private httpErrorService = inject(HttpErrorService);
@@ -63,13 +67,16 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   currentPerson = signal<Person | null>(null);
   currentEmployee = signal<Employee | null>(null);
   isLoadingEmployee = signal(false);
+  currentClient = signal<Client | null>(null);
+  isLoadingClient = signal(false);
   currentUser = signal<User | null>(null);
   isLoadingUser = signal(false);
-  activeTab = signal<'person' | 'employee' | 'user'>('person');
+  activeTab = signal<'person' | 'employee' | 'client' | 'user'>('person');
   tabs = signal<TabItem[]>([]);
 
   personForm = this.formBuilders.buildPersonForm();
   employeeForm = this.formBuilders.buildEmployeeForm();
+  clientForm = this.formBuilders.buildClientForm();
   userForm = this.formBuilders.buildUserForm({ isEditMode: true });
 
   ngOnInit(): void {
@@ -83,6 +90,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
 
     if (this.isEditMode()) {
       this.loadEmployeeInfo(person.id);
+      this.loadClientInfo(person.id);
       this.loadUserInfo(person);
 
       const returnFromUser = this.route.snapshot.queryParamMap.get('returnFromUser');
@@ -125,6 +133,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       type: 'admin' as const,
       hasUserAccount: !!this.currentUser(),
       hasEmploymentProfile: !!this.currentEmployee(),
+      hasClientProfile: !!this.currentClient(),
       isEditMode: this.isEditMode()
     };
 
@@ -137,6 +146,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       type: 'admin' as const,
       hasUserAccount: !!this.currentUser(),
       hasEmploymentProfile: !!this.currentEmployee(),
+      hasClientProfile: !!this.currentClient(),
       isEditMode: this.isEditMode()
     };
 
@@ -285,6 +295,30 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     }
   }
 
+  private async loadClientInfo(personId: string): Promise<void> {
+    if (!personId || personId === 'undefined' || personId === 'null') {
+      this.currentClient.set(null);
+      this.isLoadingClient.set(false);
+      return;
+    }
+
+    this.isLoadingClient.set(true);
+    try {
+      const client = await firstValueFrom(
+        this.clientService.getClientByPersonId(personId)
+      );
+      this.currentClient.set(client);
+      if (client) {
+        this.setClientFormValues(client);
+      }
+    } catch (error) {
+      this.currentClient.set(null);
+    } finally {
+      this.isLoadingClient.set(false);
+      this.updateTabs();
+    }
+  }
+
   private async loadUserInfo(person: Person): Promise<void> {
     if (!person.userId) {
       this.currentUser.set(null);
@@ -310,7 +344,7 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
   }
 
   setActiveTab(tab: string) {
-    this.activeTab.set(tab as 'person' | 'employee' | 'user');
+    this.activeTab.set(tab as 'person' | 'employee' | 'client' | 'user');
     if (tab === 'user' && this.currentUser()) {
       this.formBuilders.patchForm(this.userForm, this.currentUser());
     }
@@ -337,6 +371,29 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
       this.feedbackService.showError(error.message || 'An error occurred while saving the employee.');
     } finally {
       this.isLoadingEmployee.set(false);
+    }
+  }
+
+  async submitClientForm(): Promise<void> {
+    if (this.clientForm.invalid) {
+      this.clientForm.markAllAsTouched();
+      this.feedbackService.showError('Please fix validation errors before saving.');
+      return;
+    }
+
+    this.isLoadingClient.set(true);
+    try {
+      const clientData = this.formBuilders.prepareClientFormData(this.clientForm.value);
+
+      if (this.currentClient()) {
+        await this.updateClientData(clientData);
+      } else {
+        await this.createClientData(clientData);
+      }
+    } catch (error: any) {
+      this.feedbackService.showError(error.message || 'An error occurred while saving the client.');
+    } finally {
+      this.isLoadingClient.set(false);
     }
   }
 
@@ -539,6 +596,11 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.cdr.detectChanges();
   }
 
+  private setClientFormValues(client: Client): void {
+    this.formBuilders.patchForm(this.clientForm, client);
+    this.cdr.detectChanges();
+  }
+
   private async createEmployeeData(formData: any): Promise<void> {
     const person = this.currentPerson();
     if (!person || person.id === 'new') return;
@@ -571,6 +633,41 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     this.setEmployeeFormValues(updatedEmployee);
     this.updateTabs();
     this.feedbackService.showSuccess('Employment information updated successfully!');
+    this.scrollService.scrollToTop();
+  }
+
+  private async createClientData(formData: any): Promise<void> {
+    const person = this.currentPerson();
+    if (!person || person.id === 'new') return;
+
+    const clientData = { ...formData, personId: person.id };
+    const createdClient = await firstValueFrom(
+      this.clientService.createClient(clientData).pipe(
+        catchError(error => this.httpErrorService.handleError(error, 'creating client'))
+      )
+    );
+
+    this.currentClient.set(createdClient);
+    this.setClientFormValues(createdClient);
+    this.updateTabs();
+    this.feedbackService.showSuccess('Client information created successfully!');
+    this.scrollService.scrollToTop();
+  }
+
+  private async updateClientData(formData: any): Promise<void> {
+    const client = this.currentClient();
+    if (!client) return;
+
+    const updatedClient = await firstValueFrom(
+      this.clientService.updateClient(client.id, formData).pipe(
+        catchError(error => this.httpErrorService.handleError(error, 'updating client'))
+      )
+    );
+
+    this.currentClient.set(updatedClient);
+    this.setClientFormValues(updatedClient);
+    this.updateTabs();
+    this.feedbackService.showSuccess('Client information updated successfully!');
     this.scrollService.scrollToTop();
   }
 
