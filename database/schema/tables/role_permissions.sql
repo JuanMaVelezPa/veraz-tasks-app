@@ -9,14 +9,15 @@
 --
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: GE_TROPE
+-- OBJECT NAME: role_permissions
 -- DESCRIPTION: Stores role-permission relationships
 --
-DROP TABLE IF EXISTS GE_TROPE;
-CREATE TABLE GE_TROPE (
-    rope_rope UUID DEFAULT GEN_RANDOM_UUID(),
-    rope_role UUID NOT NULL,
-    rope_perm UUID NOT NULL,
-    rope_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    rope_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+DROP TABLE IF EXISTS role_permissions;
+CREATE TABLE role_permissions (
+    role_permissions_id UUID DEFAULT GEN_RANDOM_UUID(),
+    roles_id UUID NOT NULL,
+    permissions_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

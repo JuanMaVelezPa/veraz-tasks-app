@@ -15,29 +15,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ge_tperm")
+@Table(name = "permissions")
 @Data
 @NoArgsConstructor
 public class Perm {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "perm_perm")
+    @Column(name = "permissions_id")
     private UUID Id;
 
-    @Column(name = "perm_name", nullable = false, unique = true, length = 100)
+    @Column(name = "name", nullable = false, unique = true, length = 100)
     private String name;
 
-    @Column(name = "perm_description", length = 255)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "perm_is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "perm_created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "perm_updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @PrePersist

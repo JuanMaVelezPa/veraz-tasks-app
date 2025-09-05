@@ -9,14 +9,15 @@
 --
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: GE_TUSRO
+-- OBJECT NAME: user_roles
 -- DESCRIPTION: Stores user-role relationships
 --
-DROP TABLE IF EXISTS GE_TUSRO;
-CREATE TABLE GE_TUSRO (
-    usro_usro UUID DEFAULT GEN_RANDOM_UUID(),
-    usro_user UUID NOT NULL,
-    usro_role UUID NOT NULL,
-    usro_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    usro_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+DROP TABLE IF EXISTS user_roles;
+CREATE TABLE user_roles (
+    user_roles_id UUID DEFAULT GEN_RANDOM_UUID(),
+    users_id UUID NOT NULL,
+    roles_id UUID NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

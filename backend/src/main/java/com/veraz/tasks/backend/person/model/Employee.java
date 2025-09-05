@@ -24,7 +24,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "ge_templ")
+@Table(name = "employees")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -34,92 +34,92 @@ public class Employee {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "empl_empl", nullable = false)
+    @Column(name = "employees_id", nullable = false)
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinColumn(name = "empl_pers", referencedColumnName = "pers_pers")
+    @JoinColumn(name = "persons_id", referencedColumnName = "persons_id")
     private Person person;
 
-    @Column(name = "empl_position", nullable = false, length = 100)
+    @Column(name = "position", nullable = false, length = 100)
     private String position;
 
-    @Column(name = "empl_department", length = 100)
+    @Column(name = "department", length = 100)
     private String department;
 
-    @Column(name = "empl_employment_type", nullable = false, length = 20)
+    @Column(name = "employment_type", nullable = false, length = 20)
     private String employmentType;
 
-    @Column(name = "empl_status", nullable = false, length = 20)
+    @Column(name = "status", nullable = false, length = 20)
     private String status;
 
-    @Column(name = "empl_hire_date", nullable = false)
+    @Column(name = "hire_date", nullable = false)
     private LocalDate hireDate;
 
-    @Column(name = "empl_termination_date")
+    @Column(name = "termination_date")
     private LocalDate terminationDate;
 
-    @Column(name = "empl_probation_end_date")
+    @Column(name = "probation_end_date")
     private LocalDate probationEndDate;
 
-    @Column(name = "empl_salary", precision = 12, scale = 2)
+    @Column(name = "salary", precision = 12, scale = 2)
     private BigDecimal salary;
 
-    @Column(name = "empl_currency", length = 3)
+    @Column(name = "currency", length = 3)
     private String currency;
 
-    @Column(name = "empl_salary_type", length = 20)
+    @Column(name = "salary_type", length = 20)
     private String salaryType;
 
-    @Column(name = "empl_work_email", length = 100)
+    @Column(name = "work_email", length = 100)
     private String workEmail;
 
-    @Column(name = "empl_work_phone", length = 20)
+    @Column(name = "work_phone", length = 20)
     private String workPhone;
 
-    @Column(name = "empl_work_location", length = 100)
+    @Column(name = "work_location", length = 100)
     private String workLocation;
 
-    @Column(name = "empl_work_schedule", length = 100)
+    @Column(name = "work_schedule", length = 100)
     private String workSchedule;
 
-    @Column(name = "empl_job_level", length = 20)
+    @Column(name = "job_level", length = 20)
     private String jobLevel;
 
-    @Column(name = "empl_cost_center", length = 50)
+    @Column(name = "cost_center", length = 50)
     private String costCenter;
 
-    @Column(name = "empl_work_shift", length = 20)
+    @Column(name = "work_shift", length = 20)
     private String workShift;
 
-    @Column(name = "empl_skills", columnDefinition = "TEXT")
+    @Column(name = "skills", columnDefinition = "TEXT")
     private String skills;
 
-    @Column(name = "empl_certifications", columnDefinition = "TEXT")
+    @Column(name = "certifications", columnDefinition = "TEXT")
     private String certifications;
 
-    @Column(name = "empl_education", columnDefinition = "TEXT")
+    @Column(name = "education", columnDefinition = "TEXT")
     private String education;
 
-    @Column(name = "empl_benefits", columnDefinition = "TEXT")
+    @Column(name = "benefits", columnDefinition = "TEXT")
     private String benefits;
 
-    @Column(name = "empl_notes", columnDefinition = "TEXT")
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "empl_is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    @Column(name = "empl_created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "empl_updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @Column(name = "empl_created_by")
+    @Column(name = "created_by")
     private UUID createdBy;
 
-    @Column(name = "empl_updated_by")
+    @Column(name = "updated_by")
     private UUID updatedBy;
 
     @PrePersist

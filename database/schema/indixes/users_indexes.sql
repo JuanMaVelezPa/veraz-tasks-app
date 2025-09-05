@@ -9,14 +9,10 @@
 --
 --
 -- OBJECT TYPE: INDEXES
--- OBJECT NAME: GE_TUSER_INDEXES
--- DESCRIPTION: Performance indexes for GE_TUSER table
+-- OBJECT NAME: users_indexes
+-- DESCRIPTION: Performance indexes for users table
 --
 
--- Drop existing indexes if they exist
-DROP INDEX IF EXISTS GE_IUSER_USERNAME;
-DROP INDEX IF EXISTS GE_IUSER_EMAIL;
-
--- Create indexes
-CREATE INDEX GE_IUSER_USERNAME ON GE_TUSER(user_username);
-CREATE INDEX GE_IUSER_EMAIL ON GE_TUSER(user_email);   
+CREATE INDEX idx_users_username ON users (username);
+CREATE INDEX idx_users_email ON users (email);
+CREATE INDEX idx_users_is_active ON users (is_active);

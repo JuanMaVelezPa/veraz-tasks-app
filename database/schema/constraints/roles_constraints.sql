@@ -9,8 +9,9 @@
 --
 --
 -- OBJECT TYPE: CONSTRAINTS
--- OBJECT NAME: GE_TROLE_CONSTRAINTS
--- DESCRIPTION: Primary key and unique constraints for GE_TROLE table
+-- OBJECT NAME: roles_constraints
+-- DESCRIPTION: Primary key and unique constraints for roles table
 --
-ALTER TABLE GE_TROLE ADD CONSTRAINT PKY_GE_TROLE_ROLE PRIMARY KEY (role_role);
-ALTER TABLE GE_TROLE ADD CONSTRAINT UQ_GE_TROLE_NAME UNIQUE (role_name); 
+
+ALTER TABLE roles ADD CONSTRAINT pk_roles_id PRIMARY KEY (roles_id);
+ALTER TABLE roles ADD CONSTRAINT uq_roles_name UNIQUE (name);

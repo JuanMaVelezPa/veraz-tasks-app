@@ -13,7 +13,7 @@
             "---",
             "--",
             "-- OBJECT TYPE: ${5:TABLE}",
-            "-- OBJECT NAME: ${6:GE_TEXAMPLE}",
+            "-- OBJECT NAME: ${6:example_table}",
             "-- DESCRIPTION: ${7:Brief description of the object}",
             "--",
             "",
@@ -35,28 +35,24 @@
             "---",
             "--",
             "-- OBJECT TYPE: TABLE",
-            "-- OBJECT NAME: ${5:GE_TEXAMPLE}",
+            "-- OBJECT NAME: ${5:example_table}",
             "-- DESCRIPTION: ${6:Stores example data}",
             "--",
             "",
-            "CREATE TABLE ${5:GE_TEXAMPLE} (",
-            "    ${7:EXAMPLE_EXAMPLE} UUID PRIMARY KEY DEFAULT (UUID()),",
-            "    ${8:NAME} VARCHAR(100) NOT NULL,",
-            "    ${9:DESCRIPTION} TEXT,",
-            "    IS_ACTIVE BOOLEAN DEFAULT TRUE,",
-            "    CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
-            "    UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,",
-            "    VERSION INTEGER DEFAULT 1",
-            ");",
-            "",
-            "-- Indexes",
-            "CREATE INDEX ${10:GE_IEXAMPLE_NAME} ON ${5:GE_TEXAMPLE}(${8:NAME});",
-            "CREATE INDEX ${11:GE_IEXAMPLE_ACTIVE} ON ${5:GE_TEXAMPLE}(IS_ACTIVE);"
+            "DROP TABLE IF EXISTS ${5:example_table};",
+            "CREATE TABLE ${5:example_table} (",
+            "    ${5:example_table}_id UUID DEFAULT GEN_RANDOM_UUID(),",
+            "    ${7:name} VARCHAR(100) NOT NULL,",
+            "    ${8:description} TEXT,",
+            "    is_active BOOLEAN DEFAULT TRUE,",
+            "    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,",
+            "    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
+            ");"
         ],
         "description": "Complete SQL table template with version header"
     },
-    "SQL Stored Procedure Template": {
-        "prefix": "sql-procedure",
+    "SQL Constraints Template": {
+        "prefix": "sql-constraints",
         "body": [
             "--",
             "-- VERSION ${1:1.0.0}",
@@ -68,24 +64,19 @@
             "-- ----------- -------------- --------------- ---------------- ----------------",
             "---",
             "--",
-            "-- OBJECT TYPE: PROCEDURE",
-            "-- OBJECT NAME: ${5:GE_PEXAMPLE}",
-            "-- DESCRIPTION: ${6:Example stored procedure}",
+            "-- OBJECT TYPE: CONSTRAINTS",
+            "-- OBJECT NAME: ${5:example_table}_constraints",
+            "-- DESCRIPTION: Constraints for ${5:example_table} table",
             "--",
             "",
-            "DELIMITER //",
-            "CREATE PROCEDURE ${5:GE_PEXAMPLE}(",
-            "    IN p_${7:parameter} VARCHAR(50)",
-            ")",
-            "BEGIN",
-            "    SELECT * FROM ${8:GE_TEXAMPLE} WHERE ${9:column} = p_${7:parameter};",
-            "END//",
-            "DELIMITER ;"
+            "ALTER TABLE ${5:example_table} ADD CONSTRAINT pk_${5:example_table}_id PRIMARY KEY (${5:example_table}_id);",
+            "ALTER TABLE ${5:example_table} ADD CONSTRAINT uq_${5:example_table}_${6:column} UNIQUE (${6:column});",
+            "ALTER TABLE ${5:example_table} ADD CONSTRAINT ck_${5:example_table}_${7:column} CHECK (${7:column} IN ('${8:VALUE1}', '${9:VALUE2}'));"
         ],
-        "description": "SQL stored procedure template with version header"
+        "description": "SQL constraints template with version header"
     },
-    "SQL View Template": {
-        "prefix": "sql-view",
+    "SQL Indexes Template": {
+        "prefix": "sql-indexes",
         "body": [
             "--",
             "-- VERSION ${1:1.0.0}",
@@ -97,23 +88,73 @@
             "-- ----------- -------------- --------------- ---------------- ----------------",
             "---",
             "--",
-            "-- OBJECT TYPE: VIEW",
-            "-- OBJECT NAME: ${5:GE_VEXAMPLE}",
-            "-- DESCRIPTION: ${6:Example view}",
+            "-- OBJECT TYPE: INDEXES",
+            "-- OBJECT NAME: ${5:example_table}_indexes",
+            "-- DESCRIPTION: Performance indexes for ${5:example_table} table",
             "--",
             "",
-            "CREATE VIEW ${5:GE_VEXAMPLE} AS",
+            "CREATE INDEX idx_${5:example_table}_${6:column} ON ${5:example_table}(${6:column});",
+            "CREATE INDEX idx_${5:example_table}_${7:column} ON ${5:example_table}(${7:column});",
+            "CREATE INDEX idx_${5:example_table}_active ON ${5:example_table}(is_active);"
+        ],
+        "description": "SQL indexes template with version header"
+    },
+    "SQL Foreign Key Template": {
+        "prefix": "sql-fk",
+        "body": [
+            "ALTER TABLE ${1:table_name} ADD CONSTRAINT fk_${1:table_name}_${2:referenced_table} FOREIGN KEY (${2:referenced_table}_id) REFERENCES ${2:referenced_table}(${2:referenced_table}_id);"
+        ],
+        "description": "SQL foreign key constraint"
+    },
+    "SQL Insert Template": {
+        "prefix": "sql-insert",
+        "body": [
+            "INSERT INTO ${1:table_name} (${2:column1}, ${3:column2}, ${4:column3}) VALUES",
+            "('${5:value1}', '${6:value2}', '${7:value3}'),",
+            "('${8:value4}', '${9:value5}', '${10:value6}');"
+        ],
+        "description": "SQL insert statement template"
+    },
+    "SQL Select Template": {
+        "prefix": "sql-select",
+        "body": [
             "SELECT ",
-            "    ${7:column1},",
-            "    ${8:column2},",
-            "    ${9:column3}",
-            "FROM ${10:GE_TEXAMPLE}",
-            "WHERE IS_ACTIVE = TRUE;"
+            "    ${1:column1},",
+            "    ${2:column2},",
+            "    ${3:column3}",
+            "FROM ${4:table_name}",
+            "WHERE ${5:condition} = '${6:value}'",
+            "    AND is_active = TRUE",
+            "ORDER BY ${7:column1};"
         ],
-        "description": "SQL view template with version header"
+        "description": "SQL select statement template"
     },
-    "SQL Function Template": {
-        "prefix": "sql-function",
+    "SQL Update Template": {
+        "prefix": "sql-update",
+        "body": [
+            "UPDATE ${1:table_name}",
+            "SET ",
+            "    ${2:column1} = '${3:value1}',",
+            "    ${4:column2} = '${5:value2}',",
+            "    updated_at = CURRENT_TIMESTAMP",
+            "WHERE ${6:condition} = '${7:value}'",
+            "    AND is_active = TRUE;"
+        ],
+        "description": "SQL update statement template"
+    },
+    "SQL Delete Template": {
+        "prefix": "sql-delete",
+        "body": [
+            "UPDATE ${1:table_name}",
+            "SET ",
+            "    is_active = FALSE,",
+            "    updated_at = CURRENT_TIMESTAMP",
+            "WHERE ${2:condition} = '${3:value}';"
+        ],
+        "description": "SQL soft delete template"
+    },
+    "SQL Patch Template": {
+        "prefix": "sql-patch",
         "body": [
             "--",
             "-- VERSION ${1:1.0.0}",
@@ -125,70 +166,23 @@
             "-- ----------- -------------- --------------- ---------------- ----------------",
             "---",
             "--",
-            "-- OBJECT TYPE: FUNCTION",
-            "-- OBJECT NAME: ${5:GE_FEXAMPLE}",
-            "-- DESCRIPTION: ${6:Example function}",
+            "-- OBJECT TYPE: PATCH",
+            "-- OBJECT NAME: ${5:001_description}",
+            "-- DESCRIPTION: ${6:Description of the patch}",
             "--",
             "",
-            "DELIMITER //",
-            "CREATE FUNCTION ${5:GE_FEXAMPLE}(",
-            "    p_${7:parameter} VARCHAR(50)",
-            ") RETURNS VARCHAR(100)",
-            "READS SQL DATA",
-            "DETERMINISTIC",
+            "DO $$",
             "BEGIN",
-            "    DECLARE result VARCHAR(100);",
-            "    SELECT ${8:column} INTO result FROM ${9:GE_TEXAMPLE} WHERE ${10:condition} = p_${7:parameter};",
-            "    RETURN result;",
-            "END//",
-            "DELIMITER ;"
-        ],
-        "description": "SQL function template with version header"
-    },
-    "SQL Trigger Template": {
-        "prefix": "sql-trigger",
-        "body": [
-            "--",
-            "-- VERSION ${1:1.0.0}",
-            "--",
-            "--",
-            "-- VERSION     REQUEST NRO    USER            DATE             CHANGES",
-            "-- ----------- -------------- --------------- ---------------- ----------------",
-            "-- ${1:1.0.0}                      ${2:JMVELEZ}         ${3:2025-01-15}       ${4:INITIAL CREATION}",
-            "-- ----------- -------------- --------------- ---------------- ----------------",
-            "---",
-            "--",
-            "-- OBJECT TYPE: TRIGGER",
-            "-- OBJECT NAME: ${5:GE_TEXAMPLE_AUDIT_INSERT}",
-            "-- DESCRIPTION: ${6:Audit trigger for example table}",
-            "--",
+            "    RAISE NOTICE 'Starting patch ${5:001_description}...';",
+            "END $$;",
             "",
-            "DELIMITER //",
-            "CREATE TRIGGER ${5:GE_TEXAMPLE_AUDIT_INSERT}",
-            "AFTER INSERT ON ${7:GE_TEXAMPLE}",
-            "FOR EACH ROW",
+            "-- ${7:SQL commands here}",
+            "",
+            "DO $$",
             "BEGIN",
-            "    INSERT INTO ${8:GE_TAUDIT_LOG} (",
-            "        TABLE_NAME,",
-            "        ACTION_TYPE,",
-            "        RECORD_ID,",
-            "        NEW_VALUES,",
-            "        CREATED_AT",
-            "        CREATED_BY",
-            "    ) VALUES (",
-            "        '${7:GE_TEXAMPLE}',",
-            "        'INSERT',",
-            "        NEW.${9:EXAMPLE_EXAMPLE},",
-            "        JSON_OBJECT(",
-            "            '${10:column1}', NEW.${10:column1},",
-            "            '${11:column2}', NEW.${11:column2}",
-            "        ),",
-            "        NOW(),",
-            "        USER()",
-            "    );",
-            "END//",
-            "DELIMITER ;"
+            "    RAISE NOTICE 'Patch ${5:001_description} applied successfully';",
+            "END $$;"
         ],
-        "description": "SQL trigger template with version header"
+        "description": "SQL patch template with version header"
     }
-} 
+}

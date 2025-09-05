@@ -33,7 +33,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ge_tuser")
+@Table(name = "users")
 @Data
 @Builder
 @NoArgsConstructor
@@ -42,31 +42,31 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "user_user")
+    @Column(name = "users_id")
     private UUID id;
 
-    @Column(name = "user_username", nullable = false, unique = true, length = 50)
+    @Column(name = "username", nullable = false, unique = true, length = 50)
     private String username;
 
-    @Column(name = "user_email", nullable = false, unique = true, length = 100)
+    @Column(name = "email", nullable = false, unique = true, length = 100)
     private String email;
 
-    @Column(name = "user_pwd", nullable = false, length = 255)
+    @Column(name = "password", nullable = false, length = 255)
     @JsonIgnore
     private String password;
 
-    @Column(name = "user_is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     @Builder.Default
     private Boolean isActive = true;
 
-    @Column(name = "user_created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "user_updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ge_tusro", joinColumns = @JoinColumn(name = "usro_user"), inverseJoinColumns = @JoinColumn(name = "usro_role"))
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "users_id"), inverseJoinColumns = @JoinColumn(name = "roles_id"))
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 

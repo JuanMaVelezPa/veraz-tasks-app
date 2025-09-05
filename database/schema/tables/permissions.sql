@@ -9,15 +9,16 @@
 --
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: GE_TPERM
+-- OBJECT NAME: permissions
 -- DESCRIPTION: Stores system permissions information
 --
-DROP TABLE IF EXISTS GE_TPERM;
-CREATE TABLE GE_TPERM (
-    perm_perm UUID DEFAULT GEN_RANDOM_UUID(),
-    perm_name VARCHAR(100) NOT NULL,
-    perm_descr TEXT,
-    perm_is_active BOOLEAN DEFAULT TRUE,
-    perm_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    perm_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+DROP TABLE IF EXISTS permissions;
+CREATE TABLE permissions (
+    permissions_id UUID DEFAULT GEN_RANDOM_UUID(),
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

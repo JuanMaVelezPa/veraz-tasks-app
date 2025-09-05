@@ -40,9 +40,9 @@ BEGIN
     RAISE NOTICE 'PATCH 002_initial_auth_data APPLIED SUCCESSFULLY';
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'Authentication system initialized with:';
-    RAISE NOTICE '- 4 roles (ADMIN, MANAGER, SUPERVISOR, USER)';
-    RAISE NOTICE '- 14 permissions for system operations';
-    RAISE NOTICE '- 1 admin user (admin_user)';
+    RAISE NOTICE '- 5 roles (ADMIN, MANAGER, SUPERVISOR, USER, CLIENT)';
+    RAISE NOTICE '- 17 permissions for system operations';
+    RAISE NOTICE '- 1 admin user (jmvelez)';
     RAISE NOTICE '- Complete role-permission matrix';
     RAISE NOTICE '=====================================================';
-END $$; 
+END $$;

@@ -4,13 +4,13 @@
 --
 -- VERSION     REQUEST NRO    USER            DATE             CHANGES
 -- ----------- -------------- --------------- ---------------- ----------------
--- 1.0.0                      JMVELEZ         15/01/2025       Initial schema creation
+-- 1.0.0                      JMVELEZ         15/01/2025       Initial database schema creation
 -- ----------- -------------- --------------- ---------------- ----------------
 --
 --
 -- OBJECT TYPE: PATCH
 -- OBJECT NAME: 001_initial_schema
--- DESCRIPTION: Initial database schema with all base tables, roles, permissions and business tables
+-- DESCRIPTION: Create initial database schema with all tables, constraints and indexes
 --
 
 DO $$
@@ -18,104 +18,60 @@ BEGIN
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'STARTING PATCH 001_initial_schema';
     RAISE NOTICE '=====================================================';
+    RAISE NOTICE 'Creating initial database schema...';
 END $$; 
 
 -- =====================================================
--- STEP 1: CREATE BASE TABLES (No dependencies)
+-- CREATE BASE TABLES
 -- =====================================================
-
--- Create GE_TUSER table (no dependencies)
-\i ../../schema/tables/GE_TUSER.sql
-
--- Create GE_TPERS table (no dependencies)
-\i ../../schema/tables/GE_TPERS.sql
-
--- Create GE_TROLE table (no dependencies)
-\i ../../schema/tables/GE_TROLE.sql
-
--- Create GE_TPERM table (no dependencies)
-\i ../../schema/tables/GE_TPERM.sql
+\i ../../schema/tables/users.sql
+\i ../../schema/tables/persons.sql
+\i ../../schema/tables/roles.sql
+\i ../../schema/tables/permissions.sql
 
 -- =====================================================
--- STEP 2: CREATE RELATIONSHIP TABLES (With dependencies)
+-- CREATE RELATIONSHIP TABLES
 -- =====================================================
-
--- Create GE_TUSRO table (depends on GE_TUSER and GE_TROLE)
-\i ../../schema/tables/GE_TUSRO.sql
-
--- Create GE_TROPE table (depends on GE_TROLE and GE_TPERM)
-\i ../../schema/tables/GE_TROPE.sql
+\i ../../schema/tables/user_roles.sql
+\i ../../schema/tables/role_permissions.sql
 
 -- =====================================================
--- STEP 3: CREATE BUSINESS TABLES (With dependencies)
+-- CREATE BUSINESS TABLES
 -- =====================================================
-
--- Create GE_TEMPL table (depends on GE_TUSER and GE_TPERS)
-\i ../../schema/tables/GE_TEMPL.sql
-
--- Create GE_TCLIE table (depends on GE_TUSER and GE_TPERS)
-\i ../../schema/tables/GE_TCLIE.sql
-
+\i ../../schema/tables/employees.sql
+\i ../../schema/tables/clients.sql
 
 -- =====================================================
--- STEP 4: CREATE CONSTRAINTS
+-- ADD CONSTRAINTS
 -- =====================================================
-
--- Add constraints to base tables
-\i ../../schema/constraints/GE_TUSER_CONSTRAINTS.sql
-\i ../../schema/constraints/GE_TPERS_CONSTRAINTS.sql
-\i ../../schema/constraints/GE_TROLE_CONSTRAINTS.sql
-\i ../../schema/constraints/GE_TPERM_CONSTRAINTS.sql
-
--- Add constraints to relationship tables
-\i ../../schema/constraints/GE_TUSRO_CONSTRAINTS.sql
-\i ../../schema/constraints/GE_TROPE_CONSTRAINTS.sql
-
--- Add constraints to business tables
-\i ../../schema/constraints/GE_TEMPL_CONSTRAINTS.sql
-\i ../../schema/constraints/GE_TCLIE_CONSTRAINTS.sql
+\i ../../schema/constraints/users_constraints.sql
+\i ../../schema/constraints/persons_constraints.sql
+\i ../../schema/constraints/roles_constraints.sql
+\i ../../schema/constraints/permissions_constraints.sql
+\i ../../schema/constraints/user_roles_constraints.sql
+\i ../../schema/constraints/role_permissions_constraints.sql
+\i ../../schema/constraints/employees_constraints.sql
+\i ../../schema/constraints/clients_constraints.sql
 
 -- =====================================================
--- STEP 5: CREATE INDEXES
+-- ADD INDEXES
 -- =====================================================
-
--- Create indexes for base tables
-\i ../../schema/indixes/GE_TUSER_INDEXES.sql
-\i ../../schema/indixes/GE_TPERS_INDEXES.sql
-\i ../../schema/indixes/GE_TROLE_INDEXES.sql
-\i ../../schema/indixes/GE_TPERM_INDEXES.sql
-
--- Create indexes for relationship tables
-\i ../../schema/indixes/GE_TUSRO_INDEXES.sql
-\i ../../schema/indixes/GE_TROPE_INDEXES.sql
-
--- Create indexes for business tables
-
-\i ../../schema/indixes/GE_TEMPL_INDEXES.sql
-\i ../../schema/indixes/GE_TCLIE_INDEXES.sql
-
-
--- =====================================================
--- COMPLETION MESSAGE
--- =====================================================
+\i ../../schema/indixes/users_indexes.sql
+\i ../../schema/indixes/persons_indexes.sql
+\i ../../schema/indixes/roles_indexes.sql
+\i ../../schema/indixes/permissions_indexes.sql
+\i ../../schema/indixes/user_roles_indexes.sql
+\i ../../schema/indixes/role_permissions_indexes.sql
+\i ../../schema/indixes/employees_indexes.sql
+\i ../../schema/indixes/clients_indexes.sql
 
 DO $$
 BEGIN
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'PATCH 001_initial_schema APPLIED SUCCESSFULLY';
     RAISE NOTICE '=====================================================';
-    RAISE NOTICE 'Created base tables:';
-    RAISE NOTICE '- GE_TUSER (Users)';
-    RAISE NOTICE '- GE_TPERS (Persons)';
-    RAISE NOTICE '- GE_TROLE (Roles)';
-    RAISE NOTICE '- GE_TPERM (Permissions)';
-    RAISE NOTICE '';
-    RAISE NOTICE 'Created relationship tables:';
-    RAISE NOTICE '- GE_TUSRO (User-Role relationships)';
-    RAISE NOTICE '- GE_TROPE (Role-Permission relationships)';
-    RAISE NOTICE '';
-    RAISE NOTICE 'Created business tables:';
-    RAISE NOTICE '- GE_TEMPL (Employees)';
-    RAISE NOTICE '- GE_TCLIE (Clients)';
+    RAISE NOTICE 'Schema created successfully:';
+    RAISE NOTICE '- 8 tables: users, persons, roles, permissions, user_roles, role_permissions, employees, clients';
+    RAISE NOTICE '- All constraints and indexes applied';
     RAISE NOTICE '=====================================================';
-END $$; 
+END $$;

@@ -9,8 +9,9 @@
 --
 --
 -- OBJECT TYPE: CONSTRAINTS
--- OBJECT NAME: GE_TPERM_CONSTRAINTS
--- DESCRIPTION: Primary key and unique constraints for GE_TPERM table
+-- OBJECT NAME: permissions_constraints
+-- DESCRIPTION: Primary key and unique constraints for permissions table
 --
-ALTER TABLE GE_TPERM ADD CONSTRAINT PKY_GE_TPERM_PERM PRIMARY KEY (perm_perm);
-ALTER TABLE GE_TPERM ADD CONSTRAINT UQ_GE_TPERM_NAME UNIQUE (perm_name); 
+
+ALTER TABLE permissions ADD CONSTRAINT pk_permissions_id PRIMARY KEY (permissions_id);
+ALTER TABLE permissions ADD CONSTRAINT uq_permissions_name UNIQUE (name);

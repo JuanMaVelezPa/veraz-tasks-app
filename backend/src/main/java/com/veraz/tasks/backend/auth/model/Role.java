@@ -21,33 +21,33 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "ge_trole")
+@Table(name = "roles")
 @Data
 @NoArgsConstructor
 public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "role_role")
+    @Column(name = "roles_id")
     private UUID Id;
 
-    @Column(name = "role_name", nullable = false, unique = true, length = 50)
+    @Column(name = "name", nullable = false, unique = true, length = 50)
     private String name;
 
-    @Column(name = "role_description", length = 255)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "role_is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
-    @Column(name = "role_created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "role_updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(name = "ge_trope", joinColumns = @JoinColumn(name = "rope_role"), inverseJoinColumns = @JoinColumn(name = "rope_perm"))
+    @JoinTable(name = "role_permissions", joinColumns = @JoinColumn(name = "roles_id"), inverseJoinColumns = @JoinColumn(name = "permissions_id"))
     private Set<Perm> perms = new HashSet<>();
 
     @PrePersist

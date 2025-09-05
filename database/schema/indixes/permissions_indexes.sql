@@ -9,12 +9,8 @@
 --
 --
 -- OBJECT TYPE: INDEXES
--- OBJECT NAME: GE_TPERM_INDEXES
--- DESCRIPTION: Performance indexes for GE_TPERM table
+-- OBJECT NAME: permissions_indexes
+-- DESCRIPTION: Performance indexes for permissions table
 --
 
--- Drop existing indexes if they exist
-DROP INDEX IF EXISTS GE_IPERM_NAME;
-
--- Create indexes
-CREATE INDEX GE_IPERM_NAME ON GE_TPERM(perm_name);
+CREATE INDEX idx_permissions_name ON permissions(name);

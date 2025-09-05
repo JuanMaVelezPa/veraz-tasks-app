@@ -3,47 +3,44 @@
 ## Core Rules
 - **PostgreSQL**: Use PostgreSQL-specific syntax and functions
 - **KISS**: Keep It Simple, Stupid
-- **Consistent Naming**: Follow established conventions strictly
+- **Consistent Naming**: Follow snake_case conventions strictly
+- **Modern Standards**: Use descriptive, self-documenting names
 
 ## Naming Conventions
 
-### Modules
-- GE => General
-- CL => Client  
-- HR => Human Resources
-
-### Objects
-- **Tables**: `{MODULE}_T` + 4-letter name (e.g., `GE_TUSER`, `GE_TCLIE`)
-- **Views**: `{MODULE}_V` + 4-letter name (e.g., `GE_VUSER_WITH_ROLES`)
-- **Procedures**: `{MODULE}_P` + verb + 4-letter name (e.g., `GE_PINS_USER`)
-- **Functions**: `{MODULE}_F` + verb + 4-letter name (e.g., `GE_FGET_USER_FULL_NAME`)
-- **Triggers**: `{MODULE}_T` + 4-letter table + action (e.g., `GE_TUSER_AUDIT_INSERT`)
-- **Indexes**: `{MODULE}_I` + 4-letter table + columns (e.g., `GE_IUSER_EMAIL`)
+### Tables
+- **Format**: `snake_case` (e.g., `users`, `user_roles`, `role_permissions`)
+- **Primary Key**: `{table_name}_id` (e.g., `users_id`, `persons_id`)
+- **Foreign Key**: `{referenced_table}_id` (e.g., `users_id`, `roles_id`)
 
 ### Columns
-- **Format**: `{4-letter_table_prefix}_{column_name}` in lowercase
-- **Primary Key**: `{4-letter_table_prefix}_{4-letter_table_prefix}` (e.g., `user_user`)
-- **Examples**: `user_username`, `pers_pers`, `empl_empl`
+- **Format**: `snake_case` (e.g., `username`, `email`, `created_at`)
+- **Primary Key**: `{table_name}_id` (e.g., `users_id`)
+- **Foreign Key**: `{referenced_table}_id` (e.g., `users_id`)
+- **Audit Fields**: `created_at`, `updated_at`, `is_active`
 
 ### Constraints
-- **Primary Key**: `PKY_{TABLE}_{4-letter_prefix}` (e.g., `PKY_GE_TUSER_USER`)
-- **Foreign Key**: `FKY_{TABLE}_{4-letter_prefix}` (e.g., `FKY_GE_TUSRO_ROLE`)
-- **NOT NULL**: `NN_{TABLE}_{4-letter_prefix}` (e.g., `NN_GE_TUSRO_ROLE`)
-- **UNIQUE**: `UQ_{TABLE}_{4-letter_prefix}` (e.g., `UQ_GE_TUSER_USERNAME`)
-- **CHECK**: `CK_{TABLE}_{4-letter_prefix}` (e.g., `CK_GE_TUSER_STATUS`)
+- **Primary Key**: `pk_{table}_{column}` (e.g., `pk_users_id`)
+- **Foreign Key**: `fk_{table}_{referenced_table}` (e.g., `fk_persons_users`)
+- **Unique**: `uq_{table}_{column}` (e.g., `uq_users_username`)
+- **Check**: `ck_{table}_{column}` (e.g., `ck_users_status`)
+
+### Indexes
+- **Format**: `idx_{table}_{columns}` (e.g., `idx_users_email`)
+- **Composite**: `idx_{table}_{col1}_{col2}` (e.g., `idx_user_roles_user_role`)
 
 ## Table Structure
 
 ### Mandatory Audit Columns
 ```sql
-CREATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-UPDATED_AT TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-VERSION INTEGER DEFAULT 1
+is_active BOOLEAN DEFAULT TRUE,
+created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ```
 
 ### Primary Key Convention
 - **Type**: Always use `UUID` with `GEN_RANDOM_UUID()`
-- **Format**: `{4-letter_table_prefix}_{4-letter_table_prefix}`
+- **Format**: `{table_name}_id`
 
 ## PostgreSQL Specific
 
@@ -67,31 +64,32 @@ VERSION INTEGER DEFAULT 1
 database/
 ├── schema/
 │   ├── tables/          # Table creation scripts
-│   ├── views/           # View creation scripts
+│   ├── constraints/     # Constraint scripts
 │   ├── indexes/         # Index creation scripts
-│   └── constraints/     # Constraint scripts
-├── logic/
-│   ├── functions/       # Custom functions
-│   ├── procedures/      # Stored procedures
-│   ├── triggers/        # Audit and validation triggers
-│   └── packages/        # Packages (if applicable)
+│   └── views/           # View creation scripts (future)
 ├── data/
 │   └── seed/           # Initial and test data
+├── logic/
+│   ├── functions/       # Custom functions (future)
+│   ├── procedures/      # Stored procedures (future)
+│   ├── triggers/        # Audit and validation triggers (future)
+│   └── packages/        # Packages (future)
 └── infrastructure/     # Deployment scripts
+    ├── patches/        # Versioned patches
+    └── scripts/        # Setup and utility scripts
 ```
 
 ### File Naming
-- **Tables**: `{MODULE}_T{4-letter-name}.sql`
-- **Views**: `{MODULE}_V{4-letter-name}.sql`
-- **Procedures**: `{MODULE}_P{4-letter-name}.sql`
-- **Functions**: `{MODULE}_F{4-letter-name}.sql`
-- **Triggers**: `{MODULE}_T{4-letter-table}_{ACTION}.sql`
+- **Tables**: `{table_name}.sql` (e.g., `users.sql`, `user_roles.sql`)
+- **Constraints**: `{table_name}_constraints.sql` (e.g., `users_constraints.sql`)
+- **Indexes**: `{table_name}_indexes.sql` (e.g., `users_indexes.sql`)
+- **Patches**: `{version}_{description}.sql` (e.g., `001_initial_schema.sql`)
 
 ## SQL Code Standards
 
 ### Format
 - **UPPERCASE** for SQL reserved words and functions
-- **lowercase** for custom object names (tables, columns, constraints)
+- **snake_case** for custom object names (tables, columns, constraints)
 - **Indent** with 4 spaces
 - **Separate sections** with blank lines
 
@@ -107,7 +105,12 @@ database/
 -- ----------- -------------- --------------- ---------------- ----------------
 -- 1.0.0                      JMVELEZ         15/01/2025       Create users table
 -- ----------- -------------- --------------- ---------------- ----------------
----
+--
+--
+-- OBJECT TYPE: [TABLE/CONSTRAINT/INDEX/PATCH]
+-- OBJECT NAME: [FULL_OBJECT_NAME]
+-- DESCRIPTION: [Brief description of the object]
+--
 ```
 
 ### File Structure Template
@@ -120,13 +123,23 @@ database/
 -- ----------- -------------- --------------- ---------------- ----------------
 -- 1.0.0                      JMVELEZ         15/01/2025       Create users table
 -- ----------- -------------- --------------- ---------------- ----------------
----
 --
--- OBJECT TYPE: [TABLE/VIEW/PROCEDURE/FUNCTION/TRIGGER]
--- OBJECT NAME: [FULL_OBJECT_NAME]
--- DESCRIPTION: [Brief description of the object]
 --
--- [SQL CODE HERE]
+-- OBJECT TYPE: TABLE
+-- OBJECT NAME: users
+-- DESCRIPTION: Stores system user information
+--
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    users_id UUID DEFAULT GEN_RANDOM_UUID(),
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 ## Example Table Structure
@@ -140,32 +153,23 @@ database/
 -- ----------- -------------- --------------- ---------------- ----------------
 -- 1.0.0                      JMVELEZ         15/01/2025       Create users table
 -- ----------- -------------- --------------- ---------------- ----------------
----
+--
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: GE_TUSER
+-- OBJECT NAME: users
 -- DESCRIPTION: Stores system user information
 --
 
-DROP TABLE IF EXISTS GE_TUSER;
-CREATE TABLE GE_TUSER (
-    user_user UUID DEFAULT GEN_RANDOM_UUID(),
-    user_username VARCHAR(50) NOT NULL,
-    user_email VARCHAR(100) NOT NULL,
-    user_pwd VARCHAR(255) NOT NULL,
-    user_phone VARCHAR(20),
-    user_is_active BOOLEAN DEFAULT TRUE,
-    user_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    user_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT PKY_GE_TUSER_USER PRIMARY KEY (user_user),
-    CONSTRAINT UQ_GE_TUSER_USERNAME UNIQUE (user_username),
-    CONSTRAINT UQ_GE_TUSER_EMAIL UNIQUE (user_email)
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+    users_id UUID DEFAULT GEN_RANDOM_UUID(),
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
-
--- Indexes
-CREATE INDEX GE_IUSER_USERNAME ON GE_TUSER(user_username);
-CREATE INDEX GE_IUSER_EMAIL ON GE_TUSER(user_email);
-CREATE INDEX GE_IUSER_ACTIVE ON GE_TUSER(user_is_active);
 ```
 
 ## Migration Guidelines
@@ -182,6 +186,22 @@ CREATE INDEX GE_IUSER_ACTIVE ON GE_TUSER(user_is_active);
 - Use `CASCADE` options carefully
 - Test all constraints and triggers thoroughly
 
+## Current Database Schema
+
+### Core Tables
+- `users` - System authentication
+- `persons` - Personal information
+- `roles` - User roles
+- `permissions` - System permissions
+
+### Relationship Tables
+- `user_roles` - User-role assignments
+- `role_permissions` - Role-permission assignments
+
+### Business Tables
+- `employees` - Employment information
+- `clients` - Client information
+
 ## Prohibited
 ❌ No inconsistent naming conventions
 ❌ No missing version headers
@@ -189,13 +209,15 @@ CREATE INDEX GE_IUSER_ACTIVE ON GE_TUSER(user_is_active);
 ❌ No hardcoded UUIDs
 ❌ No missing constraints
 ❌ No inconsistent indentation
+❌ No old GE_* naming conventions
 
 ## Required
 ✅ Version header in all files
-✅ Consistent naming conventions
+✅ Consistent snake_case naming
 ✅ Audit columns in all tables
 ✅ Proper constraints
 ✅ PostgreSQL-specific syntax
 ✅ Proper file organization
 ✅ English documentation
 ✅ KISS principle
+✅ Descriptive, self-documenting names

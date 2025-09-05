@@ -24,7 +24,7 @@ import java.util.UUID;
 import com.veraz.tasks.backend.auth.model.User;
 
 @Entity
-@Table(name = "ge_tpers")
+@Table(name = "persons")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -33,62 +33,62 @@ public class Person {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "pers_pers", nullable = false)
+    @Column(name = "persons_id", nullable = false)
     private UUID id;
 
-    @Column(name = "pers_ident_type", nullable = false, length = 20)
+    @Column(name = "ident_type", nullable = false, length = 20)
     private String identType;
 
-    @Column(name = "pers_ident_number", nullable = false, length = 20)
+    @Column(name = "ident_number", nullable = false, length = 20)
     private String identNumber;
 
-    @Column(name = "pers_first_name", nullable = false, length = 100)
+    @Column(name = "first_name", nullable = false, length = 100)
     private String firstName;
 
-    @Column(name = "pers_last_name", nullable = false, length = 100)
+    @Column(name = "last_name", nullable = false, length = 100)
     private String lastName;
 
-    @Column(name = "pers_birth_date")
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    @Column(name = "pers_gender", length = 3)
+    @Column(name = "gender", length = 3)
     private String gender;
 
-    @Column(name = "pers_nationality", length = 50)
+    @Column(name = "nationality", length = 50)
     private String nationality;
 
-    @Column(name = "pers_mobile", length = 20)
+    @Column(name = "mobile", length = 20)
     private String mobile;
 
-    @Column(name = "pers_email", length = 100)
+    @Column(name = "email", length = 100)
     private String email;
 
-    @Column(name = "pers_address", length = 255)
+    @Column(name = "address", length = 255)
     private String address;
 
-    @Column(name = "pers_city", length = 100)
+    @Column(name = "city", length = 100)
     private String city;
 
-    @Column(name = "pers_country", length = 100)
+    @Column(name = "country", length = 100)
     private String country;
 
-    @Column(name = "pers_postal_code", length = 20)
+    @Column(name = "postal_code", length = 20)
     private String postalCode;
 
-    @Column(name = "pers_notes", length = 255)
+    @Column(name = "notes", columnDefinition = "TEXT")
     private String notes;
 
-    @Column(name = "pers_is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private Boolean isActive;
 
-    @Column(name = "pers_created_at")
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
 
-    @Column(name = "pers_updated_at")
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST, orphanRemoval = false)
-    @JoinColumn(name = "pers_user", referencedColumnName = "user_user")
+    @JoinColumn(name = "users_id", referencedColumnName = "users_id")
     private User user;
 
     @OneToOne(fetch = FetchType.LAZY, mappedBy = "person", cascade = CascadeType.ALL, orphanRemoval = true)

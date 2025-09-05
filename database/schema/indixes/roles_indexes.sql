@@ -9,12 +9,8 @@
 --
 --
 -- OBJECT TYPE: INDEXES
--- OBJECT NAME: GE_TROLE_INDEXES
--- DESCRIPTION: Performance indexes for GE_TROLE table
+-- OBJECT NAME: roles_indexes
+-- DESCRIPTION: Performance indexes for roles table
 --
 
--- Drop existing indexes if they exist
-DROP INDEX IF EXISTS GE_IROLE_NAME;
-
--- Create indexes
-CREATE INDEX GE_IROLE_NAME ON GE_TROLE(role_name);
+CREATE INDEX idx_roles_name ON roles(name);

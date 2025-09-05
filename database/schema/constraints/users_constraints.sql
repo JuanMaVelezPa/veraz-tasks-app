@@ -9,9 +9,10 @@
 --
 --
 -- OBJECT TYPE: CONSTRAINTS
--- OBJECT NAME: GE_TUSER_CONSTRAINTS
--- DESCRIPTION: Primary key, unique and check constraints for GE_TUSER table
+-- OBJECT NAME: users_constraints
+-- DESCRIPTION: Primary key and unique constraints for users table
 --
-ALTER TABLE GE_TUSER ADD CONSTRAINT PKY_GE_TUSER_USER PRIMARY KEY (user_user);
-ALTER TABLE GE_TUSER ADD CONSTRAINT UQ_GE_TUSER_USERNAME UNIQUE (user_username);
-ALTER TABLE GE_TUSER ADD CONSTRAINT UQ_GE_TUSER_EMAIL UNIQUE (user_email); 
+
+ALTER TABLE users ADD CONSTRAINT pk_users_id PRIMARY KEY (users_id);
+ALTER TABLE users ADD CONSTRAINT uq_users_username UNIQUE (username);
+ALTER TABLE users ADD CONSTRAINT uq_users_email UNIQUE (email);

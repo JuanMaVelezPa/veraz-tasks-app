@@ -9,15 +9,16 @@
 --
 --
 -- OBJECT TYPE: TABLE
--- OBJECT NAME: GE_TROLE
+-- OBJECT NAME: roles
 -- DESCRIPTION: Stores system roles information
 --
-DROP TABLE IF EXISTS GE_TROLE;
-CREATE TABLE GE_TROLE (
-    role_role UUID DEFAULT GEN_RANDOM_UUID(),
-    role_name VARCHAR(50) NOT NULL,
-    role_desc TEXT,
-    role_is_active BOOLEAN DEFAULT TRUE,
-    role_created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    role_updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+
+DROP TABLE IF EXISTS roles;
+CREATE TABLE roles (
+    roles_id UUID DEFAULT GEN_RANDOM_UUID(),
+    name VARCHAR(50) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

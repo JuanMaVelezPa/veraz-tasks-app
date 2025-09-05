@@ -8,29 +8,21 @@
 -- ----------- -------------- --------------- ---------------- ----------------
 --
 --
--- OBJECT TYPE: SEED DATA
+-- OBJECT TYPE: DATA
 -- OBJECT NAME: 00_initial_data_auth
--- DESCRIPTION: Initial data for authentication tables (roles, permissions, users)
+-- DESCRIPTION: Insert initial authentication data (roles, permissions, admin user)
 --
 
--- =====================================================
--- STEP 1: INSERT ROLES
--- =====================================================
-
--- Insert Roles into GE_TROLE
-INSERT INTO GE_TROLE (role_name, role_desc) VALUES
+-- Insert roles
+INSERT INTO roles (name, description) VALUES
 ('ADMIN', 'Full control over the application and user management.'),
 ('MANAGER', 'Can create, edit, and assign PROJECTS and TASKS.'),
 ('SUPERVISOR', 'Oversees TASKS and PROJECT progress.'),
 ('USER', 'Can view assigned TASKS and log HOURS.'),
 ('CLIENT', 'Can view their own projects and tasks, submit requests.');
 
--- =====================================================
--- STEP 2: INSERT PERMISSIONS
--- =====================================================
-
--- Insert Permissions into GE_TPERM
-INSERT INTO GE_TPERM (perm_name, perm_descr) VALUES
+-- Insert permissions
+INSERT INTO permissions (name, description) VALUES
 ('MANAGE_USERS', 'Allows creating, editing, and deleting users.'),
 ('MANAGE_ROLES', 'Allows creating, editing, and deleting roles.'),
 ('MANAGE_PERMISSIONS', 'Allows managing permissions.'),
@@ -43,161 +35,127 @@ INSERT INTO GE_TPERM (perm_name, perm_descr) VALUES
 ('VIEW_TASK', 'Allows viewing TASK details.'),
 ('DELETE_TASK', 'Allows deleting TASKS.'),
 ('LOG_HOURS', 'Allows logging HOURS on TASKS.'),
-('VIEW_ALL_HOURS', 'Allows viewing all users'' hour logs.'),
+('VIEW_ALL_HOURS', 'Allows viewing all users hour logs.'),
 ('APPROVE_TASKS', 'Allows approving reported TASKS and hour logs.'),
 ('VIEW_OWN_PROJECTS', 'Allows viewing own projects only.'),
 ('VIEW_OWN_TASKS', 'Allows viewing own tasks only.'),
 ('SUBMIT_REQUESTS', 'Allows submitting project requests.');
 
--- =====================================================
--- STEP 3: INSERT EXAMPLE USER
--- =====================================================
-
--- Insert Example User into GE_TUSER
--- Note: Replace 'password_hashed_here' with the actual hashed password
-INSERT INTO GE_TUSER (user_username, user_email, user_pwd) VALUES
+-- Insert admin user
+INSERT INTO users (username, email, password) VALUES
 ('jmvelez', 'jmvelez@empresa.com', '$2a$10$sT16vxheEx5PmMt.OBfhrOk5k1hEocQeU//wb9ebsz/oZ9Z3IElx6');
 
--- =====================================================
--- STEP 4: ASSIGN ROLES TO USERS
--- =====================================================
-
--- Assign the 'ADMIN' role to the 'jmvelez'
-INSERT INTO GE_TUSRO (usro_user, usro_role) VALUES
+-- Assign admin role to user
+INSERT INTO user_roles (users_id, roles_id) VALUES
 (
-    (SELECT user_user FROM GE_TUSER WHERE user_username = 'jmvelez'),
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'ADMIN')
+    (SELECT users_id FROM users WHERE username = 'jmvelez'),
+    (SELECT roles_id FROM roles WHERE name = 'ADMIN')
 );
 
--- =====================================================
--- STEP 5: ASSIGN PERMISSIONS TO ROLES
--- =====================================================
-
--- Assign all permissions to the 'ADMIN' role
-INSERT INTO GE_TROPE (rope_role, rope_perm)
+-- Assign all permissions to admin role
+INSERT INTO role_permissions (roles_id, permissions_id)
 SELECT
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'ADMIN'),
-    perm_perm
-FROM GE_TPERM;
+    (SELECT roles_id FROM roles WHERE name = 'ADMIN'),
+    permissions_id
+FROM permissions;
 
--- Assign permissions to the 'MANAGER' role
-INSERT INTO GE_TROPE (rope_role, rope_perm) VALUES
+-- Assign permissions to manager role
+INSERT INTO role_permissions (roles_id, permissions_id) VALUES
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'CREATE_PROJECT')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'CREATE_PROJECT')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'EDIT_PROJECT')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'EDIT_PROJECT')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_PROJECT')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_PROJECT')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'CREATE_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'CREATE_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'EDIT_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'EDIT_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_ALL_HOURS')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_ALL_HOURS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'MANAGER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'APPROVE_TASKS')
+    (SELECT roles_id FROM roles WHERE name = 'MANAGER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'APPROVE_TASKS')
 );
 
--- Assign permissions to the 'SUPERVISOR' role
-INSERT INTO GE_TROPE (rope_role, rope_perm) VALUES
+-- Assign permissions to supervisor role
+INSERT INTO role_permissions (roles_id, permissions_id) VALUES
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'CREATE_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'CREATE_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'EDIT_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'EDIT_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'LOG_HOURS')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'LOG_HOURS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_ALL_HOURS')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_ALL_HOURS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'APPROVE_TASKS')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'APPROVE_TASKS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'SUPERVISOR'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_PROJECT')
+    (SELECT roles_id FROM roles WHERE name = 'SUPERVISOR'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_PROJECT')
 );
 
--- Assign permissions to the 'USER' role
-INSERT INTO GE_TROPE (rope_role, rope_perm) VALUES
+-- Assign permissions to user role
+INSERT INTO role_permissions (roles_id, permissions_id) VALUES
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'USER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_PROJECT')
+    (SELECT roles_id FROM roles WHERE name = 'USER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_PROJECT')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'USER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_TASK')
+    (SELECT roles_id FROM roles WHERE name = 'USER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_TASK')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'USER'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'LOG_HOURS')
+    (SELECT roles_id FROM roles WHERE name = 'USER'),
+    (SELECT permissions_id FROM permissions WHERE name = 'LOG_HOURS')
 );
 
--- Assign permissions to the 'CLIENT' role
-INSERT INTO GE_TROPE (rope_role, rope_perm) VALUES
+-- Assign permissions to client role
+INSERT INTO role_permissions (roles_id, permissions_id) VALUES
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'CLIENT'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_OWN_PROJECTS')
+    (SELECT roles_id FROM roles WHERE name = 'CLIENT'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_OWN_PROJECTS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'CLIENT'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'VIEW_OWN_TASKS')
+    (SELECT roles_id FROM roles WHERE name = 'CLIENT'),
+    (SELECT permissions_id FROM permissions WHERE name = 'VIEW_OWN_TASKS')
 ),
 (
-    (SELECT role_role FROM GE_TROLE WHERE role_name = 'CLIENT'),
-    (SELECT perm_perm FROM GE_TPERM WHERE perm_name = 'SUBMIT_REQUESTS')
+    (SELECT roles_id FROM roles WHERE name = 'CLIENT'),
+    (SELECT permissions_id FROM permissions WHERE name = 'SUBMIT_REQUESTS')
 );
-
--- =====================================================
--- COMPLETION MESSAGE
--- =====================================================
 
 DO $$
 BEGIN
-    RAISE NOTICE '=====================================================';
-    RAISE NOTICE 'INITIAL AUTHENTICATION DATA INSERTED SUCCESSFULLY';
-    RAISE NOTICE '=====================================================';
-    RAISE NOTICE 'Created roles:';
-    RAISE NOTICE '- ADMIN (Full control)';
-    RAISE NOTICE '- MANAGER (Project and task management)';
-    RAISE NOTICE '- SUPERVISOR (Task oversight)';
-    RAISE NOTICE '- USER (Basic access)';
-    RAISE NOTICE '- CLIENT (Client access)';
-    RAISE NOTICE '';
-    RAISE NOTICE 'Created permissions:';
-    RAISE NOTICE '- 17 system permissions';
-    RAISE NOTICE '';
-    RAISE NOTICE 'Created user:';
-    RAISE NOTICE '- jmvelez (admin@empresa.com) with ADMIN role';
-    RAISE NOTICE '';
-    RAISE NOTICE 'Role-permission assignments completed';
-    RAISE NOTICE '=====================================================';
+    RAISE NOTICE 'Authentication data inserted: 5 roles, 17 permissions, 1 admin user';
 END $$;
