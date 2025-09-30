@@ -81,6 +81,7 @@
       (linkExistingUser)="linkExistingUser()"
       (createNewUser)="createNewUser()"
       (formSubmitted)="onUserFormSubmitted()"
+      (rolesSelected)="onRolesSelected($event)"
     />
     }
 
@@ -135,6 +136,29 @@
             <div>
               <h3 class="font-semibold text-base-content">User Account</h3>
               <p class="text-sm text-base-content/60">No user account associated</p>
+            </div>
+          </div>
+        </div>
+        }
+        @if (activeTab() === 'client' && currentClient()) {
+        <shared-timestamp-info
+          [entity]="currentClient()"
+          title="Client Information"
+        />
+        }
+        @if (activeTab() === 'client' && !currentClient()) {
+        <div class="bg-base-100 rounded-lg border border-base-300 p-4 shadow-sm">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-warning/10 rounded-full flex items-center justify-center">
+              <shared-icon
+                type="warning"
+                size="sm"
+                class="text-warning"
+              />
+            </div>
+            <div>
+              <h3 class="font-semibold text-base-content">Client Information</h3>
+              <p class="text-sm text-base-content/60">No client information available</p>
             </div>
           </div>
         </div>

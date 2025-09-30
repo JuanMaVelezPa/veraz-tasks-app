@@ -28,11 +28,9 @@ psql -d your_database -f infrastructure/scripts/00_DROP_ALL.sql && psql -d your_
 - `users` - System authentication
 - `persons` - Personal information
 - `roles` - User roles
-- `permissions` - System permissions
 
 ### Relationship Tables
 - `user_roles` → `users` + `roles`
-- `role_permissions` → `roles` + `permissions`
 
 ### Business Tables
 - `employees` → `users` + `persons`
@@ -55,12 +53,12 @@ psql -d your_database -f infrastructure/scripts/00_DROP_ALL.sql && psql -d your_
 -- Check constraints
 SELECT conname, contype, conrelid::regclass 
 FROM pg_constraint 
-WHERE conrelid::regclass::text IN ('users', 'persons', 'roles', 'permissions', 'user_roles', 'role_permissions', 'employees', 'clients');
+WHERE conrelid::regclass::text IN ('users', 'persons', 'roles', 'user_roles', 'employees', 'clients');
 
 -- Check indexes
 SELECT indexname, tablename 
 FROM pg_indexes 
-WHERE tablename IN ('users', 'persons', 'roles', 'permissions', 'user_roles', 'role_permissions', 'employees', 'clients');
+WHERE tablename IN ('users', 'persons', 'roles', 'user_roles', 'employees', 'clients');
 ```
 
 ## ⚠️ Important Notes

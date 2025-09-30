@@ -9,7 +9,7 @@
 ## Naming Conventions
 
 ### Tables
-- **Format**: `snake_case` (e.g., `users`, `user_roles`, `role_permissions`)
+- **Format**: `snake_case` (e.g., `users`, `user_roles`)
 - **Primary Key**: `{table_name}_id` (e.g., `users_id`, `persons_id`)
 - **Foreign Key**: `{referenced_table}_id` (e.g., `users_id`, `roles_id`)
 
@@ -192,11 +192,9 @@ CREATE TABLE users (
 - `users` - System authentication
 - `persons` - Personal information
 - `roles` - User roles
-- `permissions` - System permissions
 
 ### Relationship Tables
 - `user_roles` - User-role assignments
-- `role_permissions` - Role-permission assignments
 
 ### Business Tables
 - `employees` - Employment information

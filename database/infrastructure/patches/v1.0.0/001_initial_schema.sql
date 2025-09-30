@@ -27,13 +27,11 @@ END $$;
 \i ../../schema/tables/users.sql
 \i ../../schema/tables/persons.sql
 \i ../../schema/tables/roles.sql
-\i ../../schema/tables/permissions.sql
 
 -- =====================================================
 -- CREATE RELATIONSHIP TABLES
 -- =====================================================
 \i ../../schema/tables/user_roles.sql
-\i ../../schema/tables/role_permissions.sql
 
 -- =====================================================
 -- CREATE BUSINESS TABLES
@@ -47,9 +45,7 @@ END $$;
 \i ../../schema/constraints/users_constraints.sql
 \i ../../schema/constraints/persons_constraints.sql
 \i ../../schema/constraints/roles_constraints.sql
-\i ../../schema/constraints/permissions_constraints.sql
 \i ../../schema/constraints/user_roles_constraints.sql
-\i ../../schema/constraints/role_permissions_constraints.sql
 \i ../../schema/constraints/employees_constraints.sql
 \i ../../schema/constraints/clients_constraints.sql
 
@@ -59,9 +55,7 @@ END $$;
 \i ../../schema/indixes/users_indexes.sql
 \i ../../schema/indixes/persons_indexes.sql
 \i ../../schema/indixes/roles_indexes.sql
-\i ../../schema/indixes/permissions_indexes.sql
 \i ../../schema/indixes/user_roles_indexes.sql
-\i ../../schema/indixes/role_permissions_indexes.sql
 \i ../../schema/indixes/employees_indexes.sql
 \i ../../schema/indixes/clients_indexes.sql
 
@@ -71,7 +65,7 @@ BEGIN
     RAISE NOTICE 'PATCH 001_initial_schema APPLIED SUCCESSFULLY';
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'Schema created successfully:';
-    RAISE NOTICE '- 8 tables: users, persons, roles, permissions, user_roles, role_permissions, employees, clients';
+    RAISE NOTICE '- 6 tables: users, persons, roles, user_roles, employees, clients';
     RAISE NOTICE '- All constraints and indexes applied';
     RAISE NOTICE '=====================================================';
 END $$;

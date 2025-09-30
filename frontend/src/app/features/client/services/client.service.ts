@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, of, tap, catchError, throwError } from 'rxjs';
 import { ClientApiService } from './client-api.service';
-import { Client, ClientCreateRequest, ClientUpdateRequest, ClientType, ClientStatus } from '@client/interfaces/client.interface';
+import { Client, ClientCreateRequest, ClientUpdateRequest, ClientType, ClientStatus, ClientCategory } from '@client/interfaces/client.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
@@ -11,7 +11,10 @@ const emptyClient: Client = {
   id: 'new',
   personId: '',
   type: ClientType.INDIVIDUAL,
+  category: ClientCategory.STANDARD,
   status: ClientStatus.ACTIVE,
+  creditLimit: 0,
+  currency: 'USD',
   isActive: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -79,6 +82,9 @@ export class ClientService {
   }
 
   createClient(clientData: ClientCreateRequest): Observable<Client> {
+    // Validar campos obligatorios antes de enviar
+    this.validateRequiredFields(clientData);
+
     return this.clientApiService.createClient(clientData)
       .pipe(
         map((apiResponse) => this.extractDataFromResponse(apiResponse, 'client')),
@@ -135,6 +141,11 @@ export class ClientService {
         map((apiResponse) => this.extractClientFromResponse(apiResponse)),
         tap((client: Client | null) => this.cacheService.set(cacheKey, client)),
         catchError((error) => {
+          // Si no se encuentra el cliente (404), devolver null en lugar de propagar error
+          if (error.status === 404) {
+            this.cacheService.set(cacheKey, null);
+            return of(null);
+          }
           return this.propagateError(error, 'loading client by person ID');
         })
       );
@@ -184,5 +195,37 @@ export class ClientService {
 
   private isValidPersonId(personId: string): boolean {
     return Boolean(personId && personId !== 'undefined' && personId !== 'null' && personId.trim() !== '');
+  }
+
+  private validateRequiredFields(clientData: ClientCreateRequest): void {
+    const errors: string[] = [];
+
+    if (!clientData.personId || clientData.personId.trim() === '') {
+      errors.push('Person ID is required');
+    }
+
+    if (!clientData.type) {
+      errors.push('Client type is required');
+    }
+
+    if (!clientData.category) {
+      errors.push('Client category is required');
+    }
+
+    if (!clientData.status) {
+      errors.push('Client status is required');
+    }
+
+    if (!clientData.creditLimit || clientData.creditLimit <= 0) {
+      errors.push('Credit limit is required and must be greater than 0');
+    }
+
+    if (!clientData.currency || clientData.currency.trim() === '') {
+      errors.push('Currency is required');
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Validation failed: ${errors.join(', ')}`);
+    }
   }
 }

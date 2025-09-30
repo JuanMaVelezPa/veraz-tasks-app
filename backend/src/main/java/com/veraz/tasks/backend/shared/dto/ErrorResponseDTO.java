@@ -1,24 +1,63 @@
 package com.veraz.tasks.backend.shared.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 import java.util.Map;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ErrorResponseDTO {
-
-    private LocalDateTime timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String errorId;
-    private String path;
-    private Map<String, String> fieldErrors;
+public record ErrorResponseDTO(
+    LocalDateTime timestamp,
+    int status,
+    String error,
+    String message,
+    String errorId,
+    String path,
+    Map<String, String> fieldErrors
+) {
+    
+    public static ErrorResponseDTO of(int status, String error, String message) {
+        return new ErrorResponseDTO(
+            LocalDateTime.now(),
+            status,
+            error,
+            message,
+            null,
+            null,
+            null
+        );
+    }
+    
+    public static ErrorResponseDTO of(int status, String error, String message, String errorId) {
+        return new ErrorResponseDTO(
+            LocalDateTime.now(),
+            status,
+            error,
+            message,
+            errorId,
+            null,
+            null
+        );
+    }
+    
+    public static ErrorResponseDTO of(int status, String error, String message, String errorId, String path) {
+        return new ErrorResponseDTO(
+            LocalDateTime.now(),
+            status,
+            error,
+            message,
+            errorId,
+            path,
+            null
+        );
+    }
+    
+    public static ErrorResponseDTO of(int status, String error, String message, String errorId, String path, Map<String, String> fieldErrors) {
+        return new ErrorResponseDTO(
+            LocalDateTime.now(),
+            status,
+            error,
+            message,
+            errorId,
+            path,
+            fieldErrors
+        );
+    }
 }

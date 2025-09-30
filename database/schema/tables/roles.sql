@@ -17,7 +17,7 @@ DROP TABLE IF EXISTS roles;
 CREATE TABLE roles (
     roles_id UUID DEFAULT GEN_RANDOM_UUID(),
     name VARCHAR(50) NOT NULL,
-    description TEXT,
+    description VARCHAR(200),
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

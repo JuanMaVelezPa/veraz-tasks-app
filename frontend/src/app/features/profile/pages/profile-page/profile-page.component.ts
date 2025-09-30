@@ -196,7 +196,7 @@ export class ProfilePageComponent implements OnInit {
   private setUserFormValues(user: User) {
     const userData = {
       ...user,
-      selectedRole: user.roles && user.roles.length > 0 ? user.roles[0] : '',
+      selectedRoles: user.roles || [],
       password: '',
       confirmPassword: ''
     };
@@ -323,9 +323,10 @@ export class ProfilePageComponent implements OnInit {
     }
   }
 
-  onRoleSelected(roleName: string) {
-    const control = this.userForm.get('selectedRole');
-    control?.setValue(roleName);
+  onRolesSelected(roles: string[]) {
+    const control = this.userForm.get('selectedRoles');
+    control?.setValue(roles);
+    control?.markAsTouched();
   }
 
   onPersonUpdated(updatedPerson: Person) {

@@ -91,25 +91,17 @@
       }
     </div>
 
-    <!-- Role -->
-    <div class="form-control">
-      @if (isReadOnly()) {
-      <label class="label">
-        <span class="label-text font-medium">Role *</span>
-      </label>
-      <div class="input input-bordered w-full bg-base-200 text-base-content/70">
-        {{ getSelectedRole() | titlecase }}
-      </div>
-      } @else {
+    <!-- Roles -->
+    <div class="form-control md:col-span-3">
       <app-user-role-selector
-        [selectedRole]="userForm().get('selectedRole')?.value || ''"
-        (roleSelected)="onRoleSelected($event)"
+        [selectedRoles]="userForm().get('selectedRoles')?.value || []"
+        [isReadOnly]="isReadOnly()"
+        (rolesSelected)="onRolesSelected($event)"
       />
-      @if (formUtils.hasFieldError(userForm(), 'selectedRole')) {
+      @if (!isReadOnly() && formUtils.hasFieldError(userForm(), 'selectedRoles')) {
       <label class="label">
-        <span class="label-text-alt text-error">{{ formUtils.getFieldErrorMessage(userForm(), 'selectedRole') }}</span>
+        <span class="label-text-alt text-error">{{ formUtils.getFieldErrorMessage(userForm(), 'selectedRoles') }}</span>
       </label>
-      }
       }
     </div>
   </div>

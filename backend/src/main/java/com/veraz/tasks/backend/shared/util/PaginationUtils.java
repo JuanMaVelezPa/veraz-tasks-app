@@ -15,32 +15,16 @@ import com.veraz.tasks.backend.shared.dto.PaginationRequestDTO;
 public class PaginationUtils {
 
     public static Pageable createPageable(PaginationRequestDTO paginationRequest) {
-        paginationRequest.validateAndNormalize();
-
         Sort sort = Sort.by(
-                paginationRequest.getSortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
+                paginationRequest.sortDirection().equalsIgnoreCase("desc") ? Sort.Direction.DESC
                         : Sort.Direction.ASC,
-                paginationRequest.getSortBy());
+                paginationRequest.sortBy());
 
-        return PageRequest.of(paginationRequest.getPage(), paginationRequest.getSize(), sort);
+        return PageRequest.of(paginationRequest.page(), paginationRequest.size(), sort);
     }
 
     public static <T> PaginatedResponseDTO<T> toPaginatedResponse(Page<T> page) {
-        PaginatedResponseDTO.PaginationInfo paginationInfo = PaginatedResponseDTO.PaginationInfo.builder()
-                .currentPage(page.getNumber())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .pageSize(page.getSize())
-                .hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious())
-                .isFirst(page.isFirst())
-                .isLast(page.isLast())
-                .build();
-
-        return PaginatedResponseDTO.<T>builder()
-                .data(page.getContent())
-                .pagination(paginationInfo)
-                .build();
+        return PaginatedResponseDTO.from(page);
     }
 
     public static <T, R> PaginatedResponseDTO<R> toPaginatedResponse(Page<T> page, Function<T, R> mapper) {
@@ -48,34 +32,13 @@ public class PaginationUtils {
                 .map(mapper)
                 .collect(Collectors.toList());
 
-        PaginatedResponseDTO.PaginationInfo paginationInfo = PaginatedResponseDTO.PaginationInfo.builder()
-                .currentPage(page.getNumber())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .pageSize(page.getSize())
-                .hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious())
-                .isFirst(page.isFirst())
-                .isLast(page.isLast())
-                .build();
+        PaginatedResponseDTO.PaginationInfo paginationInfo = PaginatedResponseDTO.PaginationInfo.from(page);
 
-        return PaginatedResponseDTO.<R>builder()
-                .data(mappedContent)
-                .pagination(paginationInfo)
-                .build();
+        return new PaginatedResponseDTO<>(mappedContent, paginationInfo);
     }
 
     public static PaginatedResponseDTO.PaginationInfo buildPaginationInfo(Page<?> page) {
-        return PaginatedResponseDTO.PaginationInfo.builder()
-                .currentPage(page.getNumber())
-                .totalPages(page.getTotalPages())
-                .totalElements(page.getTotalElements())
-                .pageSize(page.getSize())
-                .hasNext(page.hasNext())
-                .hasPrevious(page.hasPrevious())
-                .isFirst(page.isFirst())
-                .isLast(page.isLast())
-                .build();
+        return PaginatedResponseDTO.PaginationInfo.from(page);
     }
 
     public static void validatePaginationParams(int page, int size) {

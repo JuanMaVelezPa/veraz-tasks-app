@@ -10,7 +10,7 @@
 --
 -- OBJECT TYPE: PATCH
 -- OBJECT NAME: 002_initial_auth_data
--- DESCRIPTION: Insert initial authentication data (roles, permissions, admin user)
+-- DESCRIPTION: Insert initial authentication data (roles, admin user)
 --
 
 DO $$
@@ -24,7 +24,7 @@ END $$;
 -- INITIAL AUTHENTICATION DATA
 -- =====================================================
 -- This patch inserts the initial data needed for authentication
--- Includes roles, permissions, admin user and role-permission assignments
+-- Includes roles and admin user
 -- =====================================================
 
 -- Insert initial authentication data
@@ -41,8 +41,7 @@ BEGIN
     RAISE NOTICE '=====================================================';
     RAISE NOTICE 'Authentication system initialized with:';
     RAISE NOTICE '- 5 roles (ADMIN, MANAGER, SUPERVISOR, USER, CLIENT)';
-    RAISE NOTICE '- 17 permissions for system operations';
     RAISE NOTICE '- 1 admin user (jmvelez)';
-    RAISE NOTICE '- Complete role-permission matrix';
+    RAISE NOTICE '- Role-based authentication';
     RAISE NOTICE '=====================================================';
 END $$;

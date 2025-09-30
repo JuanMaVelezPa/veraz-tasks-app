@@ -1,39 +1,52 @@
 <div class="form-control">
   <label class="label">
-    <span class="label-text font-medium">Role *</span>
+    <span class="label-text">Roles *</span>
+    <span class="label-text-alt">
+      {{ getSelectedRolesCount() }} selected
+    </span>
   </label>
 
   @if (isLoadingRoles()) {
   <shared-loading></shared-loading>
   } @else if (availableRoles().length > 0) {
-  <select
-    class="select select-bordered w-full"
-    [value]="selectedRole()"
-    (change)="onRoleChange($event)"
+  <div
+    class="flex flex-wrap gap-2 p-2 rounded-lg"
+    [class.bg-base-200]="isReadOnly()"
   >
-    <option
-      value=""
-      disabled
-    >Select a role</option>
     @for (role of availableRoles(); track role.name) {
-    <option
-      [value]="role.name"
-      [title]="role.description || ''"
-      [selected]="role.name === selectedRole()"
+    <label
+      class="flex items-center gap-2 p-2 rounded cursor-pointer hover:bg-base-100"
+      [class.cursor-not-allowed]="isReadOnly()"
+      [class.opacity-50]="isReadOnly()"
     >
-      {{ role.name | titlecase }}
-    </option>
+      <input
+        type="checkbox"
+        class="checkbox checkbox-primary checkbox-sm"
+        [checked]="isRoleSelected(role.name)"
+        [disabled]="isReadOnly()"
+        (change)="toggleRole(role.name)"
+      />
+      <span class="text-sm">{{ role.name | titlecase }}</span>
+    </label>
     }
-  </select>
+  </div>
 
-  @if (selectedRole() && getSelectedRoleDescription()) {
+  @if (getSelectedRolesCount() > 0) {
   <label class="label">
-    <span class="label-text-alt text-base-content/70">{{ getSelectedRoleDescription() }}</span>
+    <span class="label-text-alt">
+      <strong>Selected:</strong> {{ getSelectedRolesNames() }}
+    </span>
+  </label>
+  } @else {
+  <label class="label">
+    <span class="label-text-alt text-error">
+      <strong>⚠️ At least one role must be selected</strong>
+    </span>
   </label>
   }
   } @else {
-  <div class="text-center py-2">
-    <span class="text-xs text-gray-500">No available roles</span>
+  <div class="text-center py-4">
+    <span class="text-sm text-base-content/60">No available roles</span>
   </div>
   }
 </div>

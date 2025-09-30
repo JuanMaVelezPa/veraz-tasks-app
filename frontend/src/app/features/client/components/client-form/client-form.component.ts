@@ -132,4 +132,9 @@ export class ClientFormComponent implements OnInit {
   getPaymentMethodDisplayName(code: string): string {
     return this.getDisplayName(code, this.paymentMethods());
   }
+
+  getCurrencySymbol(currencyCode: string): string {
+    const currency = this.currencies().find(c => c.code === currencyCode);
+    return currency?.symbol || '$';
+  }
 }

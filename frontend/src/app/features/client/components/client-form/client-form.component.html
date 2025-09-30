@@ -18,7 +18,6 @@
       </h3>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-
         <!-- Client Type -->
         <div class="form-control">
           <label class="label">
@@ -52,10 +51,43 @@
           }
         </div>
 
+        <!-- Category -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Category *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getClientCategoryDisplayName(clientForm().get('category')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="category"
+            class="select select-bordered w-full"
+            [class.select-error]="clientForm().get('category')?.invalid && clientForm().get('category')?.touched"
+          >
+            <option
+              value=""
+              disabled
+            >Select category</option>
+            @for (category of clientCategories(); track category.id) {
+            <option [value]="category.code">
+              {{ category.name }}
+            </option>
+            }
+          </select>
+          @if (clientForm().get('category')?.invalid && clientForm().get('category')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Category is required</span>
+          </label>
+          }
+          }
+        </div>
+
         <!-- Status -->
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-medium">Status</span>
+            <span class="label-text font-medium">Status *</span>
           </label>
           @if (isReadOnly()) {
           <div class="input input-bordered w-full bg-base-200 text-base-content/70">
@@ -65,6 +97,7 @@
           <select
             formControlName="status"
             class="select select-bordered w-full"
+            [class.select-error]="clientForm().get('status')?.invalid && clientForm().get('status')?.touched"
           >
             @for (status of clientStatuses(); track status.id) {
             <option [value]="status.code">
@@ -72,6 +105,84 @@
             </option>
             }
           </select>
+          @if (clientForm().get('status')?.invalid && clientForm().get('status')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Status is required</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Credit Limit -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Credit Limit *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            @if (clientForm().get('creditLimit')?.value) {
+            {{ clientForm().get('creditLimit')?.value | currency:(clientForm().get('currency')?.value || 'USD') }}
+            } @else {
+            -
+            }
+          </div>
+          } @else {
+          <div class="relative">
+            <input
+              type="number"
+              formControlName="creditLimit"
+              placeholder="Enter credit limit"
+              class="input input-bordered w-full pr-12"
+              [class.input-error]="clientForm().get('creditLimit')?.invalid && clientForm().get('creditLimit')?.touched"
+              step="0.01"
+              min="0.01"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span class="text-gray-500 text-sm">
+                {{ getCurrencySymbol(clientForm().get('currency')?.value || 'USD') }}
+              </span>
+            </div>
+          </div>
+          @if (clientForm().get('creditLimit')?.invalid && clientForm().get('creditLimit')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Credit limit is required and must be greater than 0</span>
+          </label>
+          }
+          @if (clientForm().get('creditLimit')?.value) {
+          <div class="text-xs text-gray-500 mt-1">
+            Formatted: {{ clientForm().get('creditLimit')?.value | currency:(clientForm().get('currency')?.value ||
+            'USD') }}
+          </div>
+          }
+          }
+        </div>
+
+        <!-- Currency -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Currency *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getCurrencyDisplayName(clientForm().get('currency')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="currency"
+            class="select select-bordered w-full"
+            [class.select-error]="clientForm().get('currency')?.invalid && clientForm().get('currency')?.touched"
+          >
+            @for (currency of currencies(); track currency.id) {
+            <option [value]="currency.code">
+              {{ currency.code }} - {{ currency.name }}
+            </option>
+            }
+          </select>
+          @if (clientForm().get('currency')?.invalid && clientForm().get('currency')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Currency is required</span>
+          </label>
+          }
           }
         </div>
       </div>

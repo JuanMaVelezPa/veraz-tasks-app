@@ -198,6 +198,7 @@ export class EmployeeCreationComponent implements OnInit {
       const rawUserData = this.userForm.getRawValue();
       const userData = {
         ...this.formBuilders.prepareUserFormData(rawUserData),
+        roles: rawUserData.selectedRoles || [],
         personId: this.createdPerson()!.id
       };
 
@@ -246,8 +247,10 @@ export class EmployeeCreationComponent implements OnInit {
     }
   }
 
-  onRoleSelected(roleName: string) {
-    this.formBuilders.patchForm(this.userForm, { selectedRole: roleName });
+  onRolesSelected(roles: string[]) {
+    this.formBuilders.patchForm(this.userForm, { selectedRoles: roles });
+    // Mark the field as touched to trigger change detection
+    this.userForm.get('selectedRoles')?.markAsTouched();
   }
 
 

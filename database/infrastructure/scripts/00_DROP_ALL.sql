@@ -29,15 +29,13 @@ DROP TABLE IF EXISTS employees CASCADE;
 DROP TABLE IF EXISTS persons CASCADE;
 
 -- =====================================================
--- DROP RELATIONSHIP TABLES (depend on users, roles, permissions)
+-- DROP RELATIONSHIP TABLES (depend on users, roles)
 -- =====================================================
-DROP TABLE IF EXISTS role_permissions CASCADE;
 DROP TABLE IF EXISTS user_roles CASCADE;
 
 -- =====================================================
 -- DROP BASE TABLES (no dependencies)
 -- =====================================================
-DROP TABLE IF EXISTS permissions CASCADE;
 DROP TABLE IF EXISTS roles CASCADE;
 DROP TABLE IF EXISTS users CASCADE;
 

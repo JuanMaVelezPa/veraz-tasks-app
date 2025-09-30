@@ -2,32 +2,36 @@ package com.veraz.tasks.backend.shared.dto;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+public record PaginatedResponseDTO<T>(
+        List<T> data,
+        PaginationInfo pagination) {
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class PaginatedResponseDTO<T> {
+    public record PaginationInfo(
+            int currentPage,
+            int totalPages,
+            long totalElements,
+            int pageSize,
+            boolean hasNext,
+            boolean hasPrevious,
+            boolean isFirst,
+            boolean isLast) {
 
-    private List<T> data;
-    private PaginationInfo pagination;
-
-    @Data
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class PaginationInfo {
-        private int currentPage;
-        private int totalPages;
-        private long totalElements;
-        private int pageSize;
-        private boolean hasNext;
-        private boolean hasPrevious;
-        private boolean isFirst;
-        private boolean isLast;
+        public static PaginationInfo from(org.springframework.data.domain.Page<?> page) {
+            return new PaginationInfo(
+                    page.getNumber(),
+                    page.getTotalPages(),
+                    page.getTotalElements(),
+                    page.getSize(),
+                    page.hasNext(),
+                    page.hasPrevious(),
+                    page.isFirst(),
+                    page.isLast());
+        }
     }
-} 
+
+    public static <T> PaginatedResponseDTO<T> from(org.springframework.data.domain.Page<T> page) {
+        return new PaginatedResponseDTO<>(
+                page.getContent(),
+                PaginationInfo.from(page));
+    }
+}

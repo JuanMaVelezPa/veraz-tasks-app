@@ -15,6 +15,8 @@ public class MessageConfig {
         messageSource.setBasename("classpath:messages");
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setCacheSeconds(3600);
+        messageSource.setFallbackToSystemLocale(false);
+        messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
 
@@ -24,5 +26,4 @@ public class MessageConfig {
         bean.setValidationMessageSource(messageSource());
         return bean;
     }
-
 }

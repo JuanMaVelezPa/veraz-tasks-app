@@ -38,6 +38,8 @@ public final class MessageKeys {
     public static final String VALIDATION_FIELD_MIN_LENGTH = "validation.field.min.length";
     public static final String VALIDATION_FIELD_EMAIL = "validation.field.email";
     public static final String VALIDATION_FIELD_PASSWORD = "validation.field.password";
+    public static final String VALIDATION_FIELD_DECIMAL_MIN = "validation.field.decimal.min";
+    public static final String VALIDATION_FIELD_NOT_EMPTY = "validation.field.not.empty";
 
     // ===========================================
     // AUTHENTICATION KEYS
@@ -48,20 +50,14 @@ public final class MessageKeys {
     public static final String AUTH_LOGOUT_SUCCESS = "auth.logout.success";
     public static final String AUTH_INVALID_CREDENTIALS = "auth.invalid.credentials";
     public static final String AUTH_USER_INACTIVE = "auth.user.inactive";
-    public static final String AUTH_USER_NOT_FOUND = "auth.user.not.found";
-    public static final String AUTH_USER_ALREADY_EXISTS = "auth.user.already.exists";
+    // Removed: AUTH_USER_NOT_FOUND and AUTH_USER_ALREADY_EXISTS (unified with controller messages)
     public static final String AUTH_USER_NOT_AUTHENTICATED = "auth.user.not.authenticated";
 
     // ===========================================
-    // CRUD OPERATION KEYS
+    // CRUD OPERATION KEYS (Unified with Controller)
     // ===========================================
 
-    public static final String CRUD_CREATED_SUCCESS = "crud.created.success";
-    public static final String CRUD_UPDATED_SUCCESS = "crud.updated.success";
-    public static final String CRUD_DELETED_SUCCESS = "crud.deleted.success";
-    public static final String CRUD_RETRIEVED_SUCCESS = "crud.retrieved.success";
-    public static final String CRUD_NOT_FOUND = "crud.not.found";
-    public static final String CRUD_ALREADY_EXISTS = "crud.already.exists";
+    // Error messages (Success messages moved to controller section)
     public static final String CRUD_ERROR_CREATING = "crud.error.creating";
     public static final String CRUD_ERROR_UPDATING = "crud.error.updating";
     public static final String CRUD_ERROR_DELETING = "crud.error.deleting";
@@ -125,6 +121,11 @@ public final class MessageKeys {
     public static final String ENTITY_CLIENT_PREFERENCES = "entity.client.preferences";
     public static final String ENTITY_CLIENT_TAGS = "entity.client.tags";
 
+    // Role entity
+    public static final String ENTITY_ROLE = "entity.role";
+    public static final String ENTITY_ROLE_NAME = "entity.role.name";
+    public static final String ENTITY_ROLE_DESCRIPTION = "entity.role.description";
+
     // ===========================================
     // BUSINESS LOGIC KEYS
     // ===========================================
@@ -145,6 +146,30 @@ public final class MessageKeys {
     public static final String PAGINATION_INVALID_SORT_DIRECTION = "pagination.invalid.sort.direction";
 
     // ===========================================
+    // CONTROLLER RESPONSE MESSAGES
+    // ===========================================
+
+    // Generic controller messages
+    public static final String CONTROLLER_RETRIEVED_SUCCESS = "controller.retrieved.success";
+    public static final String CONTROLLER_CREATED_SUCCESS = "controller.created.success";
+    public static final String CONTROLLER_UPDATED_SUCCESS = "controller.updated.success";
+    public static final String CONTROLLER_DELETED_SUCCESS = "controller.deleted.success";
+    public static final String CONTROLLER_FOUND_SUCCESS = "controller.found.success";
+    public static final String CONTROLLER_NOT_FOUND = "controller.not.found";
+    public static final String CONTROLLER_NOT_FOUND_WITH_ID = "controller.not.found.with.id";
+    public static final String CONTROLLER_NOT_FOUND_FOR_USER = "controller.not.found.for.user";
+    public static final String CONTROLLER_NOT_FOUND_FOR_PERSON = "controller.not.found.for.person";
+    public static final String CONTROLLER_ALREADY_EXISTS = "controller.already.exists";
+    public static final String CONTROLLER_ASSOCIATED_SUCCESS = "controller.associated.success";
+    public static final String CONTROLLER_ASSOCIATION_REMOVED_SUCCESS = "controller.association.removed.success";
+    public static final String CONTROLLER_INVALID_DATA = "controller.invalid.data";
+    public static final String CONTROLLER_INVALID_PAGINATION = "controller.invalid.pagination";
+    public static final String CONTROLLER_INVALID_ID_FORMAT = "controller.invalid.id.format";
+    public static final String CONTROLLER_INVALID_PERSON_ID_FORMAT = "controller.invalid.person.id.format";
+    public static final String CONTROLLER_INVALID_USER_ID_FORMAT = "controller.invalid.user.id.format";
+    public static final String CONTROLLER_INVALID_TOKEN = "controller.invalid.token";
+
+    // ===========================================
     // GLOBAL EXCEPTION KEYS
     // ===========================================
 
@@ -158,4 +183,15 @@ public final class MessageKeys {
     public static final String EXCEPTION_AUTHENTICATION_FAILED = "exception.authentication.failed";
     public static final String EXCEPTION_ACCESS_DENIED = "exception.access.denied";
     public static final String EXCEPTION_DATA_INTEGRITY_VIOLATION = "exception.data.integrity.violation";
+
+    // ===========================================
+    // DOMAIN VALIDATION KEYS (Reusing existing messages)
+    // ===========================================
+
+    // Reusing existing validation messages for domain validation
+    // Most domain validation can use the existing validation.field.* messages
+    
+    // Specific domain validation messages that don't fit existing patterns
+    public static final String DOMAIN_DATE_BEFORE_OTHER = "domain.date.before.other";
+    public static final String DOMAIN_DATE_AFTER_OTHER = "domain.date.after.other";
 }

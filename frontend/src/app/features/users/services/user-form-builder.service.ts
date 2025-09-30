@@ -1,5 +1,5 @@
 import { Injectable, inject } from '@angular/core';
-import { FormGroup, Validators } from '@angular/forms';
+import { FormGroup, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { BaseFormBuilderService, FormConfig, FieldConfig } from '@shared/services/base-form-builder.service';
@@ -15,6 +15,15 @@ export interface UserFormConfig extends FormConfig {
 export class UserFormBuilderService extends BaseFormBuilderService {
   private formUtils = inject(FormUtilsService);
   private passwordUtils = inject(PasswordUtilsService);
+
+  // Custom validator for roles - at least one role must be selected
+  private rolesRequiredValidator(control: AbstractControl): ValidationErrors | null {
+    const roles = control.value;
+    if (!roles || !Array.isArray(roles) || roles.length === 0) {
+      return { rolesRequired: true };
+    }
+    return null;
+  }
 
   protected readonly fieldConfigs: { [key: string]: FieldConfig } = {
     username: {
@@ -39,10 +48,10 @@ export class UserFormBuilderService extends BaseFormBuilderService {
       validators: [this.passwordUtils.passwordValidator],
       defaultValue: ''
     },
-    selectedRole: {
-      name: 'selectedRole',
-      validators: [Validators.required],
-      defaultValue: '',
+    selectedRoles: {
+      name: 'selectedRoles',
+      validators: [this.rolesRequiredValidator.bind(this)],
+      defaultValue: [],
       isRequired: true
     },
     isActive: {
@@ -52,7 +61,7 @@ export class UserFormBuilderService extends BaseFormBuilderService {
     }
   };
 
-  protected readonly requiredFields = ['username', 'email', 'selectedRole'];
+  protected readonly requiredFields = ['username', 'email', 'selectedRoles'];
   protected readonly optionalFields = ['password', 'confirmPassword', 'isActive'];
 
   buildUserForm(config: UserFormConfig = {}): FormGroup {
@@ -153,9 +162,9 @@ export class UserFormBuilderService extends BaseFormBuilderService {
   } = {}): any {
     const { includeRoles = true, includePassword = true } = options;
 
-    // Create a clean comparison object without selectedRole
+    // Create a clean comparison object without role-related fields
     const comparisonValue = { ...formValue };
-    delete comparisonValue.selectedRole; // Remove selectedRole from comparison
+    delete comparisonValue.selectedRoles; // Remove roles field from comparison
 
     const changes = this.detectChanges(comparisonValue, originalUser, {
       trimStrings: true,
@@ -170,14 +179,20 @@ export class UserFormBuilderService extends BaseFormBuilderService {
 
   private addRoleChanges(changes: any, formValue: any, originalUser: any, includeRoles: boolean): void {
     if (includeRoles) {
-      const formRole = formValue.selectedRole?.trim();
-      const originalRole = originalUser.roles?.[0]?.trim();
+      const formRoles = formValue.selectedRoles || [];
+      const originalRoles = originalUser.roles || [];
 
-      // Only add role change if roles are actually different
-      if (formRole !== originalRole) {
-        changes.roles = formRole ? [formRole] : [];
+      // Convert to arrays and sort for comparison
+      const formRolesSorted = [...formRoles].sort();
+      const originalRolesSorted = [...originalRoles].sort();
+
+      // Check if roles are different
+      const rolesChanged = JSON.stringify(formRolesSorted) !== JSON.stringify(originalRolesSorted);
+
+      if (rolesChanged) {
+        changes.roles = formRoles;
       } else {
-        // Remove roles from changes if it was incorrectly added by detectChanges
+        // Remove roles from changes if they haven't changed
         if (changes.roles) {
           delete changes.roles;
         }
@@ -208,12 +223,13 @@ export class UserFormBuilderService extends BaseFormBuilderService {
   private preparePatchData(data: any): any {
     const patchData = { ...data };
 
-    if (data.roles && Array.isArray(data.roles) && data.roles.length > 0) {
-      patchData.selectedRole = data.roles[0];
-    } else if (data.selectedRole) {
-      patchData.selectedRole = data.selectedRole;
+    // Handle multiple roles
+    if (data.roles && Array.isArray(data.roles)) {
+      patchData.selectedRoles = data.roles;
+    } else if (data.selectedRoles && Array.isArray(data.selectedRoles)) {
+      patchData.selectedRoles = data.selectedRoles;
     } else {
-      patchData.selectedRole = '';
+      patchData.selectedRoles = [];
     }
 
     patchData.password = '';

@@ -38,36 +38,6 @@
           }
         </div>
 
-        <!-- Employment Type -->
-        <div class="form-control">
-          <label class="label">
-            <span class="label-text font-medium">Employment Type *</span>
-          </label>
-          @if (isReadOnly()) {
-          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
-            {{ getEmploymentTypeDisplayName(employeeForm().get('employmentType')?.value) }}
-          </div>
-          } @else {
-          <select
-            formControlName="employmentType"
-            class="select select-bordered w-full"
-            [class.select-error]="employeeForm().get('employmentType')?.invalid && employeeForm().get('employmentType')?.touched"
-          >
-            <option value="">Select type</option>
-            @for (type of employmentTypes(); track type.id) {
-            <option [value]="type.code">
-              {{ type.name }}
-            </option>
-            }
-          </select>
-          @if (employeeForm().get('employmentType')?.invalid && employeeForm().get('employmentType')?.touched) {
-          <label class="label">
-            <span class="label-text-alt text-error">Employment type is required</span>
-          </label>
-          }
-          }
-        </div>
-
         <!-- Hire Date -->
         <div class="form-control">
           <label class="label">
@@ -87,6 +57,138 @@
           @if (employeeForm().get('hireDate')?.invalid && employeeForm().get('hireDate')?.touched) {
           <label class="label">
             <span class="label-text-alt text-error">Hire date is required</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Status -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Status *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getEmployeeStatusDisplayName(employeeForm().get('status')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="status"
+            class="select select-bordered w-full"
+            [class.select-error]="employeeForm().get('status')?.invalid && employeeForm().get('status')?.touched"
+          >
+            @for (status of employeeStatuses(); track status.id) {
+            <option [value]="status.code">
+              {{ status.name }}
+            </option>
+            }
+          </select>
+          @if (employeeForm().get('status')?.invalid && employeeForm().get('status')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Status is required</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Salary -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Salary *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            @if (employeeForm().get('salary')?.value) {
+            {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value || 'USD') }}
+            } @else {
+            -
+            }
+          </div>
+          } @else {
+          <div class="relative">
+            <input
+              type="number"
+              formControlName="salary"
+              placeholder="Enter salary"
+              class="input input-bordered w-full pr-12"
+              [class.input-error]="employeeForm().get('salary')?.invalid && employeeForm().get('salary')?.touched"
+              step="0.01"
+              min="0.01"
+            />
+            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <span class="text-gray-500 text-sm">
+                {{ getCurrencySymbol(employeeForm().get('currency')?.value || 'USD') }}
+              </span>
+            </div>
+          </div>
+          @if (employeeForm().get('salary')?.invalid && employeeForm().get('salary')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Salary is required and must be greater than 0</span>
+          </label>
+          }
+          @if (employeeForm().get('salary')?.value) {
+          <div class="text-xs text-gray-500 mt-1">
+            Formatted: {{ employeeForm().get('salary')?.value | currency:(employeeForm().get('currency')?.value ||
+            'USD') }}
+          </div>
+          }
+          }
+        </div>
+
+        <!-- Currency -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Currency *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getCurrencyDisplayName(employeeForm().get('currency')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="currency"
+            class="select select-bordered w-full"
+            [class.select-error]="employeeForm().get('currency')?.invalid && employeeForm().get('currency')?.touched"
+          >
+            @for (currency of currencies(); track currency.id) {
+            <option [value]="currency.code">
+              {{ currency.code }} - {{ currency.name }}
+            </option>
+            }
+          </select>
+          @if (employeeForm().get('currency')?.invalid && employeeForm().get('currency')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Currency is required</span>
+          </label>
+          }
+          }
+        </div>
+
+        <!-- Salary Type -->
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text font-medium">Salary Type *</span>
+          </label>
+          @if (isReadOnly()) {
+          <div class="input input-bordered w-full bg-base-200 text-base-content/70">
+            {{ getSalaryTypeDisplayName(employeeForm().get('salaryType')?.value) }}
+          </div>
+          } @else {
+          <select
+            formControlName="salaryType"
+            class="select select-bordered w-full"
+            [class.select-error]="employeeForm().get('salaryType')?.invalid && employeeForm().get('salaryType')?.touched"
+          >
+            <option value="">Select type</option>
+            @for (type of salaryTypes(); track type.id) {
+            <option [value]="type.code">
+              {{ type.name }}
+            </option>
+            }
+          </select>
+          @if (employeeForm().get('salaryType')?.invalid && employeeForm().get('salaryType')?.touched) {
+          <label class="label">
+            <span class="label-text-alt text-error">Salary type is required</span>
           </label>
           }
           }
@@ -131,23 +233,24 @@
           }
         </div>
 
-        <!-- Status -->
+        <!-- Employment Type -->
         <div class="form-control">
           <label class="label">
-            <span class="label-text font-medium">Status</span>
+            <span class="label-text font-medium">Employment Type</span>
           </label>
           @if (isReadOnly()) {
           <div class="input input-bordered w-full bg-base-200 text-base-content/70">
-            {{ getEmployeeStatusDisplayName(employeeForm().get('status')?.value) }}
+            {{ getEmploymentTypeDisplayName(employeeForm().get('employmentType')?.value) }}
           </div>
           } @else {
           <select
-            formControlName="status"
+            formControlName="employmentType"
             class="select select-bordered w-full"
           >
-            @for (status of employeeStatuses(); track status.id) {
-            <option [value]="status.code">
-              {{ status.name }}
+            <option value="">Select type</option>
+            @for (type of employmentTypes(); track type.id) {
+            <option [value]="type.code">
+              {{ type.name }}
             </option>
             }
           </select>

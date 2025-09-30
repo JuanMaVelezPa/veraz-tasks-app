@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { FormGroup, Validators } from '@angular/forms';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { BaseFormBuilderService, FormConfig, FieldConfig } from '@shared/services/base-form-builder.service';
@@ -9,7 +9,6 @@ export interface EmployeeFormConfig extends FormConfig { }
   providedIn: 'root'
 })
 export class EmployeeFormBuilderService extends BaseFormBuilderService {
-  private formUtils = inject(FormUtilsService);
 
   protected readonly fieldConfigs: { [key: string]: FieldConfig } = {
     position: {
@@ -18,6 +17,37 @@ export class EmployeeFormBuilderService extends BaseFormBuilderService {
       defaultValue: '',
       isRequired: true
     },
+    hireDate: {
+      name: 'hireDate',
+      validators: [Validators.required],
+      defaultValue: '',
+      isRequired: true
+    },
+    status: {
+      name: 'status',
+      validators: [Validators.required, Validators.maxLength(20)],
+      defaultValue: 'ACTIVE',
+      isRequired: true
+    },
+    salary: {
+      name: 'salary',
+      validators: [Validators.required, Validators.min(0.01)],
+      defaultValue: null,
+      isRequired: true
+    },
+    currency: {
+      name: 'currency',
+      validators: [Validators.required, Validators.maxLength(3)],
+      defaultValue: 'CAD',
+      isRequired: true
+    },
+    salaryType: {
+      name: 'salaryType',
+      validators: [Validators.required, Validators.maxLength(20)],
+      defaultValue: 'HOURLY',
+      isRequired: true
+    },
+
     department: {
       name: 'department',
       validators: [Validators.maxLength(100)],
@@ -25,20 +55,8 @@ export class EmployeeFormBuilderService extends BaseFormBuilderService {
     },
     employmentType: {
       name: 'employmentType',
-      validators: [Validators.required, Validators.maxLength(20)],
-      defaultValue: '',
-      isRequired: true
-    },
-    status: {
-      name: 'status',
       validators: [Validators.maxLength(20)],
-      defaultValue: 'ACTIVE'
-    },
-    hireDate: {
-      name: 'hireDate',
-      validators: [Validators.required],
-      defaultValue: '',
-      isRequired: true
+      defaultValue: ''
     },
     terminationDate: {
       name: 'terminationDate',
@@ -50,26 +68,10 @@ export class EmployeeFormBuilderService extends BaseFormBuilderService {
       validators: [],
       defaultValue: ''
     },
-    salary: {
-      name: 'salary',
-      validators: [],
-      defaultValue: null
-    },
-    currency: {
-      name: 'currency',
-      validators: [Validators.maxLength(3)],
-      defaultValue: 'USD'
-    },
-    salaryType: {
-      name: 'salaryType',
-      validators: [Validators.maxLength(20)],
-      defaultValue: ''
-    },
     workEmail: {
       name: 'workEmail',
       validators: [Validators.pattern(FormUtilsService.EMAIL_PATTERN), Validators.maxLength(100)],
-      defaultValue: '',
-      isRequired: true
+      defaultValue: ''
     },
     workPhone: {
       name: 'workPhone',
@@ -133,12 +135,12 @@ export class EmployeeFormBuilderService extends BaseFormBuilderService {
     }
   };
 
-  protected readonly requiredFields = ['position', 'employmentType', 'hireDate'];
+  protected readonly requiredFields = ['position', 'hireDate', 'status', 'salary', 'currency', 'salaryType'];
   protected readonly optionalFields = [
-    'department', 'status', 'terminationDate', 'probationEndDate', 'salary',
-    'currency', 'salaryType', 'workEmail', 'workPhone', 'workLocation',
-    'workSchedule', 'jobLevel', 'costCenter', 'workShift', 'skills',
-    'certifications', 'education', 'benefits', 'notes', 'isActive'
+    'department', 'employmentType', 'terminationDate', 'probationEndDate',
+    'workEmail', 'workPhone', 'workLocation', 'workSchedule', 'jobLevel',
+    'costCenter', 'workShift', 'skills', 'certifications', 'education',
+    'benefits', 'notes', 'isActive'
   ];
 
   buildEmployeeForm(config: EmployeeFormConfig = {}): FormGroup {

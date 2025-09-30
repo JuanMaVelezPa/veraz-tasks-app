@@ -10,10 +10,28 @@ import { CacheService } from '@shared/services/cache.service';
 const emptyEmployee: Employee = {
   id: 'new',
   personId: '',
-  position: '',
-  employmentType: '',
-  status: 'ACTIVE',
   hireDate: new Date().toISOString().split('T')[0],
+  position: '',
+  status: 'ACTIVE',
+  salary: 0,
+  currency: 'USD',
+  salaryType: '',
+  department: '',
+  employmentType: '',
+  terminationDate: '',
+  probationEndDate: '',
+  workEmail: '',
+  workPhone: '',
+  workLocation: '',
+  workSchedule: '',
+  jobLevel: '',
+  costCenter: '',
+  workShift: '',
+  skills: '',
+  certifications: '',
+  education: '',
+  benefits: '',
+  notes: '',
   isActive: true,
   createdAt: new Date().toISOString(),
   updatedAt: new Date().toISOString()
@@ -81,6 +99,8 @@ export class EmployeeService {
   }
 
   createEmployee(employeeData: EmployeeCreateRequest): Observable<Employee> {
+    this.validateRequiredFields(employeeData);
+
     return this.employeeApiService.createEmployee(employeeData)
       .pipe(
         map((apiResponse) => this.extractDataFromResponse(apiResponse, 'employee')),
@@ -196,5 +216,22 @@ export class EmployeeService {
 
   private clearPersonsCache(): void {
     this.cacheService.clearPattern('persons:');
+  }
+
+  private validateRequiredFields(employeeData: EmployeeCreateRequest): void {
+    const requiredFields = ['personId', 'hireDate', 'position', 'status', 'salary', 'currency', 'salaryType'];
+    const missingFields: string[] = [];
+
+    requiredFields.forEach(field => {
+      const value = employeeData[field as keyof EmployeeCreateRequest];
+      if (value === undefined || value === null || value === '' ||
+        (field === 'salary' && (value as number) <= 0)) {
+        missingFields.push(field);
+      }
+    });
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required fields: ${missingFields.join(', ')}`);
+    }
   }
 }

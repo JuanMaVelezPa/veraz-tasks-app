@@ -15,18 +15,21 @@
 
 DROP TABLE IF EXISTS employees;
 CREATE TABLE employees (
+    -- CAMPOS OBLIGATORIOS
     employees_id UUID DEFAULT GEN_RANDOM_UUID(),
     persons_id UUID NOT NULL,
-    position VARCHAR(100) NOT NULL,
-    department VARCHAR(100),
-    employment_type VARCHAR(20) NOT NULL,
-    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
     hire_date DATE NOT NULL,
+    position VARCHAR(100) NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    salary NUMERIC(12,2) NOT NULL,
+    currency VARCHAR(3) NOT NULL DEFAULT 'USD',
+    salary_type VARCHAR(20) NOT NULL,
+    
+    -- CAMPOS OPCIONALES
+    department VARCHAR(100),
+    employment_type VARCHAR(20),
     termination_date DATE,
     probation_end_date DATE,
-    salary DECIMAL(12,2),
-    currency VARCHAR(3) DEFAULT 'USD',
-    salary_type VARCHAR(20),
     work_email VARCHAR(100),
     work_phone VARCHAR(20),
     work_location VARCHAR(100),

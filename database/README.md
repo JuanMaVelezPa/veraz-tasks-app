@@ -31,9 +31,7 @@ psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f apply_patches.sql
 | `users` | System authentication |
 | `persons` | Personal information |
 | `roles` | User roles (ADMIN, MANAGER, etc.) |
-| `permissions` | System permissions |
 | `user_roles` | User-role assignments |
-| `role_permissions` | Role-permission assignments |
 | `employees` | Employment information |
 | `clients` | Client information |
 

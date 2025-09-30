@@ -287,6 +287,10 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
         this.employeeAssociationService.getEmployeeByPersonId(personId)
       );
       this.currentEmployee.set(employee);
+
+      if (employee) {
+        this.setEmployeeFormValues(employee);
+      }
     } catch (error) {
       this.currentEmployee.set(null);
     } finally {
@@ -547,6 +551,12 @@ export class PersonDetailsComponent implements OnInit, OnDestroy {
     } finally {
       this.isLoadingUser.set(false);
     }
+  }
+
+  onRolesSelected(roles: string[]) {
+    this.formBuilders.patchForm(this.userForm, { selectedRoles: roles });
+    // Mark the field as touched to trigger change detection
+    this.userForm.get('selectedRoles')?.markAsTouched();
   }
 
   ngOnDestroy(): void {

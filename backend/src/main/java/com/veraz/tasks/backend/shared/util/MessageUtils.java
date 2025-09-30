@@ -28,12 +28,12 @@ public class MessageUtils {
 
     public static String getEntityNotFoundMessage(String entityName) {
         String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(MessageKeys.CRUD_NOT_FOUND, localizedEntityName);
+        return getMessage(MessageKeys.CONTROLLER_NOT_FOUND, localizedEntityName);
     }
 
     public static String getEntityAlreadyExistsMessage(String entityName) {
         String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
-        return getMessage(MessageKeys.CRUD_ALREADY_EXISTS, localizedEntityName);
+        return getMessage(MessageKeys.CONTROLLER_ALREADY_EXISTS, localizedEntityName);
     }
 
     public static String getCrudSuccessMessage(String operation, String entityName) {
@@ -44,6 +44,30 @@ public class MessageUtils {
     public static String getCrudErrorMessage(String operation, String entityName) {
         String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
         return getMessage(operation, localizedEntityName);
+    }
+
+    // ===========================================
+    // CONTROLLER MESSAGES (Unified CRUD + Controller)
+    // ===========================================
+
+    public static String getControllerSuccessMessage(String operation, String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(operation, localizedEntityName);
+    }
+
+    public static String getControllerNotFoundMessage(String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(MessageKeys.CONTROLLER_NOT_FOUND, localizedEntityName);
+    }
+
+    public static String getControllerNotFoundWithIdMessage(String entityName, String id) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(MessageKeys.CONTROLLER_NOT_FOUND_WITH_ID, localizedEntityName, id);
+    }
+
+    public static String getControllerAlreadyExistsMessage(String entityName) {
+        String localizedEntityName = getMessage("entity." + entityName.toLowerCase(), entityName);
+        return getMessage(MessageKeys.CONTROLLER_ALREADY_EXISTS, localizedEntityName);
     }
 
     public static String getFieldValidationMessage(String fieldName, String validationType, Object... arguments) {
@@ -58,5 +82,37 @@ public class MessageUtils {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    public static String getLocalizedEntityName(String entityName) {
+        return getMessage("entity." + entityName.toLowerCase(), entityName);
+    }
+
+    // ===========================================
+    // AUTHENTICATION MESSAGES (Unified)
+    // ===========================================
+
+    public static String getAuthSuccessMessage(String operation) {
+        return getMessage("auth." + operation + ".success");
+    }
+
+    public static String getAuthErrorMessage(String errorType, Object... arguments) {
+        return getMessage("auth." + errorType, arguments);
+    }
+
+    // ===========================================
+    // EXCEPTION MESSAGES (Unified)
+    // ===========================================
+
+    public static String getExceptionMessage(String exceptionType, Object... arguments) {
+        return getMessage("exception." + exceptionType, arguments);
+    }
+
+    public static String getValidationExceptionMessage(String validationType, Object... arguments) {
+        return getMessage("exception." + validationType, arguments);
+    }
+
+    public static String getSystemExceptionMessage(String systemType, Object... arguments) {
+        return getMessage("exception." + systemType, arguments);
     }
 }

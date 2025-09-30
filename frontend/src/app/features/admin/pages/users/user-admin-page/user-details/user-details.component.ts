@@ -122,8 +122,9 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.navigationHistory.goBack('/admin/users');
   }
 
-  onRoleSelected(roleName: string): void {
-    this.userForm.get('selectedRole')?.setValue(roleName);
+  onRolesSelected(roles: string[]): void {
+    this.userForm.get('selectedRoles')?.setValue(roles);
+    this.userForm.get('selectedRoles')?.markAsTouched();
   }
 
   removePersonalProfile(): void {
@@ -153,7 +154,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
     this.formBuilders.patchForm(this.userForm, { isActive: target.checked });
   }
 
-  // Private methods
   private initializeComponent(): void {
     this.feedbackService.clearMessage();
     const user = this.user();
@@ -188,11 +188,6 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   private setFormValues(user: Partial<User>): void {
     this.formBuilders.patchForm(this.userForm, user);
-
-    if (user.roles && user.roles.length > 0) {
-      this.userForm.get('selectedRole')?.setValue(user.roles[0]);
-    }
-
     this.cdr.detectChanges();
   }
 
@@ -293,7 +288,7 @@ export class UserDetailsComponent implements OnInit, OnDestroy {
 
   private prepareUserData(formValue: any): any {
     const processedData = this.formBuilders.prepareUserFormData(formValue);
-    processedData.roles = formValue.selectedRole ? [formValue.selectedRole] : [];
+    processedData.roles = formValue.selectedRoles || [];
 
     if (this.isEditMode()) {
       if (formValue.password?.trim()) {

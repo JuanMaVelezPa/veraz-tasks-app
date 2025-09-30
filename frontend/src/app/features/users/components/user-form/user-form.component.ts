@@ -25,6 +25,7 @@ export class UserFormComponent {
 
   formSubmitted = output<void>();
   roleSelected = output<string>();
+  rolesSelected = output<string[]>();
 
   formUtils = inject(FormUtilsService);
   passwordUtils = inject(PasswordUtilsService);
@@ -57,7 +58,12 @@ export class UserFormComponent {
     this.roleSelected.emit(roleName);
   }
 
-  getSelectedRole(): string {
-    return this.userForm().get('selectedRole')?.value ?? '';
+  onRolesSelected(roles: string[]): void {
+    this.rolesSelected.emit(roles);
+  }
+
+  getSelectedRoles(): string {
+    const roles = this.userForm().get('selectedRoles')?.value ?? [];
+    return roles.length > 0 ? roles.join(', ') : 'No roles selected';
   }
 }

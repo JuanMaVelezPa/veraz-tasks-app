@@ -20,18 +20,20 @@ infrastructure/
 
 ```bash
 # Apply all patches
+cd scripts/
 psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f scripts/apply_patches.sql
 
 # Clean installation
-psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f scripts/00_DROP_ALL.sql
-psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f scripts/apply_patches.sql
+cd scripts/
+psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f 00_DROP_ALL.sql
+psql -h localhost -p 5432 tasks_app_db -U tasks_app_user -f apply_patches.sql
 ```
 
 ## 📋 Current Patches
 
 ### Version 1.0.0
 - **001_initial_schema**: Creates all tables, constraints, and indexes
-- **002_initial_auth_data**: Inserts initial roles, permissions, and admin user
+- **002_initial_auth_data**: Inserts initial roles and admin user
 
 ## ⚠️ Important
 

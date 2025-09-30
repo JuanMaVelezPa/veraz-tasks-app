@@ -1,24 +1,29 @@
 package com.veraz.tasks.backend.shared.dto;
 
-import java.util.List;
-
 import org.springframework.http.HttpStatus;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class ApiResponseDTO<T> {
+public record ApiResponseDTO<T>(
+        boolean success,
+        HttpStatus status,
+        String message,
+        T data,
+        List<String> errors) {
 
-    private boolean success;
-    private HttpStatus status;
-    private String message;
-    private T data;
-    private List<String> errors;
+    public static <T> ApiResponseDTO<T> success(T data, String message) {
+        return new ApiResponseDTO<>(true, HttpStatus.OK, message, data, null);
+    }
 
+    public static <T> ApiResponseDTO<T> success(HttpStatus status, T data, String message) {
+        return new ApiResponseDTO<>(true, status, message, data, null);
+    }
+
+    public static <T> ApiResponseDTO<T> error(HttpStatus status, String message) {
+        return new ApiResponseDTO<>(false, status, message, null, null);
+    }
+
+    public static <T> ApiResponseDTO<T> error(HttpStatus status, String message, List<String> errors) {
+        return new ApiResponseDTO<>(false, status, message, null, errors);
+    }
 }

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '@env/environment';
-import { Person, PersonCreateRequest, PersonUpdateRequest, PersonUserAssociation } from '@person/interfaces/person.interface';
+import { Person, PersonCreateRequest, PersonUpdateRequest } from '@person/interfaces/person.interface';
 import { ApiResponse } from '@shared/interfaces/api-response.interface';
 import { PaginatedResponseDTO } from '@shared/interfaces/pagination.interface';
 import { SearchOptions } from '@shared/interfaces/search.interface';
@@ -53,8 +53,7 @@ export class PersonApiService {
   }
 
   associateUser(id: string, userId: string): Observable<ApiResponse<Person>> {
-    const associationData: PersonUserAssociation = { userId };
-    return this.http.patch<ApiResponse<Person>>(`${this.baseUrl}/associate-user/${id}`, associationData);
+    return this.http.patch<ApiResponse<Person>>(`${this.baseUrl}/${id}/associate-user?userId=${userId}`, {});
   }
 
   getPersonByUserId(userId: string): Observable<ApiResponse<Person>> {

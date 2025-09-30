@@ -2,8 +2,13 @@ import { Timestamped } from '@shared/interfaces/timestamped.interface';
 
 export interface ClientFields {
   personId: string;
+  // CAMPOS OBLIGATORIOS
   type: ClientType;
-  category?: ClientCategory;
+  category: ClientCategory;
+  status: ClientStatus;
+  creditLimit: number;
+  currency: string;
+  // CAMPOS OPCIONALES
   source?: string;
   companyName?: string;
   companyWebsite?: string;
@@ -15,15 +20,12 @@ export interface ClientFields {
   country?: string;
   postalCode?: string;
   taxId?: string;
-  creditLimit?: number;
-  currency?: string;
   paymentTerms?: string;
   paymentMethod?: string;
   notes?: string;
   preferences?: string;
   tags?: string;
   rating?: ClientRating;
-  status?: ClientStatus;
   isActive: boolean;
 }
 
