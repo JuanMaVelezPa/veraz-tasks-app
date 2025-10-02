@@ -6,7 +6,7 @@
     <div class="flex items-center justify-between gap-4">
       <div class="flex items-center gap-3">
         <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-          <shared-icon type="user-tie" />
+          <shared-icon type="building" />
         </div>
         <div>
           <h1 class="text-xl font-bold">Create New Employee</h1>
@@ -157,7 +157,6 @@
             [isEditMode]="false"
             [isLoading]="isLoading()"
             (formSubmitted)="onUserFormSubmitted()"
-            (roleSelected)="onRoleSelected($event)"
             (rolesSelected)="onRolesSelected($event)"
           />
         </div>

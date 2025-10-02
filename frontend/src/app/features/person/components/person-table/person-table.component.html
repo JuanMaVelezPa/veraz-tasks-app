@@ -28,12 +28,13 @@
       <div class="flex items-center gap-2">
         <span class="text-xs font-medium text-base-content/60">Show:</span>
         <div class="flex gap-1">
+
           <!-- All Persons -->
           <button
             class="btn btn-xs"
-            [class.btn-primary]="!hasActiveFilters()"
-            [class.btn-ghost]="hasActiveFilters()"
-            (click)="clearAllFilters()"
+            [class.btn-primary]="personFilter() === 'all'"
+            [class.btn-ghost]="personFilter() !== 'all'"
+            (click)="setFilter('all')"
             title="Show all persons"
           >
             <shared-icon
@@ -43,27 +44,12 @@
             <span class="hidden sm:inline">All</span>
           </button>
 
-          <!-- Employees Only -->
-          <button
-            class="btn btn-xs"
-            [class.btn-success]="showOnlyEmployees() && !showOnlyUsers()"
-            [class.btn-ghost]="!showOnlyEmployees() || showOnlyUsers()"
-            (click)="toggleEmployeeFilter()"
-            title="Show employees only"
-          >
-            <shared-icon
-              type="user-tie"
-              size="xs"
-            />
-            <span class="hidden sm:inline">Employees</span>
-          </button>
-
           <!-- Users Only -->
           <button
             class="btn btn-xs"
-            [class.btn-info]="showOnlyUsers() && !showOnlyEmployees()"
-            [class.btn-ghost]="!showOnlyUsers() || showOnlyEmployees()"
-            (click)="toggleUserFilter()"
+            [class.btn-info]="personFilter() === 'users'"
+            [class.btn-ghost]="personFilter() !== 'users'"
+            (click)="setFilter('users')"
             title="Show users only"
           >
             <shared-icon
@@ -73,12 +59,42 @@
             <span class="hidden sm:inline">Users</span>
           </button>
 
+          <!-- Employees Only -->
+          <button
+            class="btn btn-xs"
+            [class.btn-success]="personFilter() === 'employees'"
+            [class.btn-ghost]="personFilter() !== 'employees'"
+            (click)="setFilter('employees')"
+            title="Show employees only"
+          >
+            <shared-icon
+              type="helmet-safety"
+              size="xs"
+            />
+            <span class="hidden sm:inline">Employees</span>
+          </button>
+
+          <!-- Clients Only -->
+          <button
+            class="btn btn-xs"
+            [class.btn-warning]="personFilter() === 'clients'"
+            [class.btn-ghost]="personFilter() !== 'clients'"
+            (click)="setFilter('clients')"
+            title="Show clients only"
+          >
+            <shared-icon
+              type="building"
+              size="xs"
+            />
+            <span class="hidden sm:inline">Clients</span>
+          </button>
+
           <!-- Complete Profiles -->
           <button
             class="btn btn-xs"
-            [class.btn-primary]="showOnlyEmployees() && showOnlyUsers()"
-            [class.btn-ghost]="!showOnlyEmployees() || !showOnlyUsers()"
-            (click)="showCompleteProfiles()"
+            [class.btn-primary]="personFilter() === 'complete'"
+            [class.btn-ghost]="personFilter() !== 'complete'"
+            (click)="setFilter('complete')"
             title="Show complete profiles (Employee + User)"
           >
             <shared-icon
@@ -89,13 +105,6 @@
           </button>
         </div>
       </div>
-
-      <!-- Filter Status Badge -->
-      @if (hasActiveFilters()) {
-      <div class="badge badge-info badge-sm">
-        {{ filteredCount() }}/{{ totalPersons() }}
-      </div>
-      }
 
       <!-- Simple Separator -->
       <div class="w-px h-4 bg-base-300"></div>

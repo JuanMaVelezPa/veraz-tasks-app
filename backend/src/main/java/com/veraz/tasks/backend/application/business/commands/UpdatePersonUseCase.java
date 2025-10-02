@@ -12,30 +12,28 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 
 public class UpdatePersonUseCase {
-    
+
     private static final Logger logger = LoggerFactory.getLogger(UpdatePersonUseCase.class);
-    
+
     private final PersonRepository personRepository;
-    
+
     public UpdatePersonUseCase(PersonRepository personRepository) {
         this.personRepository = personRepository;
     }
-    
+
     public PersonResponse execute(String personIdString, UpdatePersonRequest request) {
         logger.debug("Updating person with ID: {}", personIdString);
-        
+
         try {
             PersonId personId = PersonId.of(personIdString);
-            
-            // Find existing person
+
             Optional<Person> personOpt = personRepository.findById(personId);
             if (personOpt.isEmpty()) {
                 throw new IllegalArgumentException("Person not found with ID: " + personIdString);
             }
-            
+
             Person person = personOpt.get();
-            
-            // Update person fields
+
             if (request.identType() != null) {
                 person.setIdentType(request.identType());
             }
@@ -85,18 +83,15 @@ public class UpdatePersonUseCase {
                     person.deactivate();
                 }
             }
-            
-            // Save updated person
+
             Person updatedPerson = personRepository.save(person);
-            
+
             logger.debug("Successfully updated person with ID: {}", personIdString);
             return PersonResponse.from(updatedPerson);
-            
+
         } catch (Exception e) {
             logger.error("Error updating person {}: {}", personIdString, e.getMessage(), e);
             throw e;
         }
     }
 }
-
-

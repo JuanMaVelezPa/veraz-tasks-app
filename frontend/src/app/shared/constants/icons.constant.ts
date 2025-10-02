@@ -68,7 +68,8 @@ import {
   faChartBar,
   faForward,
   faBackward,
-  faSignal
+  faSignal,
+  faHelmetSafety
 } from '@fortawesome/free-solid-svg-icons';
 
 import { faLinkedin } from '@fortawesome/free-brands-svg-icons';
@@ -234,7 +235,8 @@ export const ICON_MAP = {
   'signal': faSignal,
   'user-profile': faUser,
   'user-account': faUserCog,
-  'user-management': faUserShield
+  'user-management': faUserShield,
+  'helmet-safety': faHelmetSafety
 } as const;
 
 export type IconType = keyof typeof ICON_MAP;

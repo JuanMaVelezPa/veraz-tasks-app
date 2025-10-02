@@ -1,10 +1,8 @@
-import { DatePipe } from '@angular/common';
 import { Component, inject, signal, computed, OnInit, input, output } from '@angular/core';
-import { RouterLink, ActivatedRoute, Router } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { PersonService } from '@person/services/person.service';
 import { PersonParamsService } from '@person/services/person-params.service';
-import { EmployeeService } from '@employee/services/employee.service';
 import { Person } from '@person/interfaces/person.interface';
 
 import { SearchOptions } from '@shared/interfaces/search.interface';
@@ -28,21 +26,17 @@ import { IconType } from '@shared/constants/icons.constant';
   templateUrl: './person-table.component.html',
 })
 export class PersonTableComponent implements OnInit {
-  // Inputs
+
   selectionMode = input<boolean>(false);
   selectedUserId = input<string>('');
 
-  // Outputs
   personSelected = output<Person>();
 
-  // Internal state
   isSelectionMode = signal(false);
   currentSelectedUserId = signal('');
 
-  // Services
   private personService = inject(PersonService);
   private personParamsService = inject(PersonParamsService);
-  private employeeService = inject(EmployeeService);
   private pagination = inject(PaginationService);
   private sortService = inject(SortService);
   private searchService = inject(SearchService);
@@ -51,18 +45,14 @@ export class PersonTableComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private personAssociationService = inject(PersonAssociationService);
 
-  // Pagination and display settings
-  personsPerPage = signal(10);
   currentPage = this.pagination.currentPage;
+  personsPerPage = signal(10);
   showLastNameFirst = signal(false);
-  showOnlyEmployees = signal(false);
-  showOnlyUsers = signal(false);
+  personFilter = signal<'all' | 'users' | 'employees' | 'clients' | 'complete'>('all');
 
-  // State management
   sortState: SortState;
   searchState: SearchState;
 
-  // Table configuration
   readonly columns: SortableColumn[] = [
     { key: 'firstName', label: 'Full Name', sortable: true },
     { key: 'identNumber', label: 'ID Number', sortable: true },
@@ -84,7 +74,6 @@ export class PersonTableComponent implements OnInit {
     this.checkSelectionMode();
   }
 
-  // Data fetching and filtering
   private queryParams = computed(() => {
     const sortOptions = this.sortState.getSortOptions();
     let sort = sortOptions.sort;
@@ -115,25 +104,27 @@ export class PersonTableComponent implements OnInit {
 
   filteredPersons = computed(() => {
     const persons = this.personsResource.value()?.data ?? [];
-    let filtered = persons;
+    const filter = this.personFilter();
 
-    if (this.showOnlyEmployees()) {
-      filtered = filtered.filter(person => person.isEmployee);
+    switch (filter) {
+      case 'users':
+        return persons.filter(person => person.userId);
+      case 'employees':
+        return persons.filter(person => person.isEmployee);
+      case 'clients':
+        return persons.filter(person => person.isClient);
+      case 'complete':
+        return persons.filter(person => person.userId && person.isEmployee && person.isClient);
+      case 'all':
+      default:
+        return persons;
     }
-
-    if (this.showOnlyUsers()) {
-      filtered = filtered.filter(person => person.userId);
-    }
-
-    return filtered;
   });
 
-  // Computed properties for filter status
   totalPersons = computed(() => this.personsResource.value()?.data?.length ?? 0);
   filteredCount = computed(() => this.filteredPersons().length);
-  hasActiveFilters = computed(() => this.showOnlyEmployees() || this.showOnlyUsers());
+  hasActiveFilters = computed(() => this.personFilter() !== 'all');
 
-  // Display methods
   getFullName(person: Person): string {
     const firstName = person.firstName || '';
     const lastName = person.lastName || '';
@@ -147,29 +138,60 @@ export class PersonTableComponent implements OnInit {
     return type?.code || code;
   }
 
-  // Type configuration methods
+  private readonly personTypeConfig = {
+    astronaut: {
+      icon: 'user-astronaut' as IconType,
+      tooltip: 'Astronaut Profile (Complete)',
+      cssClass: 'text-primary',
+      condition: (person: Person) => person.userId && person.isEmployee && person.isClient
+    },
+    employee: {
+      icon: 'helmet-safety' as IconType,
+      tooltip: 'Employee Profile',
+      cssClass: 'text-success',
+      condition: (person: Person) => person.isEmployee
+    },
+    client: {
+      icon: 'building' as IconType,
+      tooltip: 'Client Profile',
+      cssClass: 'text-warning',
+      condition: (person: Person) => person.isClient
+    },
+    user: {
+      icon: 'user-check' as IconType,
+      tooltip: 'User Profile',
+      cssClass: 'text-info',
+      condition: (person: Person) => person.userId
+    },
+    basic: {
+      icon: 'user' as IconType,
+      tooltip: 'Basic Person Profile',
+      cssClass: 'text-base-content/60',
+      condition: () => true
+    }
+  } as const;
+
+  getPersonType(person: Person): keyof typeof this.personTypeConfig {
+    for (const [type, config] of Object.entries(this.personTypeConfig)) {
+      if (config.condition(person)) {
+        return type as keyof typeof this.personTypeConfig;
+      }
+    }
+    return 'basic';
+  }
+
   getTypeIcon(person: Person): IconType {
-    if (person.userId && person.isEmployee) return 'user-astronaut';
-    if (person.isEmployee && !person.userId) return 'user-tie';
-    if (person.userId && !person.isEmployee) return 'user-check';
-    return 'user';
+    return this.personTypeConfig[this.getPersonType(person)].icon;
   }
 
   getTypeTooltip(person: Person): string {
-    if (person.userId && person.isEmployee) return 'Complete Profile (User + Employee)';
-    if (person.isEmployee && !person.userId) return 'Employee Profile';
-    if (person.userId && !person.isEmployee) return 'User Profile';
-    return 'Person Profile';
+    return this.personTypeConfig[this.getPersonType(person)].tooltip;
   }
 
   getTypeCssClass(person: Person): string {
-    if (person.userId && person.isEmployee) return 'text-primary';
-    if (person.isEmployee && !person.userId) return 'text-success';
-    if (person.userId && !person.isEmployee) return 'text-info';
-    return 'text-base-content/60';
+    return this.personTypeConfig[this.getPersonType(person)].cssClass;
   }
 
-  // Event handlers
   handleSort(field: string): void {
     this.sortState.handleSort(field, this.columns);
     this.saveSortPreferences();
@@ -181,31 +203,33 @@ export class PersonTableComponent implements OnInit {
     this.resetToFirstPageIfNeeded();
   }
 
-  // Filter toggles
   toggleNameOrder(): void {
     const newValue = this.preferencesService.toggleLastNameFirst();
     this.showLastNameFirst.set(newValue);
   }
 
-  toggleEmployeeFilter(): void {
-    this.showOnlyEmployees.update(value => !value);
-  }
-
-  toggleUserFilter(): void {
-    this.showOnlyUsers.update(value => !value);
+  setFilter(filter: 'all' | 'users' | 'employees' | 'clients' | 'complete'): void {
+    this.personFilter.set(filter);
+    this.saveFilterPreferences(filter);
   }
 
   clearAllFilters(): void {
-    this.showOnlyEmployees.set(false);
-    this.showOnlyUsers.set(false);
+    this.personFilter.set('all');
+    this.saveFilterPreferences('all');
   }
 
-  showCompleteProfiles(): void {
-    this.showOnlyEmployees.set(true);
-    this.showOnlyUsers.set(true);
+  getFilterInfo() {
+    const filter = this.personFilter();
+    const filterInfo = {
+      'all': { label: 'All Persons', icon: 'users' as IconType, color: 'btn-primary' },
+      'users': { label: 'Users Only', icon: 'user-check' as IconType, color: 'btn-info' },
+      'employees': { label: 'Employees Only', icon: 'helmet-safety' as IconType, color: 'btn-success' },
+      'clients': { label: 'Clients Only', icon: 'building' as IconType, color: 'btn-warning' },
+      'complete': { label: 'Complete Profiles', icon: 'user-astronaut' as IconType, color: 'btn-primary' }
+    };
+    return filterInfo[filter] || filterInfo['all'];
   }
 
-  // Sort helpers
   isSortable(field: string): boolean {
     return this.sortState.isSortable(field, this.columns);
   }
@@ -222,7 +246,6 @@ export class PersonTableComponent implements OnInit {
     return this.searchState.getSearchTerm();
   }
 
-  // Data management
   refreshData(): void {
     this.personService.clearPersonsCache();
     this.pagination.goToFirst();
@@ -245,7 +268,6 @@ export class PersonTableComponent implements OnInit {
     this.personSelected.emit(person);
   }
 
-  // Private helper methods
   private checkSelectionMode(): void {
     const mode = this.route.snapshot.queryParamMap.get('mode');
     const userId = this.route.snapshot.queryParamMap.get('userId');
@@ -259,7 +281,14 @@ export class PersonTableComponent implements OnInit {
   private loadPreferences(): void {
     const preferences = this.preferencesService.getPreferences();
     this.showLastNameFirst.set(preferences.showLastNameFirst);
+    const validFilter = this.isValidFilter(preferences.personFilter) ? preferences.personFilter : 'all';
+    this.personFilter.set(validFilter);
     this.initializeSortState(preferences);
+  }
+
+  private isValidFilter(filter: string | undefined): filter is 'all' | 'users' | 'employees' | 'clients' | 'complete' {
+    const validFilters = ['all', 'users', 'employees', 'clients', 'complete'];
+    return validFilters.includes(filter || '');
   }
 
   private initializeSortState(preferences: any): void {
@@ -277,6 +306,10 @@ export class PersonTableComponent implements OnInit {
         sortOptions.order
       );
     }
+  }
+
+  private saveFilterPreferences(filter: string): void {
+    this.preferencesService.updatePersonFilterPreferences(filter);
   }
 
   private resetToFirstPageIfNeeded(): void {

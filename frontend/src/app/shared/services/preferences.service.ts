@@ -5,6 +5,7 @@ export interface TablePreferences {
   sortField: string;
   sortOrder: 'asc' | 'desc';
   showLastNameFirst: boolean;
+  personFilter?: string;
 }
 
 @Injectable({
@@ -18,7 +19,8 @@ export class PreferencesService {
   private preferences = signal<TablePreferences>({
     sortField: 'firstName',
     sortOrder: 'asc',
-    showLastNameFirst: false
+    showLastNameFirst: false,
+    personFilter: 'all'
   });
 
   constructor() {
@@ -48,6 +50,10 @@ export class PreferencesService {
     this.updatePreferences({ sortField, sortOrder });
   }
 
+  updatePersonFilterPreferences(personFilter: string): void {
+    this.updatePreferences({ personFilter });
+  }
+
   resetPreferences(): void {
     this.preferences.set(this.getDefaultPreferences());
     this.savePreferences();
@@ -57,7 +63,8 @@ export class PreferencesService {
     return {
       sortField: 'firstName',
       sortOrder: 'asc',
-      showLastNameFirst: false
+      showLastNameFirst: false,
+      personFilter: 'all'
     };
   }
 

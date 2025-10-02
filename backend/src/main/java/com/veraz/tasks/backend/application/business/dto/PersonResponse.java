@@ -34,6 +34,8 @@ public record PersonResponse(
     boolean isActive,
     int age,
     boolean isAdult,
+    boolean isEmployee,
+    boolean isClient,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -63,6 +65,40 @@ public record PersonResponse(
             person.isActive(),
             person.getAge(),
             person.isAdult(),
+            false, // isEmployee - will be calculated in the use case
+            false, // isClient - will be calculated in the use case
+            person.getCreatedAt(),
+            person.getUpdatedAt()
+        );
+    }
+
+    /**
+     * Factory method to create a response from a domain entity with calculated properties
+     */
+    public static PersonResponse from(Person person, boolean isEmployee, boolean isClient) {
+        return new PersonResponse(
+            person.getId().getValueAsString(),
+            person.getUserId() != null ? person.getUserId().getValueAsString() : null,
+            person.getIdentType(),
+            person.getIdentNumber(),
+            person.getFirstName(),
+            person.getLastName(),
+            person.getFullName(),
+            person.getBirthDate(),
+            person.getGender(),
+            person.getNationality(),
+            person.getMobile(),
+            person.getEmail() != null ? person.getEmail().getValue() : null,
+            person.getAddress(),
+            person.getCity(),
+            person.getCountry(),
+            person.getPostalCode(),
+            person.getNotes(),
+            person.isActive(),
+            person.getAge(),
+            person.isAdult(),
+            isEmployee,
+            isClient,
             person.getCreatedAt(),
             person.getUpdatedAt()
         );

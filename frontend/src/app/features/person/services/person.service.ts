@@ -16,7 +16,9 @@ const emptyPerson: Person = {
   lastName: '',
   isActive: true,
   createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
+  updatedAt: new Date().toISOString(),
+  isEmployee: false,
+  isClient: false
 };
 
 const emptyPagination: PaginatedResponseDTO<Person> = {

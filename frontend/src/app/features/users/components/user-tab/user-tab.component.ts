@@ -24,6 +24,5 @@ export class UserTabComponent {
   linkExistingUser = output<void>();
   createNewUser = output<void>();
   formSubmitted = output<void>();
-  roleSelected = output<string>();
   rolesSelected = output<string[]>();
 }

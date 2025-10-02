@@ -22,7 +22,7 @@
       <input
         type="checkbox"
         class="checkbox checkbox-primary checkbox-sm"
-        [checked]="isRoleSelected(role.name)"
+        [checked]="selectedRoles().includes(role.name)"
         [disabled]="isReadOnly()"
         (change)="toggleRole(role.name)"
       />

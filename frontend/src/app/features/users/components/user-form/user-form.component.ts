@@ -4,14 +4,14 @@ import { ReactiveFormsModule, FormGroup } from '@angular/forms';
 import { FormUtilsService } from '@shared/services/form-utils.service';
 import { PasswordUtilsService } from '@shared/services/password-utils.service';
 import { ScrollService } from '@shared/services/scroll.service';
-import { UserRoleSelectorComponent } from '../user-role-selector/user-role-selector.component';
+import { UserRolesSelectorComponent } from '../user-roles-selector/user-roles-selector.component';
 import { IconComponent } from '@shared/components/icon/icon.component';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
   selector: 'app-user-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, UserRoleSelectorComponent,
+  imports: [CommonModule, ReactiveFormsModule, UserRolesSelectorComponent,
     IconComponent, LoadingComponent],
   templateUrl: './user-form.component.html'
 })
@@ -24,7 +24,6 @@ export class UserFormComponent {
   isReadOnly = input<boolean>(false);
 
   formSubmitted = output<void>();
-  roleSelected = output<string>();
   rolesSelected = output<string[]>();
 
   formUtils = inject(FormUtilsService);
@@ -52,10 +51,6 @@ export class UserFormComponent {
 
   isPasswordRequired(): boolean {
     return !this.isEditMode() || this.showPasswordSection();
-  }
-
-  onRoleSelected(roleName: string): void {
-    this.roleSelected.emit(roleName);
   }
 
   onRolesSelected(roles: string[]): void {

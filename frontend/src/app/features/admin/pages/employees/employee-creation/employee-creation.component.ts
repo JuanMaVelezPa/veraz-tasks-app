@@ -75,7 +75,7 @@ export class EmployeeCreationComponent implements OnInit {
       id: 2,
       title: 'Employment Information',
       description: 'Employee details and position',
-      icon: 'user-tie',
+      icon: 'helmet-safety',
       completed: false,
       current: false
     },
@@ -249,7 +249,6 @@ export class EmployeeCreationComponent implements OnInit {
 
   onRolesSelected(roles: string[]) {
     this.formBuilders.patchForm(this.userForm, { selectedRoles: roles });
-    // Mark the field as touched to trigger change detection
     this.userForm.get('selectedRoles')?.markAsTouched();
   }
 

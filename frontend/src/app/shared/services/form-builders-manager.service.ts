@@ -39,6 +39,8 @@ export class FormBuildersManagerService {
       this.personFormBuilder.patchForm(form, data);
     } else if (this.isEmployeeForm(formKeys)) {
       this.employeeFormBuilder.patchForm(form, data);
+    } else if (this.isClientForm(formKeys)) {
+      this.clientFormBuilder.patchForm(form, data);
     } else if (this.isUserForm(formKeys)) {
       this.userFormBuilder.patchForm(form, data);
     }
@@ -97,6 +99,8 @@ export class FormBuildersManagerService {
       return this.personFormBuilder.isFieldRequired(fieldName);
     } else if (this.isEmployeeForm(formKeys)) {
       return this.employeeFormBuilder.isFieldRequired(fieldName);
+    } else if (this.isClientForm(formKeys)) {
+      return this.clientFormBuilder.isFieldRequired(fieldName);
     } else if (this.isUserForm(formKeys)) {
       return this.userFormBuilder.isFieldRequired(fieldName);
     }
@@ -113,6 +117,8 @@ export class FormBuildersManagerService {
       return this.personFormBuilder.getFieldValidators(fieldName);
     } else if (this.isEmployeeForm(formKeys)) {
       return this.employeeFormBuilder.getFieldValidators(fieldName);
+    } else if (this.isClientForm(formKeys)) {
+      return this.clientFormBuilder.getFieldValidators(fieldName);
     } else if (this.isUserForm(formKeys)) {
       return this.userFormBuilder.getFieldValidators(fieldName);
     }
@@ -129,6 +135,8 @@ export class FormBuildersManagerService {
       return this.personFormBuilder.getFieldDefaultValue(fieldName);
     } else if (this.isEmployeeForm(formKeys)) {
       return this.employeeFormBuilder.getFieldDefaultValue(fieldName);
+    } else if (this.isClientForm(formKeys)) {
+      return this.clientFormBuilder.getFieldDefaultValue(fieldName);
     } else if (this.isUserForm(formKeys)) {
       return this.userFormBuilder.getFieldDefaultValue(fieldName);
     }

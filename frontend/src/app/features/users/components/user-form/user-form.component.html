@@ -93,7 +93,7 @@
 
     <!-- Roles -->
     <div class="form-control md:col-span-3">
-      <app-user-role-selector
+      <app-user-roles-selector
         [selectedRoles]="userForm().get('selectedRoles')?.value || []"
         [isReadOnly]="isReadOnly()"
         (rolesSelected)="onRolesSelected($event)"

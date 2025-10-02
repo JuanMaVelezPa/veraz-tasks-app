@@ -6,12 +6,12 @@ import { RoleResponse } from '@users/interfaces/role.interface';
 import { LoadingComponent } from '@shared/components/loading/loading.component';
 
 @Component({
-  selector: 'app-user-role-selector',
+  selector: 'app-user-roles-selector',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, LoadingComponent],
-  templateUrl: './user-role-selector.component.html'
+  templateUrl: './user-roles-selector.component.html'
 })
-export class UserRoleSelectorComponent implements OnInit {
+export class UserRolesSelectorComponent implements OnInit {
 
   selectedRoles = input<string[]>([]);
   isReadOnly = input<boolean>(false);
@@ -81,10 +81,6 @@ export class UserRoleSelectorComponent implements OnInit {
     setTimeout(() => {
       this.isUserInteracting = false;
     }, 100);
-  }
-
-  isRoleSelected(roleName: string): boolean {
-    return this.selectedRoleNames().includes(roleName);
   }
 
   getSelectedRolesCount(): number {

@@ -16,28 +16,26 @@ export interface PersonFields {
   postalCode?: string;
   notes?: string;
   isActive: boolean;
+  isEmployee: boolean;
+  isClient: boolean;
 }
 
 export interface PersonWithUser extends PersonFields {
   userId?: string | null;
-  isEmployee?: boolean;
 }
 
 export interface Person extends PersonWithUser, Timestamped {
   id: string;
 }
 
-// Derived types using TypeScript utilities
 export type PersonCreateRequest = PersonWithUser;
 export type PersonUpdateRequest = Partial<PersonFields>;
 export type PersonFormData = PersonFields;
 
-// User association interface
 export interface PersonUserAssociation {
   userId: string;
 }
 
-// Options for management service
 export interface PersonManagementOptions {
   context: 'admin' | 'profile';
   userId?: string;

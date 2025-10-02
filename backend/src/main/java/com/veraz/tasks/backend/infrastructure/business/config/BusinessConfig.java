@@ -91,8 +91,10 @@ public class BusinessConfig {
     }
 
     @Bean
-    public FindAllPersonsUseCase findAllPersonsUseCase(PersonRepository personRepository) {
-        return new FindAllPersonsUseCase(personRepository);
+    public FindAllPersonsUseCase findAllPersonsUseCase(PersonRepository personRepository,
+            EmployeeRepository employeeRepository,
+            ClientRepository clientRepository) {
+        return new FindAllPersonsUseCase(personRepository, employeeRepository, clientRepository);
     }
 
     @Bean

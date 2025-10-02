@@ -48,7 +48,7 @@ export class TabsService {
         id: 'employee',
         label: 'Employment Information',
         shortLabel: 'Employee',
-        icon: 'user-tie',
+        icon: 'helmet-safety',
         disabled: !isEditMode,
         badge: this.getBadge('info', 'After Save', !isEditMode) ||
           this.getBadge('warning', 'Optional', !hasEmploymentProfile) ||
@@ -89,7 +89,7 @@ export class TabsService {
         id: 'employment',
         label: 'Employment Information',
         shortLabel: 'Employment',
-        icon: 'user-tie',
+        icon: 'helmet-safety',
         disabled: !hasEmploymentProfile,
         badge: hasEmploymentProfile ? { type: 'success', text: '', icon: 'check' } : undefined
       },
