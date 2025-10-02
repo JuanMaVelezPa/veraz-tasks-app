@@ -4,7 +4,7 @@
 --
 -- VERSION     REQUEST NRO    USER            DATE             CHANGES
 -- ----------- -------------- --------------- ---------------- ----------------
--- 1.0.0                      JMVELEZ         15/01/2025       Initial authentication data
+-- 1.0.0                      JMVELEZ         02/10/2024       Initial authentication data
 -- ----------- -------------- --------------- ---------------- ----------------
 --
 --
